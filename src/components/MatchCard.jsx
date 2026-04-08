@@ -3,13 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { recordResult, confirmResult, disputeResult } from '../api/matches';
 import { useAuth } from '../context/AuthContext';
 
-const statusConfig = {
-  pending: { label: 'Pendiente', cls: 'bg-amber-50 text-amber-600 border border-amber-200' },
-  awaiting_confirmation: { label: 'Pend. confirmacion', cls: 'bg-orange-50 text-orange-600 border border-orange-200' },
-  played: { label: 'Jugado', cls: 'bg-brand-50 text-brand-700 border border-brand-200' },
-  cancelled: { label: 'Cancelado', cls: 'bg-gray-100 text-gray-400 border border-gray-200' },
-};
-
 const EMPTY_SET = { a: '', b: '' };
 
 const ScoreDisplay = ({ result, scoringType }) => {
@@ -58,22 +51,21 @@ const ResultForm = ({ scoringType, teamAName, teamBName, onSubmit, onCancel, sav
 
   if (scoringType === 'goals') {
     return (
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid grid-cols-[1fr_60px_1fr] gap-2 items-center">
-          <div className="text-right">
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
             <p className="text-xs text-gray-500 font-medium mb-1">{teamAName}</p>
-            <input type="number" min="0" required className="input text-center text-xl font-bold" value={goals.a} onChange={(e) => setGoals({ ...goals, a: e.target.value })} placeholder="0" />
+            <input type="number" min="0" required className="input h-10 text-center text-base font-semibold" value={goals.a} onChange={(e) => setGoals({ ...goals, a: e.target.value })} placeholder="0" />
           </div>
-          <p className="text-center text-gray-400 font-bold text-sm pt-5">-</p>
           <div>
             <p className="text-xs text-gray-500 font-medium mb-1">{teamBName}</p>
-            <input type="number" min="0" required className="input text-center text-xl font-bold" value={goals.b} onChange={(e) => setGoals({ ...goals, b: e.target.value })} placeholder="0" />
+            <input type="number" min="0" required className="input h-10 text-center text-base font-semibold" value={goals.b} onChange={(e) => setGoals({ ...goals, b: e.target.value })} placeholder="0" />
           </div>
         </div>
         {error && <p className="text-red-500 text-xs">{error}</p>}
-        <div className="flex gap-2">
-          <button type="submit" disabled={saving} className="btn-primary flex-1 justify-center text-sm">{saving ? 'Guardando...' : 'Confirmar resultado'}</button>
+        <div className="flex items-center justify-end gap-2">
           <button type="button" onClick={onCancel} className="btn-secondary text-sm">Cancelar</button>
+          <button type="submit" disabled={saving} className="btn-primary text-sm">{saving ? 'Guardando...' : 'Guardar resultado'}</button>
         </div>
       </form>
     );
@@ -97,9 +89,9 @@ const ResultForm = ({ scoringType, teamAName, teamBName, onSubmit, onCancel, sav
         </button>
       )}
       {error && <p className="text-red-500 text-xs">{error}</p>}
-      <div className="flex gap-2 mt-1">
-        <button type="submit" disabled={saving} className="btn-primary flex-1 justify-center text-sm">{saving ? 'Guardando...' : 'Confirmar resultado'}</button>
+      <div className="flex items-center justify-end gap-2 mt-1">
         <button type="button" onClick={onCancel} className="btn-secondary text-sm">Cancelar</button>
+        <button type="submit" disabled={saving} className="btn-primary text-sm">{saving ? 'Guardando...' : 'Guardar resultado'}</button>
       </div>
     </form>
   );
@@ -111,8 +103,6 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const [error, setError] = useState('');
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const st = statusConfig[match.status] || statusConfig.pending;
 
   const winnerId = match.winner?._id || match.winner;
   const teamAId = match.teamA?._id || match.teamA;
@@ -184,11 +174,6 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
       <div className="px-3 md:px-5 py-3 md:py-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider ${st.cls}`}>{st.label}</span>
-          {eventModeEnabled && <span className="text-[10px] text-blue-600 font-semibold">Resultado por detalles</span>}
-        </div>
-
         <div className="flex items-center gap-2 md:gap-4">
           <div className={`flex-1 text-right text-xs md:text-sm font-medium truncate ${winnerSide === 'A' ? 'font-bold text-gray-900' : 'text-gray-600'} ${isMyTeamA ? 'text-brand-700 font-bold' : ''} ${!match.teamA ? 'italic text-gray-300' : ''}`}>{teamAName}</div>
           <div className={`flex-shrink-0 flex flex-col items-center w-[80px] md:w-[100px] gap-1 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
@@ -198,20 +183,22 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
         </div>
 
         {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled) && (
-          <div className="flex justify-center mt-2.5">
+          <div className="flex justify-end mt-2.5">
             {eventModeEnabled ? (
-              <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors w-full md:w-auto">
+              <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
                 Ver detalle
               </button>
             ) : (
               <>
                 {match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
-                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-4 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors w-full md:w-auto">+ Resultado</button>
+                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                    + Resultado
+                  </button>
                 )}
                 {match.status === 'awaiting_confirmation' && isProposingTeam && <span className="text-xs text-orange-500 font-medium">Esperando confirmacion del rival...</span>}
                 {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
-                  <div className="flex gap-2 w-full md:w-auto">
-                    {canConfirm && <button onClick={handleConfirm} disabled={saving} className="flex-1 md:flex-none text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
+                  <div className="flex gap-2">
+                    {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
                     {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50">Rechazar</button>}
                   </div>
                 )}
@@ -225,7 +212,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
 
       {!eventModeEnabled && showForm && (
         <div className="border-t border-gray-100 bg-gray-50 px-3 md:px-5 py-4">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Proponer resultado</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Anadir resultado</p>
           <ResultForm
             scoringType={scoringType}
             teamAName={teamAName}
