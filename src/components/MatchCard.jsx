@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { recordResult, confirmResult, disputeResult, updateMatchSchedule } from '../api/matches';
+import { recordResult, confirmResult, disputeResult } from '../api/matches';
 import { useAuth } from '../context/AuthContext';
 
 const EMPTY_SET = { a: '', b: '' };
@@ -10,18 +10,6 @@ const formatDateLabel = (value) => {
   const [y, m, d] = value.split('-');
   if (!y || !m || !d) return value;
   return `${d}/${m}/${y}`;
-};
-
-const toDateTimeLocalValue = (match) => {
-  if (match?.scheduledDate) {
-    const date = new Date(match.scheduledDate);
-    if (!Number.isNaN(date.getTime())) {
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    }
-  }
-  if (match?.matchDate && match?.matchTime) return `${match.matchDate}T${match.matchTime}`;
-  return '';
 };
 
 const formatDateTimeLabel = (match) => {
@@ -132,15 +120,8 @@ const ResultForm = ({ scoringType, teamAName, teamBName, onSubmit, onCancel, sav
 
 const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = null, forceCanRecord = false }) => {
   const [showForm, setShowForm] = useState(false);
-  const [showScheduleForm, setShowScheduleForm] = useState(false);
-  const [scheduleSaving, setScheduleSaving] = useState(false);
-  const [scheduleError, setScheduleError] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [scheduleForm, setScheduleForm] = useState({
-    location: match.location || '',
-    dateTime: toDateTimeLocalValue(match),
-  });
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -158,23 +139,14 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const canRecordResult = user && (user.role === 'organizer' || forceCanRecord || isMyTeam);
 
   const proposedByStr = match.proposedBy?._id?.toString() || match.proposedBy?.toString();
-  const organizerId = match.competition?.organizer?._id?.toString() || match.competition?.organizer?.toString();
   const isProposingTeam = myTeamId && proposedByStr === myTeamId;
   const isConfirmingTeam = myTeamId && proposedByStr && proposedByStr !== myTeamId;
   const isOrganizer = user?.role === 'organizer';
   const canConfirm = match.status === 'awaiting_confirmation' && (isOrganizer || isConfirmingTeam);
   const canDispute = match.status === 'awaiting_confirmation' && isConfirmingTeam;
-  const canManageSchedule = user?.role === 'organizer' && organizerId === user?.id;
 
   const resultConfig = match.competition?.settings?.resultConfig || {};
   const eventModeEnabled = scoringType === 'goals' && resultConfig.mode === 'events';
-
-  useEffect(() => {
-    setScheduleForm({
-      location: match.location || '',
-      dateTime: toDateTimeLocalValue(match),
-    });
-  }, [match.location, match.matchDate, match.matchTime, match.scheduledDate]);
 
   const handleSubmit = async (result) => {
     setError('');
@@ -216,22 +188,10 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
     }
   };
 
-  const handleScheduleSubmit = async (e) => {
-    e.preventDefault();
-    setScheduleError('');
-    setScheduleSaving(true);
-    try {
-      await updateMatchSchedule(match._id, {
-        location: scheduleForm.location,
-        dateTime: scheduleForm.dateTime,
-      });
-      setShowScheduleForm(false);
-      onResultRecorded && onResultRecorded();
-    } catch (err) {
-      setScheduleError(err.response?.data?.message || 'Error al guardar programacion');
-    } finally {
-      setScheduleSaving(false);
-    }
+  const handleCardClick = (e) => {
+    if (window.innerWidth >= 768) return;
+    if (e.target.closest('button, a, input, select, textarea, form')) return;
+    navigate(`/matches/${match._id}`);
   };
 
   const teamAName = match.teamA?.name || 'TBD';
@@ -240,7 +200,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
 
   return (
-    <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+    <div onClick={handleCardClick} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden cursor-pointer md:cursor-default">
       <div className="px-3 md:px-5 py-3 md:py-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
@@ -254,29 +214,11 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
           {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled) && (
             <div className="flex items-center justify-end flex-shrink-0">
               {eventModeEnabled ? (
-                <div className="flex items-center gap-2">
-                  {canManageSchedule && (
-                    <button
-                      onClick={() => setShowScheduleForm((v) => !v)}
-                      className="text-xs bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                    >
-                      Programar
-                    </button>
-                  )}
-                  <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
-                    Ver detalle
-                  </button>
-                </div>
+                <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                  Ver detalle
+                </button>
               ) : (
                 <>
-                  {canManageSchedule && (
-                    <button
-                      onClick={() => setShowScheduleForm((v) => !v)}
-                      className="text-xs bg-white text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors mr-2"
-                    >
-                      Programar
-                    </button>
-                  )}
                   {match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
                     <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
                       + Resultado
@@ -296,39 +238,8 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
         </div>
 
         {error && <p className="text-red-500 text-xs mt-2 text-center">{error}</p>}
-        <div className="mt-2 text-xs text-gray-500">
-          {schedulePieces.length > 0 ? schedulePieces.join(' · ') : 'Sin programacion'}
-        </div>
+        {schedulePieces.length > 0 && <div className="mt-2 text-xs text-gray-500">{schedulePieces.join(' - ')}</div>}
       </div>
-
-      {showScheduleForm && canManageSchedule && (
-        <div className="border-t border-gray-100 bg-gray-50 px-3 md:px-5 py-4">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Programacion del partido</p>
-          <form onSubmit={handleScheduleSubmit} className="space-y-2.5">
-            <input
-              type="text"
-              className="input h-10 text-sm"
-              placeholder="Ubicacion"
-              value={scheduleForm.location}
-              onChange={(e) => setScheduleForm((prev) => ({ ...prev, location: e.target.value }))}
-              maxLength={140}
-            />
-            <input
-              type="datetime-local"
-              className="input h-10 text-sm"
-              value={scheduleForm.dateTime}
-              onChange={(e) => setScheduleForm((prev) => ({ ...prev, dateTime: e.target.value }))}
-            />
-            {scheduleError && <p className="text-red-500 text-xs">{scheduleError}</p>}
-            <div className="flex items-center justify-end gap-2">
-              <button type="button" onClick={() => setShowScheduleForm(false)} className="btn-secondary text-sm">Cancelar</button>
-              <button type="submit" disabled={scheduleSaving} className="btn-primary text-sm">
-                {scheduleSaving ? 'Guardando...' : 'Guardar programacion'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {!eventModeEnabled && showForm && (
         <div className="border-t border-gray-100 bg-gray-50 px-3 md:px-5 py-4">
