@@ -15,6 +15,7 @@ import DivisionDetail    from './pages/DivisionDetail';
 import NewSeason         from './pages/NewSeason';
 import PlayerDashboard   from './pages/PlayerDashboard';
 import MatchDetail       from './pages/MatchDetail';
+import PublicOrganization from './pages/PublicOrganization';
 
 /** Redirects organizers without a club to onboarding. */
 const RequireOrg = ({ children }) => {
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/" element={<RootRedirect />} />
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/organizations/:id/public" element={<PublicOrganization />} />
 
           {/* Onboarding — organizer without org lands here */}
           <Route path="/onboarding" element={

@@ -15,20 +15,20 @@ const OrganizationSettings = () => {
     type: 'club',
     isPublic: true,
   });
-  const [loading, setLoading]   = useState(false);
-  const [saved, setSaved]       = useState(false);
-  const [error, setError]       = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
-  // Populate form when org loads
   useEffect(() => {
     if (!activeOrg) return;
     setForm({
-      name:        activeOrg.name        ?? '',
+      name: activeOrg.name ?? '',
       description: activeOrg.description ?? '',
-      city:        activeOrg.location?.city    ?? '',
-      country:     activeOrg.location?.country ?? '',
-      type:        activeOrg.type        ?? 'club',
-      isPublic:    activeOrg.isPublic    ?? true,
+      city: activeOrg.location?.city ?? '',
+      country: activeOrg.location?.country ?? '',
+      type: activeOrg.type ?? 'club',
+      isPublic: activeOrg.isPublic ?? true,
     });
   }, [activeOrg?._id]);
 
@@ -44,7 +44,7 @@ const OrganizationSettings = () => {
         type: form.type,
         isPublic: form.isPublic,
       });
-      orgCreated(res.data); // update context so sidebar / other pages reflect changes
+      orgCreated(res.data);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
@@ -56,11 +56,21 @@ const OrganizationSettings = () => {
 
   if (!activeOrg) return null;
 
-  return (
-    <AppLayout title="Configuración">
-      <div className="max-w-2xl space-y-6">
+  const publicPageUrl = `${window.location.origin}/organizations/${activeOrg._id}/public`;
 
-        {/* Club identity — read-only header */}
+  const copyPublicUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(publicPageUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <AppLayout title="Configuracion">
+      <div className="max-w-2xl space-y-6">
         <div className="card p-5 flex items-center gap-4">
           <div className="w-14 h-14 bg-brand-600 rounded-2xl flex items-center justify-center flex-shrink-0">
             <Building2 size={24} className="text-white" />
@@ -73,9 +83,8 @@ const OrganizationSettings = () => {
           </div>
         </div>
 
-        {/* Edit form */}
         <div className="card p-6">
-          <h2 className="text-sm font-bold text-gray-700 mb-5 uppercase tracking-wider">Información del club</h2>
+          <h2 className="text-sm font-bold text-gray-700 mb-5 uppercase tracking-wider">Informacion del club</h2>
 
           {error && (
             <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm">
@@ -84,14 +93,13 @@ const OrganizationSettings = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Tipo */}
             <div>
               <label className="label">Tipo de entidad</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: 'club',       label: 'Club' },
-                  { value: 'organizer',  label: 'Organizadora' },
-                  { value: 'federation', label: 'Federación' },
+                  { value: 'club', label: 'Club' },
+                  { value: 'organizer', label: 'Organizadora' },
+                  { value: 'federation', label: 'Federacion' },
                 ].map((t) => (
                   <button
                     key={t.value}
@@ -109,22 +117,20 @@ const OrganizationSettings = () => {
               </div>
             </div>
 
-            {/* Descripción */}
             <div>
-              <label className="label">Descripción</label>
+              <label className="label">Descripcion</label>
               <div className="relative">
                 <FileText size={15} className="absolute left-3 top-3 text-gray-400" />
                 <textarea
                   className="input pl-9 resize-none"
                   rows={3}
-                  placeholder="Cuéntanos sobre tu club..."
+                  placeholder="Cuentanos sobre tu club..."
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
               </div>
             </div>
 
-            {/* Ubicación */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label">Ciudad</label>
@@ -140,13 +146,13 @@ const OrganizationSettings = () => {
                 </div>
               </div>
               <div>
-                <label className="label">País</label>
+                <label className="label">Pais</label>
                 <div className="relative">
                   <Globe size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
                     className="input pl-9"
-                    placeholder="España"
+                    placeholder="Espana"
                     value={form.country}
                     onChange={(e) => setForm({ ...form, country: e.target.value })}
                   />
@@ -154,12 +160,11 @@ const OrganizationSettings = () => {
               </div>
             </div>
 
-            {/* Visibilidad pública */}
             <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-gray-50 border border-gray-200">
               <div>
-                <p className="text-sm font-medium text-gray-800">Página pública</p>
+                <p className="text-sm font-medium text-gray-800">Pagina publica</p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Permite que cualquiera vea el perfil público de tu club y sus competiciones
+                  Permite que cualquiera vea el perfil publico de tu club y sus competiciones
                 </p>
               </div>
               <button
@@ -177,7 +182,6 @@ const OrganizationSettings = () => {
               </button>
             </div>
 
-            {/* Submit */}
             <div className="flex items-center justify-end gap-3 pt-2">
               {saved && (
                 <span className="flex items-center gap-1.5 text-sm text-green-600 font-medium">
@@ -192,15 +196,20 @@ const OrganizationSettings = () => {
           </form>
         </div>
 
-        {/* Public URL info */}
         {form.isPublic && (
           <div className="card p-4 flex items-start gap-3">
             <Globe size={16} className="text-brand-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-gray-800">URL pública de tu club</p>
-              <p className="text-xs text-gray-400 font-mono mt-1">
-                /api/organizations/{activeOrg._id}/public
-              </p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-gray-800">URL publica de tu club</p>
+              <p className="text-xs text-gray-500 font-mono mt-1 break-all">{publicPageUrl}</p>
+              <div className="flex items-center gap-2 mt-3">
+                <button type="button" onClick={copyPublicUrl} className="btn-secondary text-xs py-1.5 px-3">
+                  {copied ? 'Copiado' : 'Copiar enlace'}
+                </button>
+                <a href={publicPageUrl} target="_blank" rel="noreferrer" className="btn-primary text-xs py-1.5 px-3">
+                  Ver pagina publica
+                </a>
+              </div>
             </div>
           </div>
         )}
