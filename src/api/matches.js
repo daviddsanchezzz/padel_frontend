@@ -13,6 +13,7 @@ export const generateDivisionBracket = (divisionId) => api.post(`/divisions/${di
 export const getDivisionBracket      = (divisionId) => api.get(`/divisions/${divisionId}/bracket`);
 
 // Shared
+export const getMatch         = (matchId)       => api.get(`/matches/${matchId}`);
 export const recordResult     = (matchId, data) => api.put(`/matches/${matchId}/result`, data);
 export const getMatchEvents   = (matchId)       => api.get(`/matches/${matchId}/events`);
 export const recordMatchEvents = (matchId, data) => api.put(`/matches/${matchId}/events`, data);

@@ -11,6 +11,7 @@ import CompetitionDetail  from './pages/CompetitionDetail';
 import DivisionDetail     from './pages/DivisionDetail';
 import NewSeason          from './pages/NewSeason';
 import PlayerDashboard    from './pages/PlayerDashboard';
+import MatchDetail        from './pages/MatchDetail';
 
 const RootRedirect = () => {
   const { user, loading } = useAuth();
@@ -39,6 +40,9 @@ const App = () => (
         } />
         <Route path="/divisions/:id" element={
           <ProtectedRoute><DivisionDetail /></ProtectedRoute>
+        } />
+        <Route path="/matches/:id" element={
+          <ProtectedRoute><MatchDetail /></ProtectedRoute>
         } />
         <Route path="/competitions/:id/new-season" element={
           <ProtectedRoute requiredRole="organizer"><NewSeason /></ProtectedRoute>
