@@ -28,8 +28,10 @@ const Login = () => {
       return;
     }
 
-    // Better Auth sets the session cookie automatically
-    navigate(data.user.role === 'organizer' ? '/dashboard' : '/player');
+    // Use full navigation instead of React Router to force a fresh session load.
+    // On iOS Safari, useSession() may not pick up the new cookie in the same render cycle.
+    const dest = data.user.role === 'organizer' ? '/dashboard' : '/player';
+    window.location.href = dest;
   };
 
   const handleGoogle = async () => {
