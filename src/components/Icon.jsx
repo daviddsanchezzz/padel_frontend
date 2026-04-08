@@ -3,14 +3,15 @@ import {
   Trophy, Medal, GitMerge, CalendarDays, CircleCheck,
   ChevronLeft, ChevronRight, LayoutList, Dumbbell,
   Plus, SlidersHorizontal, ChevronsRight, TrendingUp,
-  Users2, Trash2, Loader2, AlertTriangle, Zap,
+  Users2, Trash2, Loader2, AlertTriangle, Zap, Pencil,
 } from 'lucide-react';
 
 const ICONS = {
   alert:        AlertTriangle,   // advertencia visible
   bracket:      GitMerge,        // ramas que se fusionan = bracket
   calendar:     CalendarDays,    // calendario con días
-  check:        CircleCheck,     // check dentro de círculo
+  check:        CircleCheck,    // check dentro de círculo
+  edit:         Pencil,
   chevronLeft:  ChevronLeft,
   chevronRight: ChevronRight,
   division:     LayoutList,      // filas estructuradas = divisiones
@@ -48,3 +49,4 @@ const SPORT_EMOJIS = {
 export const sportEmoji = (slug) => SPORT_EMOJIS[slug?.toLowerCase()] ?? '🏆';
 
 export default Icon;
+
