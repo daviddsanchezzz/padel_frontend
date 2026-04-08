@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createCompetition } from '../api/competitions';
 import { getSports } from '../api/sports';
+import { useOrg } from '../context/OrgContext';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 
@@ -13,6 +14,7 @@ const normalizeSportName = (value = '') =>
 
 const CompetitionForm = () => {
   const navigate = useNavigate();
+  const { activeOrg } = useOrg();
   const [sports, setSports] = useState([]);
   const [form, setForm] = useState({
     name: '', type: 'league', sportId: '', season: '', description: '',
@@ -71,6 +73,7 @@ const CompetitionForm = () => {
       const payload = {
         ...form,
         settings,
+        organizationId: activeOrg?.authOrgId ?? null,
       };
 
       const res = await createCompetition(payload);
