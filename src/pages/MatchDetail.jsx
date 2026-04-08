@@ -17,23 +17,27 @@ const DEFAULT_EVENT_TYPES = ['goal', 'assist', 'yellow_card', 'red_card'];
 const EVENT_TYPE_STYLE = {
   goal: {
     label: 'Gol',
-    cls: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-    emoji: '⚽',
+    cls: 'bg-white border-gray-200 text-gray-800',
+    tone: 'text-emerald-600',
+    emoji: '\u26BD',
   },
   assist: {
     label: 'Asistencia',
-    cls: 'bg-sky-50 border-sky-200 text-sky-700',
-    emoji: '🎯',
+    cls: 'bg-white border-gray-200 text-gray-800',
+    tone: 'text-sky-600',
+    emoji: '\u{1F3AF}',
   },
   yellow_card: {
     label: 'Tarjeta amarilla',
-    cls: 'bg-amber-50 border-amber-200 text-amber-700',
-    emoji: '🟨',
+    cls: 'bg-white border-gray-200 text-gray-800',
+    tone: 'text-amber-600',
+    emoji: '\u{1F7E8}',
   },
   red_card: {
     label: 'Tarjeta roja',
-    cls: 'bg-red-50 border-red-200 text-red-700',
-    emoji: '🟥',
+    cls: 'bg-white border-gray-200 text-gray-800',
+    tone: 'text-red-600',
+    emoji: '\u{1F7E5}',
   },
 };
 
@@ -285,3 +289,4 @@ const MatchDetail = () => {
 };
 
 export default MatchDetail;
+
