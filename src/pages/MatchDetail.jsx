@@ -243,9 +243,9 @@ const MatchDetail = () => {
                 <p className="text-xs text-gray-500 mt-0.5">Cronologia oficial registrada</p>
               </div>
               <div className="flex items-center gap-2 text-[11px]">
-                <span className="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">{totalGoals} goles</span>
-                <span className="px-2 py-1 rounded-full bg-sky-50 text-sky-700 border border-sky-200 font-semibold">{totalAssists} asistencias</span>
-                <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold">{totalCards} tarjetas</span>
+                <span className="px-2 py-1 rounded-full bg-white text-gray-700 border border-gray-200 font-semibold">{totalGoals} goles</span>
+                <span className="px-2 py-1 rounded-full bg-white text-gray-700 border border-gray-200 font-semibold">{totalAssists} asistencias</span>
+                <span className="px-2 py-1 rounded-full bg-white text-gray-700 border border-gray-200 font-semibold">{totalCards} tarjetas</span>
               </div>
             </div>
             {events.length === 0 ? (
@@ -253,20 +253,20 @@ const MatchDetail = () => {
             ) : (
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center mb-1">
-                  <p className="text-xs font-semibold text-gray-500 text-left truncate">{match.teamA?.name || 'Equipo A'}</p>
+                  <p className="text-sm md:text-base font-bold text-gray-800 text-left truncate">{match.teamA?.name || 'Equipo A'}</p>
                   <div />
-                  <p className="text-xs font-semibold text-gray-500 text-right truncate">{match.teamB?.name || 'Equipo B'}</p>
+                  <p className="text-sm md:text-base font-bold text-gray-800 text-right truncate">{match.teamB?.name || 'Equipo B'}</p>
                 </div>
                 {sortedEvents.map((ev, idx) => {
                   const isTeamA = ev.team?.toString() === teamAId;
-                  const style = EVENT_TYPE_STYLE[ev.type] || { cls: 'bg-gray-50 border-gray-200 text-gray-700', emoji: '📌', label: ev.type };
+                  const style = EVENT_TYPE_STYLE[ev.type] || { cls: 'bg-white border-gray-200 text-gray-800', tone: 'text-gray-600', emoji: '\u{1F4CC}', label: ev.type };
                   const eventNode = (
-                    <div className={`rounded-xl border px-3 py-2 ${style.cls}`}>
+                    <div className={`rounded-xl border px-3 py-2 shadow-sm ${style.cls}`}>
                       <div className="flex items-center gap-2">
                         <span className="text-base leading-none">{style.emoji}</span>
-                        <p className="text-sm font-semibold">{EVENT_TYPE_LABEL[ev.type] || style.label}</p>
+                        <p className={`text-sm font-semibold ${style.tone || 'text-gray-700'}`}>{EVENT_TYPE_LABEL[ev.type] || style.label}</p>
                       </div>
-                      <p className="text-xs mt-1 opacity-90">{ev.playerName}</p>
+                      <p className="text-xs mt-1 text-gray-600">{ev.playerName}</p>
                     </div>
                   );
                   return (
@@ -289,4 +289,5 @@ const MatchDetail = () => {
 };
 
 export default MatchDetail;
+
 
