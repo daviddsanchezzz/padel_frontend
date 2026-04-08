@@ -260,52 +260,54 @@ const CompetitionDetail = () => {
   const settings   = competition.settings || {};
   const showNewSeason = isLeague && divisions.length > 0;
 
-  const actions = isOrganizer ? (
-    <div className="flex items-center gap-1.5 flex-wrap justify-end">
-      <button
-        onClick={() => {
-          const url = `${window.location.origin}/register?competition=${id}`;
-          navigator.clipboard.writeText(url);
-          alert('Enlace de invitación copiado al portapapeles. Comparte este enlace con los jugadores para que se registren y se unan.');
-        }}
-        className="btn-secondary text-xs py-1.5"
-      >
-        <Icon name="share" size={13} /> <span className="hidden sm:inline">Invitar jugadores</span>
-      </button>
-      {showNewSeason && (
-        <button
-          onClick={() => navigate(`/competitions/${id}/new-season`)}
-          className="btn-secondary text-xs py-1.5"
-        >
-          <Icon name="calendar" size={13} /> <span className="hidden sm:inline">Nueva temporada</span>
-        </button>
-      )}
-      <button
-        onClick={() => setShowSettings(!showSettings)}
-        className={`btn-secondary text-xs py-1.5 ${showSettings ? 'bg-gray-100' : ''}`}
-      >
-        <Icon name="settings" size={13} /> <span className="hidden sm:inline">Configuración</span>
-      </button>
-      <select
-        value={competition.status}
-        onChange={(e) => handleStatusChange(e.target.value)}
-        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
-      >
-        {statusOptions.map((s) => (
-          <option key={s} value={s}>{statusConfig[s].label}</option>
-        ))}
-      </select>
-    </div>
-  ) : null;
-
   return (
-    <AppLayout title={competition.name} actions={actions}>
-      <button
-        onClick={() => navigate(isOrganizer ? '/dashboard' : '/player')}
-        className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-6"
-      >
-        <Icon name="chevronLeft" size={14} /> {isOrganizer ? 'Mis competiciones' : 'Mi panel'}
-      </button>
+    <AppLayout title={competition.name}>
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => navigate(isOrganizer ? '/dashboard' : '/player')}
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <Icon name="chevronLeft" size={14} /> {isOrganizer ? 'Mis competiciones' : 'Mi panel'}
+        </button>
+
+        {isOrganizer && (
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/register?competition=${id}`;
+                navigator.clipboard.writeText(url);
+                alert('Enlace de invitación copiado al portapapeles. Comparte este enlace con los jugadores para que se registren y se unan.');
+              }}
+              className="btn-secondary text-xs py-1.5"
+            >
+              <Icon name="share" size={13} /> <span className="hidden sm:inline">Invitar</span>
+            </button>
+            {showNewSeason && (
+              <button
+                onClick={() => navigate(`/competitions/${id}/new-season`)}
+                className="btn-secondary text-xs py-1.5"
+              >
+                <Icon name="calendar" size={13} /> <span className="hidden sm:inline">Nueva temp.</span>
+              </button>
+            )}
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`btn-secondary text-xs py-1.5 ${showSettings ? 'bg-gray-100' : ''}`}
+            >
+              <Icon name="settings" size={13} /> <span className="hidden sm:inline">Config.</span>
+            </button>
+            <select
+              value={competition.status}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+            >
+              {statusOptions.map((s) => (
+                <option key={s} value={s}>{statusConfig[s].label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
       {/* Info card */}
       <div className="card p-4 md:p-5 mb-4">
