@@ -280,28 +280,28 @@ const CompetitionDetail = () => {
   const showNewSeason = isLeague && divisions.length > 0;
 
   const organizerActions = isOrganizer ? (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full md:w-auto">
       <button
         onClick={() => {
           const url = `${window.location.origin}/register?competition=${id}`;
           navigator.clipboard.writeText(url);
           alert('Enlace de invitación copiado al portapapeles. Comparte este enlace con los jugadores para que se registren y se unan.');
         }}
-        className="btn-secondary text-xs py-1.5"
+        className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
       >
         <Icon name="share" size={13} /> Invitar
       </button>
       {showNewSeason && (
         <button
           onClick={() => navigate(`/competitions/${id}/new-season`)}
-          className="btn-secondary text-xs py-1.5"
+          className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
         >
           <Icon name="calendar" size={13} /> Temporada
         </button>
       )}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className={`btn-secondary text-xs py-1.5 ${showSettings ? 'bg-gray-100' : ''}`}
+        className={`btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center ${showSettings ? 'bg-gray-100' : ''}`}
       >
         <Icon name="settings" size={13} /> Config.
       </button>
