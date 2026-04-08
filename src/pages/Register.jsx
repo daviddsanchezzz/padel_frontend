@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { AlertCircle, Loader2, Trophy, Dumbbell, TrendingUp, User, Medal } from 'lucide-react';
+import { AlertCircle, Loader2, Trophy, Dumbbell, TrendingUp, User, Medal, Eye, EyeOff } from 'lucide-react';
 import { authClient } from '../lib/auth-client';
 
 const Register = () => {
@@ -9,6 +9,7 @@ const Register = () => {
   const competitionId = searchParams.get('competition');
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'player' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -102,9 +103,25 @@ const Register = () => {
             </div>
             <div>
               <label className="label">Contraseña</label>
-              <input type="password" className="input" value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="Mínimo 6 caracteres" minLength={6} required />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="input pr-10"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder="Mínimo 6 caracteres"
+                  minLength={6}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             {!competitionId && (
