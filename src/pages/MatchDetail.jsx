@@ -186,14 +186,6 @@ const MatchDetail = () => {
             <form onSubmit={saveEvents} className="card p-4 space-y-3 mb-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-gray-900">Editar eventos</p>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
-                  onClick={addEvent}
-                >
-                  <Icon name="plus" size={12} />
-                  Anadir evento
-                </button>
               </div>
 
               {draftEvents.length === 0 && <p className="text-xs text-gray-500">Sin eventos. Guarda para mantener 0-0 o anade eventos.</p>}
@@ -248,6 +240,14 @@ const MatchDetail = () => {
               })}
 
               <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-700 px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 w-full sm:w-auto"
+                  onClick={addEvent}
+                >
+                  <Icon name="plus" size={12} />
+                  Anadir evento
+                </button>
                 <button type="button" onClick={() => setDraftEvents(events.map((ev) => ({
                   type: ev.type,
                   minute: ev.minute,
