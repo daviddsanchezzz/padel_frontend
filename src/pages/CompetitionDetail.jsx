@@ -40,6 +40,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
   const isSets   = competition.sport?.scoringType === 'sets';
   const isLeague = competition.type === 'league';
 
+  const [status, setStatus] = useState(competition.status);
   const [s, setS] = useState({
     pointsPerWin:        defaults.pointsPerWin        ?? 3,
     pointsPerLoss:       defaults.pointsPerLoss       ?? 0,
@@ -54,7 +55,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
 
   const handleSave = async () => {
     setSaving(true);
-    await onSave({ settings: { ...defaults, ...s } });
+    await onSave({ status, settings: { ...defaults, ...s } });
     setSaving(false);
     onClose();
   };
@@ -85,6 +86,27 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
 
         {/* Body */}
         <div className="px-6 py-5 space-y-6 max-h-[70vh] overflow-y-auto">
+
+          {/* Estado */}
+          <section>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Estado</p>
+            <div className="flex gap-2">
+              {statusOptions.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setStatus(opt)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                    status === opt
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {statusConfig[opt].label}
+                </button>
+              ))}
+            </div>
+          </section>
 
           {/* Puntuación */}
           <section>
@@ -220,11 +242,6 @@ const CompetitionDetail = () => {
     }
   };
 
-  const handleStatusChange = async (status) => {
-    const res = await updateCompetition(id, { status });
-    setCompetition(res.data);
-  };
-
   const handleSaveSettings = async (patch) => {
     const res = await updateCompetition(id, patch);
     setCompetition(res.data);
@@ -297,15 +314,6 @@ const CompetitionDetail = () => {
           >
             <Icon name="settings" size={13} /> Configuración
           </button>
-          <select
-            value={competition.status}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
-          >
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>{statusConfig[s].label}</option>
-            ))}
-          </select>
         </div>
       )}
 
