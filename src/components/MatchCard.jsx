@@ -12,6 +12,32 @@ const formatDateLabel = (value) => {
   return `${d}/${m}/${y}`;
 };
 
+const toDateTimeLocalValue = (match) => {
+  if (match?.scheduledDate) {
+    const date = new Date(match.scheduledDate);
+    if (!Number.isNaN(date.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+  }
+  if (match?.matchDate && match?.matchTime) return `${match.matchDate}T${match.matchTime}`;
+  return '';
+};
+
+const formatDateTimeLabel = (match) => {
+  if (match?.scheduledDate) {
+    const date = new Date(match.scheduledDate);
+    if (!Number.isNaN(date.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+  }
+  if (match?.matchDate && match?.matchTime) return `${formatDateLabel(match.matchDate)} ${match.matchTime}`;
+  if (match?.matchDate) return formatDateLabel(match.matchDate);
+  if (match?.matchTime) return match.matchTime;
+  return '';
+};
+
 const ScoreDisplay = ({ result, scoringType }) => {
   if (!result) return <span className="text-xs font-semibold text-gray-300 tracking-widest">VS</span>;
 
@@ -113,8 +139,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const [error, setError] = useState('');
   const [scheduleForm, setScheduleForm] = useState({
     location: match.location || '',
-    date: match.matchDate || '',
-    time: match.matchTime || '',
+    dateTime: toDateTimeLocalValue(match),
   });
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -147,10 +172,9 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   useEffect(() => {
     setScheduleForm({
       location: match.location || '',
-      date: match.matchDate || '',
-      time: match.matchTime || '',
+      dateTime: toDateTimeLocalValue(match),
     });
-  }, [match.location, match.matchDate, match.matchTime]);
+  }, [match.location, match.matchDate, match.matchTime, match.scheduledDate]);
 
   const handleSubmit = async (result) => {
     setError('');
@@ -199,8 +223,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
     try {
       await updateMatchSchedule(match._id, {
         location: scheduleForm.location,
-        date: scheduleForm.date,
-        time: scheduleForm.time,
+        dateTime: scheduleForm.dateTime,
       });
       setShowScheduleForm(false);
       onResultRecorded && onResultRecorded();
@@ -214,7 +237,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const teamAName = match.teamA?.name || 'TBD';
   const teamBName = match.teamB?.name || 'TBD';
   const displayResult = match.status === 'awaiting_confirmation' ? match.pendingResult : match.result;
-  const schedulePieces = [match.location, formatDateLabel(match.matchDate), match.matchTime].filter(Boolean);
+  const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
 
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
@@ -290,20 +313,12 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
               onChange={(e) => setScheduleForm((prev) => ({ ...prev, location: e.target.value }))}
               maxLength={140}
             />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="date"
-                className="input h-10 text-sm"
-                value={scheduleForm.date}
-                onChange={(e) => setScheduleForm((prev) => ({ ...prev, date: e.target.value }))}
-              />
-              <input
-                type="time"
-                className="input h-10 text-sm"
-                value={scheduleForm.time}
-                onChange={(e) => setScheduleForm((prev) => ({ ...prev, time: e.target.value }))}
-              />
-            </div>
+            <input
+              type="datetime-local"
+              className="input h-10 text-sm"
+              value={scheduleForm.dateTime}
+              onChange={(e) => setScheduleForm((prev) => ({ ...prev, dateTime: e.target.value }))}
+            />
             {scheduleError && <p className="text-red-500 text-xs">{scheduleError}</p>}
             <div className="flex items-center justify-end gap-2">
               <button type="button" onClick={() => setShowScheduleForm(false)} className="btn-secondary text-sm">Cancelar</button>

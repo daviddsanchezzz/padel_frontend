@@ -48,6 +48,20 @@ const formatDateLabel = (value) => {
   return `${d}/${m}/${y}`;
 };
 
+const formatDateTimeLabel = (match) => {
+  if (match?.scheduledDate) {
+    const date = new Date(match.scheduledDate);
+    if (!Number.isNaN(date.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+  }
+  if (match?.matchDate && match?.matchTime) return `${formatDateLabel(match.matchDate)} ${match.matchTime}`;
+  if (match?.matchDate) return formatDateLabel(match.matchDate);
+  if (match?.matchTime) return match.matchTime;
+  return '';
+};
+
 const MatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -155,7 +169,7 @@ const MatchDetail = () => {
   }
 
   const goals = match.result?.goals || { a: 0, b: 0 };
-  const schedulePieces = [match.location, formatDateLabel(match.matchDate), match.matchTime].filter(Boolean);
+  const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
   const sortedEvents = [...events].sort((a, b) => {
     const minuteDiff = Number(a.minute || 0) - Number(b.minute || 0);
     if (minuteDiff !== 0) return minuteDiff;
