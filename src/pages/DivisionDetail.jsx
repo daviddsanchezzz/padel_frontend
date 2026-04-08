@@ -300,17 +300,17 @@ const DivisionDetail = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4 md:mb-6">
-        <div className="card p-4 flex items-center gap-3">
-          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+        <div className="card p-3 md:p-4 text-center md:flex md:items-center md:gap-3 md:text-left">
+          <div className="hidden md:flex w-8 h-8 bg-gray-100 rounded-lg items-center justify-center text-gray-400 flex-shrink-0">
             <Icon name="team" size={15} />
           </div>
           <div>
-            <p className="text-xl font-bold text-gray-900">{teams.length}</p>
+            <p className="text-xl md:text-xl font-bold text-gray-900">{teams.length}</p>
             <p className="text-xs text-gray-400">Equipos</p>
           </div>
         </div>
-        <div className="card p-4 flex items-center gap-3">
-          <div className="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center text-brand-600">
+        <div className="card p-3 md:p-4 text-center md:flex md:items-center md:gap-3 md:text-left">
+          <div className="hidden md:flex w-8 h-8 bg-brand-50 rounded-lg items-center justify-center text-brand-600 flex-shrink-0">
             <Icon name="check" size={15} />
           </div>
           <div>
@@ -318,8 +318,8 @@ const DivisionDetail = () => {
             <p className="text-xs text-gray-400">Jugados</p>
           </div>
         </div>
-        <div className="card p-4 flex items-center gap-3">
-          <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500">
+        <div className="card p-3 md:p-4 text-center md:flex md:items-center md:gap-3 md:text-left">
+          <div className="hidden md:flex w-8 h-8 bg-amber-50 rounded-lg items-center justify-center text-amber-500 flex-shrink-0">
             <Icon name="calendar" size={15} />
           </div>
           <div>
@@ -358,12 +358,12 @@ const DivisionDetail = () => {
               <div className="flex gap-2">
                 {!isTournament && teams.length >= 2 && (
                   <button onClick={handleGenerateMatches} disabled={generating} className="btn-secondary text-xs py-1.5">
-                    <Icon name="match" size={13} /> {generating ? 'Generando...' : 'Generar calendario'}
+                    <Icon name="match" size={13} /> <span className="hidden sm:inline">{generating ? 'Generando...' : 'Generar calendario'}</span><span className="sm:hidden">{generating ? '...' : 'Calendario'}</span>
                   </button>
                 )}
                 {isTournament && teams.length >= 2 && (
                   <button onClick={handleGenerateBracket} disabled={generating} className="btn-secondary text-xs py-1.5">
-                    <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
+                    <Icon name="bracket" size={13} /> <span className="hidden sm:inline">{generating ? 'Generando...' : 'Generar bracket'}</span><span className="sm:hidden">{generating ? '...' : 'Bracket'}</span>
                   </button>
                 )}
                 <button
@@ -371,7 +371,7 @@ const DivisionDetail = () => {
                   disabled={maxTeamsPerDivision > 0 && teams.length >= maxTeamsPerDivision}
                   className="btn-primary text-xs py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Icon name="plus" size={13} /> Añadir {teamSize === 1 ? 'equipo' : teamSize === 2 ? 'pareja' : `equipo de ${teamSize} jugadores`}
+                  <Icon name="plus" size={13} /> <span className="hidden sm:inline">Añadir {teamSize === 1 ? 'equipo' : teamSize === 2 ? 'pareja' : `equipo de ${teamSize} jugadores`}</span><span className="sm:hidden">Añadir</span>
                 </button>
               </div>
             )}
@@ -413,9 +413,9 @@ const DivisionDetail = () => {
           ) : (
             <div className="space-y-2">
               {teams.map((team, i) => (
-                <div key={team._id} className={`card px-5 py-3.5 flex items-center justify-between ${myTeamId && team._id?.toString() === myTeamId ? 'border-brand-300 bg-brand-50' : ''}`}>
-                  <div className="flex items-center gap-3">
-                    <div>
+                <div key={team._id} className={`card px-4 py-3 flex items-center justify-between gap-2 ${myTeamId && team._id?.toString() === myTeamId ? 'border-brand-300 bg-brand-50' : ''}`}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="min-w-0">
                       {team.playerNames && team.playerNames.length > 0 ? (
                         <div className="flex items-center gap-1 flex-wrap">
                           {team.playerNames.map((name, idx) => {
@@ -429,11 +429,11 @@ const DivisionDetail = () => {
                           })}
                         </div>
                       ) : (
-                        <p className="font-semibold text-gray-900 text-sm">{team.name}</p>
+                        <p className="font-semibold text-gray-900 text-sm truncate">{team.name}</p>
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
                     {isOrganizer ? (
                       <button onClick={() => handleDeleteTeam(team._id)} className="text-gray-300 hover:text-red-400 transition-colors">
                         <Icon name="trash" size={14} />

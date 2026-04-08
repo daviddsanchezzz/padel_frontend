@@ -15,8 +15,8 @@ const statusConfig = {
 };
 
 const StatCard = ({ value, label, iconName, colorClass = 'text-brand-600' }) => (
-  <div className="card p-5 flex items-center gap-4">
-    <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gray-50 ${colorClass}`}>
+  <div className="card p-3 md:p-5 text-center md:text-left md:flex md:items-center md:gap-4">
+    <div className={`hidden md:flex w-10 h-10 rounded-xl items-center justify-center bg-gray-50 flex-shrink-0 ${colorClass}`}>
       <Icon name={iconName} size={18} />
     </div>
     <div>
@@ -64,7 +64,7 @@ const Dashboard = () => {
   const actions = (
     <button onClick={() => navigate('/competitions/new')} className="btn-primary">
       <Icon name="plus" size={15} />
-      Nueva competición
+      <span className="hidden sm:inline">Nueva competición</span>
     </button>
   );
 

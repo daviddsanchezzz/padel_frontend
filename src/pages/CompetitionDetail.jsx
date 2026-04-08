@@ -270,21 +270,21 @@ const CompetitionDetail = () => {
         }}
         className="btn-secondary text-xs py-1.5"
       >
-        <Icon name="share" size={13} /> Invitar jugadores
+        <Icon name="share" size={13} /> <span className="hidden sm:inline">Invitar jugadores</span>
       </button>
       {showNewSeason && (
         <button
           onClick={() => navigate(`/competitions/${id}/new-season`)}
           className="btn-secondary text-xs py-1.5"
         >
-          <Icon name="calendar" size={13} /> Nueva temporada
+          <Icon name="calendar" size={13} /> <span className="hidden sm:inline">Nueva temporada</span>
         </button>
       )}
       <button
         onClick={() => setShowSettings(!showSettings)}
         className={`btn-secondary text-xs py-1.5 ${showSettings ? 'bg-gray-100' : ''}`}
       >
-        <Icon name="settings" size={13} /> Configuración
+        <Icon name="settings" size={13} /> <span className="hidden sm:inline">Configuración</span>
       </button>
       <select
         value={competition.status}

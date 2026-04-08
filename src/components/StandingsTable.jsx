@@ -29,11 +29,15 @@ const StandingsTable = ({ standings, promotionSpots = 0, relegationSpots = 0, is
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
-              {['#','Equipo','PJ','PG','PP','SF','SC','+/-','PTS'].map((h, i) => (
-                <th key={h} className={`pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider ${i === 1 ? 'text-left' : 'text-center'} ${i === 8 ? 'text-gray-700' : ''}`}>
-                  {h}
-                </th>
-              ))}
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">#</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-left">Equipo</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">PJ</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">PG</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">PP</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center hidden sm:table-cell">SF</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center hidden sm:table-cell">SC</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center hidden sm:table-cell">+/-</th>
+              <th className="pb-3 text-[11px] font-bold text-gray-700 uppercase tracking-wider text-center">PTS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -55,9 +59,9 @@ const StandingsTable = ({ standings, promotionSpots = 0, relegationSpots = 0, is
                   <td className="py-3 text-center text-gray-500">{row.played}</td>
                   <td className="py-3 text-center text-brand-600 font-semibold">{row.won}</td>
                   <td className="py-3 text-center text-red-400">{row.lost}</td>
-                  <td className="py-3 text-center text-gray-500">{row.setsWon}</td>
-                  <td className="py-3 text-center text-gray-500">{row.setsLost}</td>
-                  <td className={`py-3 text-center font-semibold text-sm ${
+                  <td className="py-3 text-center text-gray-500 hidden sm:table-cell">{row.setsWon}</td>
+                  <td className="py-3 text-center text-gray-500 hidden sm:table-cell">{row.setsLost}</td>
+                  <td className={`py-3 text-center font-semibold text-sm hidden sm:table-cell ${
                     row.setDiff > 0 ? 'text-brand-600' : row.setDiff < 0 ? 'text-red-400' : 'text-gray-300'
                   }`}>
                     {row.setDiff > 0 ? `+${row.setDiff}` : row.setDiff}

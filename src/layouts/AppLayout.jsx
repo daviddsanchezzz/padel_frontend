@@ -48,6 +48,7 @@ const SectionLabel = ({ label, collapsed }) =>
 const AppLayout = ({ children, title, actions }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed]     = useState(false);
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
