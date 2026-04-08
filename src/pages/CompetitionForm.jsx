@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createCompetition } from '../api/competitions';
 import { getSports } from '../api/sports';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
+
+const normalizeSportName = (value = '') =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
 const CompetitionForm = () => {
   const navigate = useNavigate();
@@ -11,6 +17,8 @@ const CompetitionForm = () => {
   const [form, setForm] = useState({
     name: '', type: 'league', sportId: '', season: '', description: '',
   });
+  const [footballMaxPlayers, setFootballMaxPlayers] = useState(11);
+  const [tennisMode, setTennisMode] = useState('singles');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,29 +29,65 @@ const CompetitionForm = () => {
     });
   }, []);
 
-  const isLeague     = form.type === 'league';
-  const isTournament = form.type === 'tournament';
+  const selectedSport = useMemo(
+    () => sports.find((sport) => sport._id === form.sportId) || null,
+    [sports, form.sportId]
+  );
+
+  const normalizedSport = normalizeSportName(selectedSport?.name || '');
+  const sportSlug = (selectedSport?.slug || '').toLowerCase();
+  const isFootball = sportSlug === 'football' || normalizedSport.includes('futbol') || normalizedSport.includes('football');
+  const isTennis = sportSlug === 'tennis' || normalizedSport.includes('tenis') || normalizedSport.includes('tennis');
+
+  const isLeague = form.type === 'league';
+
+  useEffect(() => {
+    if (!selectedSport) return;
+
+    const defaultTeamSize = Number(selectedSport.teamSize || 1);
+    if (isFootball) {
+      setFootballMaxPlayers(defaultTeamSize >= 3 ? defaultTeamSize : 11);
+    }
+
+    if (isTennis) {
+      setTennisMode(defaultTeamSize === 2 ? 'doubles' : 'singles');
+    }
+  }, [selectedSport?._id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
-      const res = await createCompetition(form);
+      const settings = {};
+
+      if (isFootball) {
+        settings.teamSize = Number(footballMaxPlayers);
+      } else if (isTennis) {
+        settings.teamSize = tennisMode === 'doubles' ? 2 : 1;
+      }
+
+      const payload = {
+        ...form,
+        settings,
+      };
+
+      const res = await createCompetition(payload);
       navigate(`/competitions/${res.data._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al crear la competición');
+      setError(err.response?.data?.message || 'Error al crear la competicion');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AppLayout title="Nueva competición">
+    <AppLayout title="Nueva competicion">
       <div className="max-w-xl">
         <p className="text-gray-500 text-sm mb-6">
-          Crea una liga con clasificación automática o un torneo con bracket eliminatorio.
-          Podrás configurar los puntos y reglas desde el detalle de la competición.
+          Crea una liga con clasificacion automatica o un torneo con bracket eliminatorio.
+          Podras configurar los puntos y reglas desde el detalle de la competicion.
         </p>
 
         {error && (
@@ -55,17 +99,16 @@ const CompetitionForm = () => {
 
         <div className="card p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
-
-            {/* Type */}
             <div>
-              <label className="label">Tipo de competición *</label>
+              <label className="label">Tipo de competicion *</label>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: 'league',     label: 'Liga',    icon: 'league',     desc: 'Jornadas round-robin + clasificación' },
-                  { value: 'tournament', label: 'Torneo',  icon: 'tournament', desc: 'Bracket eliminatorio directo' },
+                  { value: 'league', label: 'Liga', icon: 'league', desc: 'Jornadas round-robin + clasificacion' },
+                  { value: 'tournament', label: 'Torneo', icon: 'tournament', desc: 'Bracket eliminatorio directo' },
                 ].map((t) => (
                   <button
-                    key={t.value} type="button"
+                    key={t.value}
+                    type="button"
                     onClick={() => setForm({ ...form, type: t.value })}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
                       form.type === t.value
@@ -73,9 +116,11 @@ const CompetitionForm = () => {
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${
-                      form.type === t.value ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500'
-                    }`}>
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${
+                        form.type === t.value ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
                       <Icon name={t.icon} size={16} />
                     </div>
                     <p className={`text-sm font-semibold ${form.type === t.value ? 'text-brand-700' : 'text-gray-800'}`}>
@@ -87,7 +132,6 @@ const CompetitionForm = () => {
               </div>
             </div>
 
-            {/* Sport */}
             <div>
               <label className="label">Deporte *</label>
               <div className="relative">
@@ -108,18 +152,63 @@ const CompetitionForm = () => {
               </div>
             </div>
 
-            {/* Name */}
+            {isFootball && (
+              <div>
+                <label className="label">Maximo de jugadores por equipo *</label>
+                <input
+                  type="number"
+                  className="input"
+                  min={3}
+                  max={30}
+                  value={footballMaxPlayers}
+                  onChange={(e) => setFootballMaxPlayers(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
+            {isTennis && (
+              <div>
+                <label className="label">Modalidad de tenis *</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTennisMode('singles')}
+                    className={`p-3 rounded-xl border text-sm font-semibold transition-colors ${
+                      tennisMode === 'singles'
+                        ? 'border-brand-600 bg-brand-50 text-brand-700'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Individual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTennisMode('doubles')}
+                    className={`p-3 rounded-xl border text-sm font-semibold transition-colors ${
+                      tennisMode === 'doubles'
+                        ? 'border-brand-600 bg-brand-50 text-brand-700'
+                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Dobles
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="label">Nombre *</label>
               <input
-                type="text" className="input"
-                value={form.name} required
+                type="text"
+                className="input"
+                value={form.name}
+                required
                 placeholder={isLeague ? 'Ej: Liga de verano 2025' : 'Ej: Torneo de primavera'}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
 
-            {/* Season — only for leagues */}
             {isLeague && (
               <div>
                 <label className="label">Temporada</label>
@@ -128,22 +217,23 @@ const CompetitionForm = () => {
                     <Icon name="calendar" size={15} />
                   </div>
                   <input
-                    type="text" className="input pl-9"
+                    type="text"
+                    className="input pl-9"
                     value={form.season}
-                    placeholder="Ej: 2025, Primavera 2025…"
+                    placeholder="Ej: 2025, Primavera 2025"
                     onChange={(e) => setForm({ ...form, season: e.target.value })}
                   />
                 </div>
               </div>
             )}
 
-            {/* Description */}
             <div>
-              <label className="label">Descripción</label>
+              <label className="label">Descripcion</label>
               <textarea
-                className="input resize-none" rows={3}
+                className="input resize-none"
+                rows={3}
                 value={form.description}
-                placeholder="Descripción opcional"
+                placeholder="Descripcion opcional"
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
@@ -153,7 +243,7 @@ const CompetitionForm = () => {
                 Cancelar
               </button>
               <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
-                {loading ? 'Creando...' : 'Crear competición'}
+                {loading ? 'Creando...' : 'Crear competicion'}
               </button>
             </div>
           </form>
