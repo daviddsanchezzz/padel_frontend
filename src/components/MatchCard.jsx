@@ -174,38 +174,40 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
       <div className="px-3 md:px-5 py-3 md:py-4">
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className={`flex-1 text-right text-xs md:text-sm font-medium truncate ${winnerSide === 'A' ? 'font-bold text-gray-900' : 'text-gray-600'} ${isMyTeamA ? 'text-brand-700 font-bold' : ''} ${!match.teamA ? 'italic text-gray-300' : ''}`}>{teamAName}</div>
-          <div className={`flex-shrink-0 flex flex-col items-center w-[80px] md:w-[100px] gap-1 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
-            <ScoreDisplay result={displayResult} scoringType={scoringType} />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+            <div className={`flex-1 text-right text-xs md:text-sm font-medium truncate ${winnerSide === 'A' ? 'font-bold text-gray-900' : 'text-gray-600'} ${isMyTeamA ? 'text-brand-700 font-bold' : ''} ${!match.teamA ? 'italic text-gray-300' : ''}`}>{teamAName}</div>
+            <div className={`flex-shrink-0 flex flex-col items-center w-[80px] md:w-[100px] gap-1 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+              <ScoreDisplay result={displayResult} scoringType={scoringType} />
+            </div>
+            <div className={`flex-1 text-xs md:text-sm font-medium truncate ${winnerSide === 'B' ? 'font-bold text-gray-900' : 'text-gray-600'} ${isMyTeamB ? 'text-brand-700 font-bold' : ''} ${!match.teamB ? 'italic text-gray-300' : ''}`}>{teamBName}</div>
           </div>
-          <div className={`flex-1 text-xs md:text-sm font-medium truncate ${winnerSide === 'B' ? 'font-bold text-gray-900' : 'text-gray-600'} ${isMyTeamB ? 'text-brand-700 font-bold' : ''} ${!match.teamB ? 'italic text-gray-300' : ''}`}>{teamBName}</div>
-        </div>
 
-        {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled) && (
-          <div className="flex justify-end mt-2.5">
-            {eventModeEnabled ? (
-              <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
-                Ver detalle
-              </button>
-            ) : (
-              <>
-                {match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
-                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
-                    + Resultado
-                  </button>
-                )}
-                {match.status === 'awaiting_confirmation' && isProposingTeam && <span className="text-xs text-orange-500 font-medium">Esperando confirmacion del rival...</span>}
-                {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
-                  <div className="flex gap-2">
-                    {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
-                    {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50">Rechazar</button>}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
+          {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled) && (
+            <div className="flex items-center justify-end flex-shrink-0">
+              {eventModeEnabled ? (
+                <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                  Ver detalle
+                </button>
+              ) : (
+                <>
+                  {match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
+                    <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                      + Resultado
+                    </button>
+                  )}
+                  {match.status === 'awaiting_confirmation' && isProposingTeam && <span className="text-xs text-orange-500 font-medium">Esperando confirmacion...</span>}
+                  {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
+                    <div className="flex gap-2">
+                      {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
+                      {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50">Rechazar</button>}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
         {error && <p className="text-red-500 text-xs mt-2 text-center">{error}</p>}
       </div>
