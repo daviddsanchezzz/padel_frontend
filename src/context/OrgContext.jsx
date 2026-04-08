@@ -5,20 +5,26 @@ import { useAuth } from './AuthContext';
 const OrgContext = createContext(null);
 
 export const OrgProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [activeOrg, setActiveOrg] = useState(null);
   const [loadingOrg, setLoadingOrg] = useState(true);
 
   useEffect(() => {
+    // Wait for auth to resolve before checking org.
+    // Without this, user is null during session load → hasOrg = false → redirect to onboarding.
+    if (authLoading) return;
+
     if (!user || user.role !== 'organizer') {
       setLoadingOrg(false);
       return;
     }
+
+    setLoadingOrg(true);
     getMyOrganizations()
       .then((res) => setActiveOrg(res.data[0] ?? null))
       .catch(() => setActiveOrg(null))
       .finally(() => setLoadingOrg(false));
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
 
   const hasOrg = !!activeOrg;
 
