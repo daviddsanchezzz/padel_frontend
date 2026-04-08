@@ -148,9 +148,6 @@ const MatchDetail = () => {
   }
 
   const goals = match.result?.goals || { a: 0, b: 0 };
-  const totalGoals = events.filter((e) => e.type === 'goal').length;
-  const totalAssists = events.filter((e) => e.type === 'assist').length;
-  const totalCards = events.filter((e) => e.type === 'yellow_card' || e.type === 'red_card').length;
   const sortedEvents = [...events].sort((a, b) => {
     const minuteDiff = Number(a.minute || 0) - Number(b.minute || 0);
     if (minuteDiff !== 0) return minuteDiff;
@@ -237,25 +234,18 @@ const MatchDetail = () => {
           )}
 
           <div className="card p-4 md:p-5">
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Eventos del partido</p>
-                <p className="text-xs text-gray-500 mt-0.5">Cronologia oficial registrada</p>
-              </div>
-              <div className="flex items-center gap-2 text-[11px]">
-                <span className="px-2 py-1 rounded-full bg-white text-gray-700 border border-gray-200 font-semibold">{totalGoals} goles</span>
-                <span className="px-2 py-1 rounded-full bg-white text-gray-700 border border-gray-200 font-semibold">{totalAssists} asistencias</span>
-                <span className="px-2 py-1 rounded-full bg-white text-gray-700 border border-gray-200 font-semibold">{totalCards} tarjetas</span>
-              </div>
+            <div className="border-b border-gray-200 pb-3 mb-4">
+              <p className="text-[11px] tracking-[0.14em] uppercase font-semibold text-gray-500">Acta del partido</p>
+              <p className="text-base font-bold text-gray-900 mt-1">Eventos oficiales</p>
             </div>
             {events.length === 0 ? (
               <p className="text-sm text-gray-500">Sin eventos registrados.</p>
             ) : (
               <div className="space-y-2">
-                <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center mb-1">
-                  <p className="text-sm md:text-base font-bold text-gray-800 text-left truncate">{match.teamA?.name || 'Equipo A'}</p>
-                  <div />
-                  <p className="text-sm md:text-base font-bold text-gray-800 text-right truncate">{match.teamB?.name || 'Equipo B'}</p>
+                <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center mb-2 pb-2 border-b border-gray-100">
+                  <p className="text-sm md:text-base font-bold text-gray-900 text-left truncate">{match.teamA?.name || 'Equipo A'}</p>
+                  <p className="text-[11px] tracking-[0.08em] uppercase font-semibold text-gray-500 text-center">Min</p>
+                  <p className="text-sm md:text-base font-bold text-gray-900 text-right truncate">{match.teamB?.name || 'Equipo B'}</p>
                 </div>
                 {sortedEvents.map((ev, idx) => {
                   const isTeamA = ev.team?.toString() === teamAId;
