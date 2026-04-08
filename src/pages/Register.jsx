@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Loader2, Trophy, Dumbbell, TrendingUp, User, Medal } from 'lucide-react';
-import { register } from '../api/auth';
-import { useAuth } from '../context/AuthContext';
+import { authClient } from '../lib/auth-client';
 
 const Register = () => {
-  const { loginUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const competitionId = searchParams.get('competition');
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: competitionId ? 'player' : 'player' });
+
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'player' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,18 +16,26 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    try {
-      const res = await register(form);
-      loginUser(res.data.token, res.data.user);
-      if (competitionId) {
-        navigate(`/competitions/${competitionId}`);
-      } else {
-        navigate(res.data.user.role === 'organizer' ? '/dashboard' : '/player');
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al crear la cuenta');
-    } finally {
-      setLoading(false);
+
+    const { data, error: authError } = await authClient.signUp.email({
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      role: competitionId ? 'player' : form.role,
+    });
+
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message || 'Error al crear la cuenta');
+      return;
+    }
+
+    // Better Auth sets the session cookie automatically
+    if (competitionId) {
+      navigate(`/competitions/${competitionId}`);
+    } else {
+      navigate(data.user.role === 'organizer' ? '/dashboard' : '/player');
     }
   };
 
@@ -100,14 +107,13 @@ const Register = () => {
                 placeholder="Mínimo 6 caracteres" minLength={6} required />
             </div>
 
-            {/* Role selector - only show if not invited */}
             {!competitionId && (
               <div>
                 <label className="label">Tipo de cuenta</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { value: 'player',    label: 'Jugador',      desc: 'Ver partidos y clasificación', icon: User },
-                    { value: 'organizer', label: 'Organizador',  desc: 'Gestionar ligas y resultados',  icon: Medal },
+                    { value: 'player',    label: 'Jugador',     desc: 'Ver partidos y clasificación',    icon: User },
+                    { value: 'organizer', label: 'Organizador', desc: 'Gestionar ligas y resultados',    icon: Medal },
                   ].map((r) => (
                     <button
                       key={r.value}
@@ -119,21 +125,19 @@ const Register = () => {
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                       }`}
                     >
-                    <r.icon size={20} className={form.role === r.value ? 'text-brand-600' : 'text-gray-400'} />
-                    <p className={`text-sm font-semibold mt-1 ${form.role === r.value ? 'text-brand-700' : 'text-gray-800'}`}>
-                      {r.label}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-tight">{r.desc}</p>
-                  </button>
-                ))}
+                      <r.icon size={20} className={form.role === r.value ? 'text-brand-600' : 'text-gray-400'} />
+                      <p className={`text-sm font-semibold mt-1 ${form.role === r.value ? 'text-brand-700' : 'text-gray-800'}`}>
+                        {r.label}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5 leading-tight">{r.desc}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
             )}
 
             <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-2.5 text-base">
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : null}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : null}
               {loading ? 'Creando cuenta...' : 'Crear cuenta'}
             </button>
           </form>

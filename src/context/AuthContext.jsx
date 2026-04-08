@@ -1,48 +1,28 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getMe } from '../api/auth';
+import React, { createContext, useContext } from 'react';
+import { authClient } from '../lib/auth-client';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
-  });
-  const [loading, setLoading] = useState(true);
+  // Better Auth React hook — re-renders on session change, handles loading state
+  const { data: session, isPending: loading } = authClient.useSession();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    getMe()
-      .then((res) => {
-        setUser(res.data.user);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-      })
-      .catch(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  // Normalize: expose user directly; keep null when not authenticated
+  const user = session?.user ?? null;
 
-  const loginUser = (token, userData) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-  };
+  const loginUser = ({ email, password }) =>
+    authClient.signIn.email({ email, password });
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const loginWithGoogle = (callbackURL = '/dashboard') =>
+    authClient.signIn.social({ provider: 'google', callbackURL });
+
+  const logout = async () => {
+    await authClient.signOut();
+    window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginUser, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginUser, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
