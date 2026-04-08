@@ -277,45 +277,47 @@ const CompetitionDetail = () => {
   const settings   = competition.settings || {};
   const showNewSeason = isLeague && divisions.length > 0;
 
-  return (
-    <AppLayout title={competition.name}>
-      {/* Back */}
+  const organizerActions = isOrganizer ? (
+    <div className="flex items-center gap-2">
       <button
-        onClick={() => navigate(isOrganizer ? '/dashboard' : '/player')}
-        className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-4"
+        onClick={() => {
+          const url = `${window.location.origin}/register?competition=${id}`;
+          navigator.clipboard.writeText(url);
+          alert('Enlace de invitación copiado al portapapeles. Comparte este enlace con los jugadores para que se registren y se unan.');
+        }}
+        className="btn-secondary text-xs py-1.5"
       >
-        <Icon name="chevronLeft" size={14} /> {isOrganizer ? 'Mis competiciones' : 'Mi panel'}
+        <Icon name="share" size={13} /> Invitar
       </button>
-
-      {/* Organizer actions */}
-      {isOrganizer && (
-        <div className="flex items-center gap-2 flex-wrap mb-4">
-          <button
-            onClick={() => {
-              const url = `${window.location.origin}/register?competition=${id}`;
-              navigator.clipboard.writeText(url);
-              alert('Enlace de invitación copiado al portapapeles. Comparte este enlace con los jugadores para que se registren y se unan.');
-            }}
-            className="btn-secondary text-xs py-1.5"
-          >
-            <Icon name="share" size={13} /> Invitar jugadores
-          </button>
-          {showNewSeason && (
-            <button
-              onClick={() => navigate(`/competitions/${id}/new-season`)}
-              className="btn-secondary text-xs py-1.5"
-            >
-              <Icon name="calendar" size={13} /> Nueva temporada
-            </button>
-          )}
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`btn-secondary text-xs py-1.5 ${showSettings ? 'bg-gray-100' : ''}`}
-          >
-            <Icon name="settings" size={13} /> Configuración
-          </button>
-        </div>
+      {showNewSeason && (
+        <button
+          onClick={() => navigate(`/competitions/${id}/new-season`)}
+          className="btn-secondary text-xs py-1.5"
+        >
+          <Icon name="calendar" size={13} /> Temporada
+        </button>
       )}
+      <button
+        onClick={() => setShowSettings(!showSettings)}
+        className={`btn-secondary text-xs py-1.5 ${showSettings ? 'bg-gray-100' : ''}`}
+      >
+        <Icon name="settings" size={13} /> Config.
+      </button>
+    </div>
+  ) : null;
+
+  return (
+    <AppLayout title={competition.name} actions={<div className="hidden md:flex">{organizerActions}</div>}>
+      {/* Back + mobile actions */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => navigate(isOrganizer ? '/dashboard' : '/player')}
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <Icon name="chevronLeft" size={14} /> {isOrganizer ? 'Mis competiciones' : 'Mi panel'}
+        </button>
+        {isOrganizer && <div className="md:hidden">{organizerActions}</div>}
+      </div>
 
       {/* Info card */}
       <div className="card p-4 md:p-5 mb-4">
@@ -353,11 +355,6 @@ const CompetitionDetail = () => {
                 {settings.relegationSpots > 0 && (
                   <span className="text-[11px] text-red-500 font-semibold flex items-center gap-0.5">
                     ↓ {settings.relegationSpots} descienden
-                  </span>
-                )}
-                {settings.maxTeamsPerDivision > 0 && (
-                  <span className="text-[11px] text-gray-400">
-                    máx. {settings.maxTeamsPerDivision} eq./div.
                   </span>
                 )}
               </div>
@@ -399,7 +396,6 @@ const CompetitionDetail = () => {
           <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
             <Icon name="division" size={14} className="text-gray-400" />
             {isLeague ? 'Divisiones' : 'Categorías'}
-            {isLeague && <span className="text-[10px] text-gray-400 font-normal">(orden = jerarquía)</span>}
           </h3>
           {isLeague && competition.seasons && competition.seasons.length > 0 && (
             <div className="mt-2 flex items-center gap-2">
