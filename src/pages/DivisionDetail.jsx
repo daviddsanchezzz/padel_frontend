@@ -122,10 +122,13 @@ const DivisionDetail = () => {
 
   const [teamName, setTeamName] = useState('');
   const [playerNames, setPlayerNames] = useState([]);
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [teamPlayersDraft, setTeamPlayersDraft] = useState([]);
 
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [editingTeamName, setEditingTeamName] = useState('');
   const [editingPlayerNames, setEditingPlayerNames] = useState([]);
+  const [editingNewPlayerName, setEditingNewPlayerName] = useState('');
   const [expandedTeams, setExpandedTeams] = useState({});
   const [teamActionsTarget, setTeamActionsTarget] = useState(null);
 
@@ -147,8 +150,15 @@ const DivisionDetail = () => {
   const isBottomDivision = currentDivisionIndex === allDivisions.length - 1;
 
   useEffect(() => {
-    if (teamSize <= 2) setPlayerNames(new Array(teamSize).fill(''));
-    else setPlayerNames([]);
+    if (teamSize <= 2) {
+      setPlayerNames(new Array(teamSize).fill(''));
+      setTeamPlayersDraft([]);
+      setNewPlayerName('');
+    } else {
+      setPlayerNames([]);
+      setTeamPlayersDraft([]);
+      setNewPlayerName('');
+    }
   }, [teamSize]);
 
   useEffect(() => {
@@ -201,12 +211,15 @@ const DivisionDetail = () => {
           return;
         }
         payload.name = teamName.trim();
+        payload.playerNames = teamPlayersDraft.map((name) => name.trim()).filter(Boolean);
       }
 
       const res = await createDivisionTeam(id, payload);
       setTeams((prev) => [...prev, res.data]);
       setTeamName('');
       setPlayerNames(teamSize <= 2 ? new Array(teamSize).fill('') : []);
+      setTeamPlayersDraft([]);
+      setNewPlayerName('');
       setShowTeamForm(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al anadir equipo');
@@ -222,12 +235,44 @@ const DivisionDetail = () => {
     } else {
       setEditingPlayerNames(team.playerNames?.length ? [...team.playerNames] : []);
     }
+    setEditingNewPlayerName('');
   };
 
   const cancelEditTeam = () => {
     setEditingTeamId(null);
     setEditingTeamName('');
     setEditingPlayerNames([]);
+    setEditingNewPlayerName('');
+  };
+
+  const addPlayerToDraft = () => {
+    const name = newPlayerName.trim();
+    if (!name) return;
+    if (teamPlayersDraft.length >= teamSize) {
+      setError(`No puede haber mas de ${teamSize} jugadores`);
+      return;
+    }
+    setTeamPlayersDraft((prev) => [...prev, name]);
+    setNewPlayerName('');
+  };
+
+  const removePlayerFromDraft = (idx) => {
+    setTeamPlayersDraft((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const addPlayerToEdit = () => {
+    const name = editingNewPlayerName.trim();
+    if (!name) return;
+    if (editingPlayerNames.length >= teamSize) {
+      setError(`No puede haber mas de ${teamSize} jugadores`);
+      return;
+    }
+    setEditingPlayerNames((prev) => [...prev, name]);
+    setEditingNewPlayerName('');
+  };
+
+  const removePlayerFromEdit = (idx) => {
+    setEditingPlayerNames((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const toggleTeamExpanded = (teamId) => {
@@ -472,15 +517,61 @@ const DivisionDetail = () => {
                     />
                   ))
                 ) : (
-                  <input
-                    type="text"
-                    className="input"
-                    placeholder="Nombre del equipo"
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                    required
-                    autoFocus
-                  />
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      className="input"
+                      placeholder="Nombre del equipo"
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                      required
+                      autoFocus
+                    />
+                    <div className="rounded-lg border border-gray-200 p-3 bg-gray-50">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-semibold text-gray-700">Jugadores del equipo</p>
+                        <p className="text-xs text-gray-500">{teamPlayersDraft.length}/{teamSize}</p>
+                      </div>
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          className="input h-9 text-sm"
+                          placeholder="Nombre del jugador"
+                          value={newPlayerName}
+                          onChange={(e) => setNewPlayerName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              addPlayerToDraft();
+                            }
+                          }}
+                          disabled={teamPlayersDraft.length >= teamSize}
+                        />
+                        <button
+                          type="button"
+                          onClick={addPlayerToDraft}
+                          disabled={teamPlayersDraft.length >= teamSize}
+                          className="btn-secondary text-xs px-3 py-1.5 whitespace-nowrap disabled:opacity-50"
+                        >
+                          Anadir
+                        </button>
+                      </div>
+                      {teamPlayersDraft.length === 0 ? (
+                        <p className="text-xs text-gray-400">Opcional al crear. Puedes anadirlos despues al editar.</p>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {teamPlayersDraft.map((name, idx) => (
+                            <span key={`${name}-${idx}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2 py-1 text-xs text-gray-700">
+                              {name}
+                              <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => removePlayerFromDraft(idx)}>
+                                x
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 <div className="pt-1 flex items-center justify-end gap-2">
@@ -555,17 +646,63 @@ const DivisionDetail = () => {
                       {editingTeamId === team._id ? (
                         <div className="space-y-2">
                           {teamSize > 2 && (
-                            <input
-                              type="text"
-                              className="input text-sm h-8"
-                              value={editingTeamName}
-                              onChange={(e) => setEditingTeamName(e.target.value)}
-                              placeholder="Nombre del equipo"
-                              autoFocus
-                            />
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                className="input text-sm h-8"
+                                value={editingTeamName}
+                                onChange={(e) => setEditingTeamName(e.target.value)}
+                                placeholder="Nombre del equipo"
+                                autoFocus
+                              />
+                              <div className="rounded-lg border border-gray-200 p-3 bg-gray-50">
+                                <div className="flex items-center justify-between mb-2">
+                                  <p className="text-xs font-semibold text-gray-700">Jugadores</p>
+                                  <p className="text-xs text-gray-500">{editingPlayerNames.length}/{teamSize}</p>
+                                </div>
+                                <div className="flex gap-2 mb-2">
+                                  <input
+                                    type="text"
+                                    className="input h-8 text-sm"
+                                    placeholder="Nombre del jugador"
+                                    value={editingNewPlayerName}
+                                    onChange={(e) => setEditingNewPlayerName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        addPlayerToEdit();
+                                      }
+                                    }}
+                                    disabled={editingPlayerNames.length >= teamSize}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={addPlayerToEdit}
+                                    disabled={editingPlayerNames.length >= teamSize}
+                                    className="btn-secondary text-xs px-3 py-1 whitespace-nowrap disabled:opacity-50"
+                                  >
+                                    Anadir
+                                  </button>
+                                </div>
+                                {editingPlayerNames.length === 0 ? (
+                                  <p className="text-xs text-gray-400">No hay jugadores anadidos.</p>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {editingPlayerNames.map((name, idx) => (
+                                      <span key={`${name}-${idx}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2 py-1 text-xs text-gray-700">
+                                        {name}
+                                        <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => removePlayerFromEdit(idx)}>
+                                          x
+                                        </button>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           )}
 
-                          {Array.from({ length: teamSize <= 2 ? teamSize : editingPlayerNames.length }, (_, idx) => (
+                          {Array.from({ length: teamSize <= 2 ? teamSize : 0 }, (_, idx) => (
                             <input
                               key={idx}
                               type="text"
@@ -579,16 +716,6 @@ const DivisionDetail = () => {
                               placeholder={`Jugador ${idx + 1}`}
                             />
                           ))}
-
-                          {teamSize > 2 && editingPlayerNames.length < teamSize && (
-                            <button
-                              type="button"
-                              onClick={() => setEditingPlayerNames((prev) => [...prev, ''])}
-                              className="text-xs text-brand-600 font-semibold"
-                            >
-                              + Anadir jugador
-                            </button>
-                          )}
 
                           <div className="flex items-center gap-2">
                             <button type="button" onClick={() => saveTeamEdit(team._id)} className="btn-primary text-xs py-1">Guardar</button>
