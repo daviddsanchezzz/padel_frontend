@@ -38,7 +38,9 @@ const Stepper = ({ value, onChange, min = 0, max = 99 }) => (
 const SettingsModal = ({ competition, onSave, onClose }) => {
   const defaults = competition.settings || {};
   const isSets   = competition.sport?.scoringType === 'sets';
+  const isGoals  = competition.sport?.scoringType === 'goals';
   const isLeague = competition.type === 'league';
+  const defaultResultConfig = defaults.resultConfig || {};
 
   const [status, setStatus] = useState(competition.status);
   const [s, setS] = useState({
@@ -49,13 +51,34 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
     maxTeamsPerDivision: defaults.maxTeamsPerDivision  ?? 0,
     promotionSpots:      defaults.promotionSpots       ?? 1,
     relegationSpots:     defaults.relegationSpots      ?? 1,
+    resultMode:          defaultResultConfig.mode      ?? 'manual',
+    enabledEventTypes:   defaultResultConfig.enabledEventTypes ?? ['goal', 'assist', 'yellow_card', 'red_card'],
   });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setS((prev) => ({ ...prev, [k]: v }));
 
+  const toggleEventType = (type) => {
+    setS((prev) => {
+      const current = Array.isArray(prev.enabledEventTypes) ? prev.enabledEventTypes : [];
+      const exists = current.includes(type);
+      const next = exists ? current.filter((t) => t !== type) : [...current, type];
+      return { ...prev, enabledEventTypes: next };
+    });
+  };
+
   const handleSave = async () => {
     setSaving(true);
-    await onSave({ status, settings: { ...defaults, ...s } });
+    await onSave({
+      status,
+      settings: {
+        ...defaults,
+        ...s,
+        resultConfig: {
+          mode: s.resultMode,
+          enabledEventTypes: s.enabledEventTypes,
+        },
+      },
+    });
     setSaving(false);
     onClose();
   };
@@ -143,6 +166,68 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                   </p>
                 </div>
                 <Stepper value={s.setsPerMatch} onChange={(v) => set('setsPerMatch', v)} min={1} max={5} />
+              </div>
+            </section>
+          )}
+
+          {isGoals && (
+            <section>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Registro de partido</p>
+              <div className="space-y-3">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-gray-800 mb-2">Modo de carga de resultado</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => set('resultMode', 'manual')}
+                      className={`py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                        s.resultMode === 'manual'
+                          ? 'bg-brand-600 text-white border-brand-600'
+                          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      Resultado simple
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => set('resultMode', 'events')}
+                      className={`py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                        s.resultMode === 'events'
+                          ? 'bg-brand-600 text-white border-brand-600'
+                          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      Eventos detallados
+                    </button>
+                  </div>
+                </div>
+
+                {s.resultMode === 'events' && (
+                  <div className="bg-blue-50 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-blue-900 mb-2">Eventos permitidos</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: 'goal', label: 'Gol' },
+                        { key: 'assist', label: 'Asistencia' },
+                        { key: 'yellow_card', label: 'Tarjeta amarilla' },
+                        { key: 'red_card', label: 'Tarjeta roja' },
+                      ].map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => toggleEventType(item.key)}
+                          className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                            s.enabledEventTypes.includes(item.key)
+                              ? 'bg-white text-blue-800 border-blue-300'
+                              : 'bg-blue-100 text-blue-500 border-blue-100'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           )}

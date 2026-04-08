@@ -14,6 +14,9 @@ export const getDivisionBracket      = (divisionId) => api.get(`/divisions/${div
 
 // Shared
 export const recordResult     = (matchId, data) => api.put(`/matches/${matchId}/result`, data);
+export const getMatchEvents   = (matchId)       => api.get(`/matches/${matchId}/events`);
+export const recordMatchEvents = (matchId, data) => api.put(`/matches/${matchId}/events`, data);
 export const confirmResult    = (matchId)       => api.post(`/matches/${matchId}/confirm`);
 export const disputeResult    = (matchId)       => api.post(`/matches/${matchId}/dispute`);
 export const getPlayerMatches = ()              => api.get('/player/matches');
+export const getCompetitionPlayerStats = (competitionId) => api.get(`/competitions/${competitionId}/player-stats`);
