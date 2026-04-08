@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
-import { getMatch, getMatchEvents, recordMatchEvents } from '../api/matches';
+import { getMatch, getMatchEvents, recordMatchEvents, updateMatchSchedule } from '../api/matches';
 
 const EVENT_TYPE_LABEL = {
   goal: 'Gol',
@@ -62,6 +62,18 @@ const formatDateTimeLabel = (match) => {
   return '';
 };
 
+const toDateTimeLocalValue = (match) => {
+  if (match?.scheduledDate) {
+    const date = new Date(match.scheduledDate);
+    if (!Number.isNaN(date.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+  }
+  if (match?.matchDate && match?.matchTime) return `${match.matchDate}T${match.matchTime}`;
+  return '';
+};
+
 const MatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -73,6 +85,9 @@ const MatchDetail = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
+  const [scheduleForm, setScheduleForm] = useState({ location: '', dateTime: '' });
 
   const teamAId = match?.teamA?._id?.toString() || match?.teamA?.toString();
   const teamBId = match?.teamB?._id?.toString() || match?.teamB?.toString();
@@ -114,6 +129,14 @@ const MatchDetail = () => {
     load();
   }, [id]);
 
+  useEffect(() => {
+    if (!match) return;
+    setScheduleForm({
+      location: match.location || '',
+      dateTime: toDateTimeLocalValue(match),
+    });
+  }, [match]);
+
   const addEvent = () => {
     const firstType = enabledEventTypes[0] || 'goal';
     setDraftEvents((prev) => [...prev, { type: firstType, minute: 1, teamSide: 'A', playerName: '' }]);
@@ -154,6 +177,23 @@ const MatchDetail = () => {
     }
   };
 
+  const saveSchedule = async (e) => {
+    e.preventDefault();
+    setScheduleError('');
+    setScheduleSaving(true);
+    try {
+      await updateMatchSchedule(id, {
+        location: scheduleForm.location,
+        dateTime: scheduleForm.dateTime,
+      });
+      await load();
+    } catch (err) {
+      setScheduleError(err.response?.data?.message || 'Error guardando programacion');
+    } finally {
+      setScheduleSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -188,8 +228,36 @@ const MatchDetail = () => {
           <p className="font-semibold text-gray-900">{match.teamA?.name} vs {match.teamB?.name}</p>
           <p className="text-lg font-bold text-gray-900">{goals.a} - {goals.b}</p>
         </div>
-        <p className="text-xs text-gray-500 mt-2">{schedulePieces.length > 0 ? schedulePieces.join(' · ') : 'Sin programacion'}</p>
+        {schedulePieces.length > 0 && <p className="text-xs text-gray-500 mt-2">{schedulePieces.join(' - ')}</p>}
       </div>
+
+      {isOrganizer && (
+        <form onSubmit={saveSchedule} className="card p-4 mb-4">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Programacion del partido</p>
+          <div className="space-y-2.5">
+            <input
+              type="text"
+              className="input h-10 text-sm"
+              placeholder="Ubicacion"
+              value={scheduleForm.location}
+              onChange={(e) => setScheduleForm((prev) => ({ ...prev, location: e.target.value }))}
+              maxLength={140}
+            />
+            <input
+              type="datetime-local"
+              className="input h-10 text-sm"
+              value={scheduleForm.dateTime}
+              onChange={(e) => setScheduleForm((prev) => ({ ...prev, dateTime: e.target.value }))}
+            />
+            {scheduleError && <p className="text-red-500 text-xs">{scheduleError}</p>}
+            <div className="flex items-center justify-end">
+              <button type="submit" disabled={scheduleSaving} className="btn-primary">
+                {scheduleSaving ? 'Guardando...' : 'Guardar programacion'}
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
 
       {!eventModeEnabled && (
         <div className="card p-4 text-sm text-gray-600">
