@@ -214,7 +214,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
           {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled) && (
             <div className="flex items-center justify-end flex-shrink-0">
               {eventModeEnabled ? (
-                <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                <button onClick={() => navigate(`/matches/${match._id}`)} className="hidden md:inline-flex text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
                   Ver detalle
                 </button>
               ) : (
