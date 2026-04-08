@@ -6,7 +6,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import Login             from './pages/Login';
 import Register          from './pages/Register';
-import Onboarding        from './pages/Onboarding';
+import Onboarding             from './pages/Onboarding';
+import OrganizationSettings   from './pages/OrganizationSettings';
 import Dashboard         from './pages/Dashboard';
 import CompetitionForm   from './pages/CompetitionForm';
 import CompetitionDetail from './pages/CompetitionDetail';
@@ -73,6 +74,11 @@ const App = () => (
           <Route path="/competitions/:id/new-season" element={
             <ProtectedRoute requiredRole="organizer">
               <RequireOrg><NewSeason /></RequireOrg>
+            </ProtectedRoute>
+          } />
+          <Route path="/organization/settings" element={
+            <ProtectedRoute requiredRole="organizer">
+              <RequireOrg><OrganizationSettings /></RequireOrg>
             </ProtectedRoute>
           } />
 

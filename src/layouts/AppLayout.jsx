@@ -113,18 +113,16 @@ const AppLayout = ({ children, title, actions }) => {
       {/* Bottom */}
       <div className="px-2 pb-2 space-y-0.5" style={{ borderTop: '1px solid #1c3325', paddingTop: '8px', marginTop: '4px' }}>
 
-        {/* Settings */}
-        <button className={`w-full relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group text-sidebar-text hover:bg-sidebar-hover hover:text-white ${collapsed ? 'justify-center' : ''}`}>
-          <span className="flex-shrink-0 w-[18px] flex items-center justify-center">
-            <SlidersHorizontal size={16} />
-          </span>
-          {!collapsed && <span>Configuración</span>}
-          {collapsed && (
-            <span className="pointer-events-none absolute left-[58px] z-50 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-              Configuración
-            </span>
-          )}
-        </button>
+        {/* Settings — only for organizers */}
+        {isOrganizer && (
+          <NavItem
+            to="/organization/settings"
+            icon={SlidersHorizontal}
+            label="Configuración"
+            collapsed={collapsed}
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
 
         {/* Profile */}
         <div ref={profileRef} className="relative">
