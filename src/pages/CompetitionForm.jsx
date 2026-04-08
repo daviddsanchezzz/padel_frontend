@@ -84,11 +84,13 @@ const CompetitionForm = () => {
 
   return (
     <AppLayout title="Nueva competicion">
-      <div className="max-w-xl">
-        <p className="text-gray-500 text-sm mb-6">
-          Crea una liga con clasificacion automatica o un torneo con bracket eliminatorio.
-          Podras configurar los puntos y reglas desde el detalle de la competicion.
-        </p>
+      <div className="w-full">
+        <div className="mb-6 flex flex-col gap-1">
+          <p className="text-xl font-bold text-gray-900">Configura tu competicion</p>
+          <p className="text-sm text-gray-500">
+            Define formato, deporte y reglas base. Luego podras ajustar detalles dentro de la competicion.
+          </p>
+        </div>
 
         {error && (
           <div className="mb-5 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
@@ -97,156 +99,195 @@ const CompetitionForm = () => {
           </div>
         )}
 
-        <div className="card p-6">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="label">Tipo de competicion *</label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { value: 'league', label: 'Liga', icon: 'league', desc: 'Jornadas round-robin + clasificacion' },
-                  { value: 'tournament', label: 'Torneo', icon: 'tournament', desc: 'Bracket eliminatorio directo' },
-                ].map((t) => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => setForm({ ...form, type: t.value })}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${
-                      form.type === t.value
-                        ? 'border-brand-500 bg-brand-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${
-                        form.type === t.value ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      <Icon name={t.icon} size={16} />
-                    </div>
-                    <p className={`text-sm font-semibold ${form.type === t.value ? 'text-brand-700' : 'text-gray-800'}`}>
-                      {t.label}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-tight">{t.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="label">Deporte *</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
-                  <Icon name="sport" size={15} />
-                </div>
-                <select
-                  className="input pl-9"
-                  value={form.sportId}
-                  onChange={(e) => setForm({ ...form, sportId: e.target.value })}
-                  required
-                >
-                  <option value="">Selecciona deporte</option>
-                  {sports.map((s) => (
-                    <option key={s._id} value={s._id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {isFootball && (
-              <div>
-                <label className="label">Maximo de jugadores por equipo *</label>
-                <input
-                  type="number"
-                  className="input"
-                  min={3}
-                  max={30}
-                  value={footballMaxPlayers}
-                  onChange={(e) => setFootballMaxPlayers(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-
-            {isTennis && (
-              <div>
-                <label className="label">Modalidad de tenis *</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setTennisMode('singles')}
-                    className={`p-3 rounded-xl border text-sm font-semibold transition-colors ${
-                      tennisMode === 'singles'
-                        ? 'border-brand-600 bg-brand-50 text-brand-700'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Individual
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTennisMode('doubles')}
-                    className={`p-3 rounded-xl border text-sm font-semibold transition-colors ${
-                      tennisMode === 'doubles'
-                        ? 'border-brand-600 bg-brand-50 text-brand-700'
-                        : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Dobles
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="label">Nombre *</label>
-              <input
-                type="text"
-                className="input"
-                value={form.name}
-                required
-                placeholder={isLeague ? 'Ej: Liga de verano 2025' : 'Ej: Torneo de primavera'}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-
-            {isLeague && (
-              <div>
-                <label className="label">Temporada</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
-                    <Icon name="calendar" size={15} />
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+          <div className="xl:col-span-8">
+            <div className="card p-5 md:p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <section className="space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Formato</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      { value: 'league', label: 'Liga', icon: 'league', desc: 'Jornadas round-robin y clasificacion' },
+                      { value: 'tournament', label: 'Torneo', icon: 'tournament', desc: 'Eliminacion directa con bracket' },
+                    ].map((t) => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setForm({ ...form, type: t.value })}
+                        className={`p-4 rounded-xl border text-left transition-all ${
+                          form.type === t.value
+                            ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-100'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${form.type === t.value ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                            <Icon name={t.icon} size={16} />
+                          </div>
+                          <p className={`text-sm font-semibold ${form.type === t.value ? 'text-brand-700' : 'text-gray-800'}`}>{t.label}</p>
+                        </div>
+                        <p className="text-xs text-gray-500 leading-relaxed">{t.desc}</p>
+                      </button>
+                    ))}
                   </div>
-                  <input
-                    type="text"
-                    className="input pl-9"
-                    value={form.season}
-                    placeholder="Ej: 2025, Primavera 2025"
-                    onChange={(e) => setForm({ ...form, season: e.target.value })}
+                </section>
+
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="label">Deporte *</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                        <Icon name="sport" size={15} />
+                      </div>
+                      <select
+                        className="input pl-9"
+                        value={form.sportId}
+                        onChange={(e) => setForm({ ...form, sportId: e.target.value })}
+                        required
+                      >
+                        <option value="">Selecciona deporte</option>
+                        {sports.map((s) => (
+                          <option key={s._id} value={s._id}>{s.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="label">Nombre *</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={form.name}
+                      required
+                      placeholder={isLeague ? 'Ej: Liga de verano 2026' : 'Ej: Torneo de primavera'}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    />
+                  </div>
+                </section>
+
+                {isLeague && (
+                  <section>
+                    <label className="label">Temporada</label>
+                    <div className="relative max-w-sm">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                        <Icon name="calendar" size={15} />
+                      </div>
+                      <input
+                        type="text"
+                        className="input pl-9"
+                        value={form.season}
+                        placeholder="Ej: 2026-27 o Apertura 2026"
+                        onChange={(e) => setForm({ ...form, season: e.target.value })}
+                      />
+                    </div>
+                  </section>
+                )}
+
+                {isFootball && (
+                  <section className="max-w-sm">
+                    <label className="label">Maximo de jugadores por equipo *</label>
+                    <input
+                      type="number"
+                      className="input"
+                      min={3}
+                      max={30}
+                      value={footballMaxPlayers}
+                      onChange={(e) => setFootballMaxPlayers(e.target.value)}
+                      required
+                    />
+                  </section>
+                )}
+
+                {isTennis && (
+                  <section>
+                    <label className="label">Modalidad de tenis *</label>
+                    <div className="grid grid-cols-2 gap-3 max-w-sm">
+                      <button
+                        type="button"
+                        onClick={() => setTennisMode('singles')}
+                        className={`p-3 rounded-xl border text-sm font-semibold transition-colors ${
+                          tennisMode === 'singles'
+                            ? 'border-brand-600 bg-brand-50 text-brand-700'
+                            : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        Individual
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTennisMode('doubles')}
+                        className={`p-3 rounded-xl border text-sm font-semibold transition-colors ${
+                          tennisMode === 'doubles'
+                            ? 'border-brand-600 bg-brand-50 text-brand-700'
+                            : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        Dobles
+                      </button>
+                    </div>
+                  </section>
+                )}
+
+                <section>
+                  <label className="label">Descripcion</label>
+                  <textarea
+                    className="input resize-none"
+                    rows={3}
+                    value={form.description}
+                    placeholder="Descripcion opcional"
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
                   />
+                </section>
+
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button type="button" onClick={() => navigate('/dashboard')} className="btn-secondary">
+                    Cancelar
+                  </button>
+                  <button type="submit" disabled={loading} className="btn-primary">
+                    {loading ? 'Creando...' : 'Crear competicion'}
+                  </button>
                 </div>
+              </form>
+            </div>
+          </div>
+
+          <div className="xl:col-span-4">
+            <div className="card p-5 sticky top-24 space-y-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Resumen</p>
+
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">Tipo</p>
+                <p className="text-sm font-semibold text-gray-900">{form.type === 'league' ? 'Liga' : 'Torneo'}</p>
               </div>
-            )}
 
-            <div>
-              <label className="label">Descripcion</label>
-              <textarea
-                className="input resize-none"
-                rows={3}
-                value={form.description}
-                placeholder="Descripcion opcional"
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </div>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">Deporte</p>
+                <p className="text-sm font-semibold text-gray-900">{selectedSport?.name || 'Sin seleccionar'}</p>
+              </div>
 
-            <div className="flex gap-3 pt-1">
-              <button type="button" onClick={() => navigate('/dashboard')} className="btn-secondary flex-1 justify-center">
-                Cancelar
-              </button>
-              <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
-                {loading ? 'Creando...' : 'Crear competicion'}
-              </button>
+              {isFootball && (
+                <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+                  <p className="text-xs text-gray-500">Regla detectada</p>
+                  <p className="text-sm font-semibold text-gray-800">Futbol: maximo {footballMaxPlayers || 0} jugadores por equipo</p>
+                </div>
+              )}
+
+              {isTennis && (
+                <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+                  <p className="text-xs text-gray-500">Regla detectada</p>
+                  <p className="text-sm font-semibold text-gray-800">Tenis: {tennisMode === 'doubles' ? 'Dobles (2 jugadores)' : 'Individual (1 jugador)'}</p>
+                </div>
+              )}
+
+              {!isFootball && !isTennis && (
+                <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+                  <p className="text-xs text-gray-500">Regla general</p>
+                  <p className="text-sm font-semibold text-gray-800">Se usaran reglas por defecto del deporte</p>
+                </div>
+              )}
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </AppLayout>
