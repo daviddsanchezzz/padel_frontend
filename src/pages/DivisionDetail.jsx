@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getDivision, getDivisions } from '../api/divisions';
-import { getDivisionTeams, createDivisionTeam, deleteTeam, joinTeam } from '../api/teams';
+import { getDivision, getDivisions, updateDivision } from '../api/divisions';
+import { getDivisionTeams, createDivisionTeam, deleteTeam, joinTeam, updateTeam } from '../api/teams';
 import { getDivisionMatches, generateLeagueMatches, generateDivisionBracket, getDivisionBracket } from '../api/matches';
 import { getStandings } from '../api/standings';
 import AppLayout from '../layouts/AppLayout';
@@ -121,10 +121,14 @@ const DivisionDetail = () => {
   const [tab, setTab]               = useState('teams');
   const [loading, setLoading]       = useState(true);
   const [playerNames, setPlayerNames] = useState([]);
+  const [teamName, setTeamName]     = useState('');
   const [showTeamForm, setShowTeamForm] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError]           = useState('');
   const [allDivisions, setAllDivisions] = useState([]);
+  const [editingTeamId, setEditingTeamId] = useState(null);
+  const [editingTeamName, setEditingTeamName] = useState('');
+  const [selectedTeamSize, setSelectedTeamSize] = useState(null);
 
   const isTournament  = division?.competition?.type === 'tournament';
   const scoringType   = division?.competition?.sport?.scoringType || 'sets';
@@ -139,15 +143,28 @@ const DivisionDetail = () => {
   const promotionSpots = settings.promotionSpots || 0;
   const relegationSpots = settings.relegationSpots || 0;
   const maxTeamsPerDivision = settings.maxTeamsPerDivision || 0;
-  const teamSize = division?.competition?.sport?.teamSize || 1;
+  
+  // Use division's teamSize override if set, otherwise use sport's teamSize
+  const sportTeamSize = division?.competition?.sport?.teamSize || 1;
+  const teamSize = division?.teamSize ?? sportTeamSize;
+  
+  // For sports that allow size selection (e.g., football with 5/7/11)
+  const teamSizeOptions = division?.competition?.sport?.name?.toLowerCase().includes('futbol') ? [5, 7, 11] : [];
+  const effectiveTeamSize = selectedTeamSize || teamSize;
 
   useEffect(() => {
-    setPlayerNames(new Array(teamSize).fill(''));
-  }, [teamSize]);
+    if (effectiveTeamSize <= 2) {
+      setPlayerNames(new Array(effectiveTeamSize).fill(''));
+      setTeamName('');
+    } else {
+      setPlayerNames([]);
+      setTeamName('');
+    }
+  }, [effectiveTeamSize]);
 
   useEffect(() => {
     setError('');
-  }, [teamSize]);
+  }, [effectiveTeamSize]);
 
   const reload = async () => {
     if (!division) return;
@@ -185,7 +202,8 @@ const DivisionDetail = () => {
   }, [id]);
 
   const handleAddTeam = async (e) => {
-    e.preventDefault(); setError('');
+    e.preventDefault(); 
+    setError('');
     
     // Enforce max teams per division
     if (maxTeamsPerDivision > 0 && teams.length >= maxTeamsPerDivision) {
@@ -195,25 +213,57 @@ const DivisionDetail = () => {
     
     try {
       const teamData = {};
+      const size = effectiveTeamSize;
       
-      // For all team sizes, send individual player names
-      const filledNames = playerNames.filter(n => n.trim());
-      if (filledNames.length !== teamSize) {
-        setError(`Debe proporcionar exactamente ${teamSize} ${teamSize === 1 ? 'nombre de jugador' : 'nombres de jugadores'}`);
-        return;
+      if (size <= 2) {
+        // For small teams, use player names
+        const filledNames = playerNames.filter(n => n.trim());
+        if (filledNames.length !== size) {
+          setError(`Debe proporcionar exactamente ${size} ${size === 1 ? 'nombre de jugador' : 'nombres de jugadores'}`);
+          return;
+        }
+        teamData.playerNames = filledNames;
+      } else {
+        // For larger teams, use team name
+        if (!teamName.trim()) {
+          setError('Nombre del equipo es requerido');
+          return;
+        }
+        teamData.name = teamName.trim();
       }
-      teamData.playerNames = filledNames;
       
       const res = await createDivisionTeam(id, teamData);
       setTeams([...teams, res.data]);
-      setPlayerNames(new Array(teamSize).fill('')); setShowTeamForm(false);
-    } catch (err) { setError(err.response?.data?.message || 'Error al añadir equipo'); }
+      
+      // Reset form
+      setPlayerNames(new Array(size).fill(''));
+      setTeamName('');
+      setSelectedTeamSize(null);
+      setShowTeamForm(false);
+    } catch (err) { 
+      setError(err.response?.data?.message || 'Error al añadir equipo'); 
+    }
   };
 
   const handleDeleteTeam = async (teamId) => {
     if (!confirm('¿Eliminar este equipo?')) return;
     await deleteTeam(teamId);
     setTeams(teams.filter((t) => t._id !== teamId));
+  };
+
+  const handleEditTeam = async (teamId, newName) => {
+    if (!newName.trim()) {
+      setError('El nombre no puede estar vacío');
+      return;
+    }
+    try {
+      const res = await updateTeam(teamId, { name: newName.trim() });
+      setTeams(teams.map(t => t._id === teamId ? res.data : t));
+      setEditingTeamId(null);
+      setEditingTeamName('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al actualizar equipo');
+    }
   };
 
   const handleJoinTeam = async (teamId, position) => {
@@ -366,12 +416,12 @@ const DivisionDetail = () => {
                     <Icon name="bracket" size={13} /> <span className="hidden sm:inline">{generating ? 'Generando...' : 'Generar bracket'}</span><span className="sm:hidden">{generating ? '...' : 'Bracket'}</span>
                   </button>
                 )}
-                <button
+            <button
                   onClick={() => setShowTeamForm(!showTeamForm)}
                   disabled={maxTeamsPerDivision > 0 && teams.length >= maxTeamsPerDivision}
                   className="btn-primary text-xs py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Icon name="plus" size={13} /> <span className="hidden sm:inline">Añadir {teamSize === 1 ? 'equipo' : teamSize === 2 ? 'pareja' : `equipo de ${teamSize} jugadores`}</span><span className="sm:hidden">Añadir</span>
+                  <Icon name="plus" size={13} /> <span className="hidden sm:inline">Añadir {effectiveTeamSize === 1 ? 'equipo' : effectiveTeamSize === 2 ? 'pareja' : `equipo de ${effectiveTeamSize} jugadores`}</span><span className="sm:hidden">Añadir</span>
                 </button>
               </div>
             )}
@@ -379,20 +429,67 @@ const DivisionDetail = () => {
 
           {isOrganizer && showTeamForm && (
             <form onSubmit={handleAddTeam} className="card p-4 mb-4">
-              <div className="space-y-2">
-                {Array.from({ length: teamSize }, (_, i) => (
-                  <input key={i} type="text" className="input"
-                    placeholder={teamSize === 1 ? 'Nombre del jugador' : `Jugador ${i + 1} · Ej: García`}
-                    value={playerNames[i] || ''} 
-                    onChange={(e) => {
-                      const newNames = [...playerNames];
-                      newNames[i] = e.target.value;
-                      setPlayerNames(newNames);
-                    }}
-                    required autoFocus={i === 0} />
-                ))}
-                <button type="submit" className="btn-primary w-full">Añadir {teamSize === 1 ? 'jugador' : teamSize === 2 ? 'pareja' : `equipo`}</button>
-                <button type="button" onClick={() => setShowTeamForm(false)} className="btn-secondary w-full">Cancelar</button>
+              <div className="space-y-3">
+                {/* Team size selector for sports with options */}
+                {teamSizeOptions.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">Tamaño del Equipo</label>
+                    <div className="flex gap-2">
+                      {teamSizeOptions.map((size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => setSelectedTeamSize(size)}
+                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            selectedTeamSize === size || (!selectedTeamSize && size === teamSize)
+                              ? 'bg-brand-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Fútbol {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Input fields based on team size */}
+                {effectiveTeamSize <= 2 ? (
+                  // Player name inputs for small teams
+                  Array.from({ length: effectiveTeamSize }, (_, i) => (
+                    <input 
+                      key={i} 
+                      type="text" 
+                      className="input"
+                      placeholder={effectiveTeamSize === 1 ? 'Nombre del jugador' : `Jugador ${i + 1} · Ej: García`}
+                      value={playerNames[i] || ''} 
+                      onChange={(e) => {
+                        const newNames = [...playerNames];
+                        newNames[i] = e.target.value;
+                        setPlayerNames(newNames);
+                      }}
+                      required 
+                      autoFocus={i === 0} 
+                    />
+                  ))
+                ) : (
+                  // Team name input for larger teams
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Nombre del equipo · Ej: FC Barcelona"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                )}
+
+                <button type="submit" className="btn-primary w-full">Añadir {effectiveTeamSize === 1 ? 'jugador' : effectiveTeamSize === 2 ? 'pareja' : `equipo`}</button>
+                <button type="button" onClick={() => {
+                  setShowTeamForm(false);
+                  setSelectedTeamSize(null);
+                }} className="btn-secondary w-full">Cancelar</button>
               </div>
             </form>
           )}
@@ -403,10 +500,10 @@ const DivisionDetail = () => {
                 <Icon name="team" size={22} />
               </div>
               <p className="font-semibold text-gray-800 mb-1">Sin equipos</p>
-              <p className="text-gray-400 text-sm mb-4">Añade {teamSize === 1 ? 'jugadores' : teamSize === 2 ? 'parejas' : `equipos de ${teamSize} jugadores`} para {isTournament ? 'generar el bracket.' : 'generar el calendario.'}</p>
+              <p className="text-gray-400 text-sm mb-4">Añade {effectiveTeamSize === 1 ? 'jugadores' : effectiveTeamSize === 2 ? 'parejas' : `equipos de ${effectiveTeamSize} jugadores`} para {isTournament ? 'generar el bracket.' : 'generar el calendario.'}</p>
               {isOrganizer && (
                 <button onClick={() => setShowTeamForm(true)} className="btn-primary mx-auto text-sm">
-                  <Icon name="plus" size={13} /> Añadir {teamSize === 1 ? 'primer jugador' : teamSize === 2 ? 'primera pareja' : `primer equipo de ${teamSize} jugadores`}
+                  <Icon name="plus" size={13} /> Añadir {effectiveTeamSize === 1 ? 'primer jugador' : effectiveTeamSize === 2 ? 'primera pareja' : `primer equipo de ${effectiveTeamSize} jugadores`}
                 </button>
               )}
             </div>
@@ -416,28 +513,68 @@ const DivisionDetail = () => {
                 <div key={team._id} className={`card px-4 py-3 flex items-center justify-between gap-2 ${myTeamId && team._id?.toString() === myTeamId ? 'border-brand-300 bg-brand-50' : ''}`}>
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="min-w-0">
-                      {team.playerNames && team.playerNames.length > 0 ? (
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {team.playerNames.map((name, idx) => {
-                            const isMe = team.players[idx] && team.players[idx]._id === user?.id;
-                            return (
-                              <React.Fragment key={idx}>
-                                {idx > 0 && <span className="text-gray-300 text-sm">/</span>}
-                                <span className={`text-sm font-semibold ${isMe ? 'text-brand-700' : 'text-gray-900'}`}>{name}</span>
-                              </React.Fragment>
-                            );
-                          })}
-                        </div>
+                      {editingTeamId === team._id ? (
+                        <input
+                          type="text"
+                          className="input text-sm h-8"
+                          value={editingTeamName}
+                          onChange={(e) => setEditingTeamName(e.target.value)}
+                          onBlur={() => {
+                            if (editingTeamName.trim()) {
+                              handleEditTeam(team._id, editingTeamName);
+                            } else {
+                              setEditingTeamId(null);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleEditTeam(team._id, editingTeamName);
+                            } else if (e.key === 'Escape') {
+                              setEditingTeamId(null);
+                            }
+                          }}
+                          autoFocus
+                        />
                       ) : (
-                        <p className="font-semibold text-gray-900 text-sm truncate">{team.name}</p>
+                        <>
+                          {team.playerNames && team.playerNames.length > 0 ? (
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {team.playerNames.map((name, idx) => {
+                                const isMe = team.players[idx] && team.players[idx]._id === user?.id;
+                                return (
+                                  <React.Fragment key={idx}>
+                                    {idx > 0 && <span className="text-gray-300 text-sm">/</span>}
+                                    <span className={`text-sm font-semibold ${isMe ? 'text-brand-700' : 'text-gray-900'}`}>{name}</span>
+                                  </React.Fragment>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="font-semibold text-gray-900 text-sm truncate">{team.name}</p>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
                     {isOrganizer ? (
-                      <button onClick={() => handleDeleteTeam(team._id)} className="text-gray-300 hover:text-red-400 transition-colors">
-                        <Icon name="trash" size={14} />
-                      </button>
+                      <>
+                        {!team.playerNames || team.playerNames.length === 0 ? (
+                          <button
+                            onClick={() => {
+                              setEditingTeamId(team._id);
+                              setEditingTeamName(team.name);
+                            }}
+                            className="text-gray-300 hover:text-brand-400 transition-colors"
+                            title="Editar equipo"
+                          >
+                            <Icon name="edit" size={14} />
+                          </button>
+                        ) : null}
+                        <button onClick={() => handleDeleteTeam(team._id)} className="text-gray-300 hover:text-red-400 transition-colors">
+                          <Icon name="trash" size={14} />
+                        </button>
+                      </>
                     ) : (
                       (() => {
                         const userInThisTeam = team.players.some(p => p && p._id === user?.id);
