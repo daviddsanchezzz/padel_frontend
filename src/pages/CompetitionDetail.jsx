@@ -110,16 +110,18 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
 
           {/* Puntuación */}
           <section>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Puntuación</p>
-            <div className="grid grid-cols-3 gap-4">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Puntuación</p>
+            <div className="space-y-2">
               {[
-                { label: 'Victoria', k: 'pointsPerWin',  color: 'text-brand-600' },
-                { label: 'Derrota',  k: 'pointsPerLoss', color: 'text-red-500' },
-                { label: 'Empate',   k: 'pointsPerDraw', color: 'text-amber-500' },
-              ].map(({ label, k, color }) => (
-                <div key={k} className="bg-gray-50 rounded-xl p-4 text-center">
-                  <p className={`text-2xl font-bold ${color} mb-1`}>{s[k]}</p>
-                  <p className="text-xs text-gray-500 font-medium mb-3">{label}</p>
+                { label: 'Puntos por victoria', k: 'pointsPerWin',  color: 'text-brand-600', bg: 'bg-gray-50' },
+                { label: 'Puntos por derrota',  k: 'pointsPerLoss', color: 'text-red-500',   bg: 'bg-gray-50' },
+                { label: 'Puntos por empate',   k: 'pointsPerDraw', color: 'text-amber-500', bg: 'bg-gray-50' },
+              ].map(({ label, k, color, bg }) => (
+                <div key={k} className={`${bg} rounded-xl px-4 py-3 flex items-center justify-between`}>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{label}</p>
+                    <p className={`text-xs font-bold ${color} mt-0.5`}>{s[k]} punto{s[k] !== 1 ? 's' : ''}</p>
+                  </div>
                   <Stepper value={s[k]} onChange={(v) => set(k, v)} max={20} />
                 </div>
               ))}
@@ -308,16 +310,16 @@ const CompetitionDetail = () => {
 
   return (
     <AppLayout title={competition.name} actions={<div className="hidden md:flex">{organizerActions}</div>}>
-      {/* Back + mobile actions */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => navigate(isOrganizer ? '/dashboard' : '/player')}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <Icon name="chevronLeft" size={14} /> {isOrganizer ? 'Mis competiciones' : 'Mi panel'}
-        </button>
-        {isOrganizer && <div className="md:hidden">{organizerActions}</div>}
-      </div>
+      {/* Back */}
+      <button
+        onClick={() => navigate(isOrganizer ? '/dashboard' : '/player')}
+        className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-3"
+      >
+        <Icon name="chevronLeft" size={14} /> {isOrganizer ? 'Mis competiciones' : 'Mi panel'}
+      </button>
+
+      {/* Mobile actions */}
+      {isOrganizer && <div className="md:hidden mb-4">{organizerActions}</div>}
 
       {/* Info card */}
       <div className="card p-4 md:p-5 mb-4">
