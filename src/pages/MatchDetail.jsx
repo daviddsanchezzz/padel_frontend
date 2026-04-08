@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { CircleDot, Handshake, AlertTriangle, ShieldAlert, Timer, User2 } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +14,33 @@ const EVENT_TYPE_LABEL = {
 };
 
 const DEFAULT_EVENT_TYPES = ['goal', 'assist', 'yellow_card', 'red_card'];
+
+const EVENT_TYPE_STYLE = {
+  goal: {
+    label: 'Gol',
+    cls: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    iconCls: 'text-emerald-600',
+    IconComp: CircleDot,
+  },
+  assist: {
+    label: 'Asistencia',
+    cls: 'bg-sky-50 border-sky-200 text-sky-700',
+    iconCls: 'text-sky-600',
+    IconComp: Handshake,
+  },
+  yellow_card: {
+    label: 'Tarjeta amarilla',
+    cls: 'bg-amber-50 border-amber-200 text-amber-700',
+    iconCls: 'text-amber-600',
+    IconComp: AlertTriangle,
+  },
+  red_card: {
+    label: 'Tarjeta roja',
+    cls: 'bg-red-50 border-red-200 text-red-700',
+    iconCls: 'text-red-600',
+    IconComp: ShieldAlert,
+  },
+};
 
 const MatchDetail = () => {
   const { id } = useParams();
@@ -121,6 +149,9 @@ const MatchDetail = () => {
   }
 
   const goals = match.result?.goals || { a: 0, b: 0 };
+  const totalGoals = events.filter((e) => e.type === 'goal').length;
+  const totalAssists = events.filter((e) => e.type === 'assist').length;
+  const totalCards = events.filter((e) => e.type === 'yellow_card' || e.type === 'red_card').length;
 
   return (
     <AppLayout title="Detalle del partido">
@@ -201,20 +232,54 @@ const MatchDetail = () => {
             </div>
           )}
 
-          <div className="card p-4">
-            <p className="text-sm font-semibold text-gray-900 mb-3">Eventos registrados</p>
+          <div className="card p-4 md:p-5">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Eventos del partido</p>
+                <p className="text-xs text-gray-500 mt-0.5">Cronologia oficial registrada</p>
+              </div>
+              <div className="flex items-center gap-2 text-[11px]">
+                <span className="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">{totalGoals} goles</span>
+                <span className="px-2 py-1 rounded-full bg-sky-50 text-sky-700 border border-sky-200 font-semibold">{totalAssists} asistencias</span>
+                <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold">{totalCards} tarjetas</span>
+              </div>
+            </div>
             {events.length === 0 ? (
               <p className="text-sm text-gray-500">Sin eventos registrados.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {events.map((ev, idx) => (
-                  <div key={ev._id || idx} className="flex items-center justify-between text-sm border border-gray-100 rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">{ev.minute}'</span>
-                      <span className="font-medium text-gray-800">{EVENT_TYPE_LABEL[ev.type] || ev.type}</span>
-                    </div>
-                    <div className="text-gray-600 text-xs md:text-sm text-right">
-                      {(ev.team?.toString() === teamAId ? match.teamA?.name : match.teamB?.name) || 'Equipo'} - {ev.playerName}
+                  <div key={ev._id || idx} className="relative pl-6">
+                    <span className="absolute left-2 top-0 bottom-0 w-px bg-gray-200" />
+                    <span className="absolute left-[5px] top-5 w-3 h-3 rounded-full border-2 border-white bg-brand-500 shadow-sm" />
+                    <div className="border border-gray-100 rounded-xl px-3 py-3 bg-white shadow-sm">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`w-8 h-8 rounded-lg border flex items-center justify-center ${EVENT_TYPE_STYLE[ev.type]?.cls || 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                            {(() => {
+                              const Cmp = EVENT_TYPE_STYLE[ev.type]?.IconComp || CircleDot;
+                              return <Cmp size={15} className={EVENT_TYPE_STYLE[ev.type]?.iconCls || 'text-gray-500'} />;
+                            })()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{EVENT_TYPE_LABEL[ev.type] || ev.type}</p>
+                            <p className="text-[11px] text-gray-400">Evento #{idx + 1}</p>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-200 text-xs text-gray-700 font-semibold">
+                          <Timer size={12} className="text-gray-500" />
+                          {ev.minute}'
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap text-xs">
+                        <span className="px-2 py-1 rounded-full bg-gray-50 border border-gray-200 text-gray-700 font-medium">
+                          {(ev.team?.toString() === teamAId ? match.teamA?.name : match.teamB?.name) || 'Equipo'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-200 text-gray-700 font-medium">
+                          <User2 size={12} className="text-gray-500" />
+                          {ev.playerName}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
