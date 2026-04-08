@@ -248,9 +248,13 @@ const MatchDetail = () => {
               <p className="text-sm text-gray-500">Sin eventos registrados.</p>
             ) : (
               <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center mb-1">
+                  <p className="text-xs font-semibold text-gray-500 text-left truncate">{match.teamA?.name || 'Equipo A'}</p>
+                  <div />
+                  <p className="text-xs font-semibold text-gray-500 text-right truncate">{match.teamB?.name || 'Equipo B'}</p>
+                </div>
                 {sortedEvents.map((ev, idx) => {
                   const isTeamA = ev.team?.toString() === teamAId;
-                  const teamName = isTeamA ? match.teamA?.name : match.teamB?.name;
                   const style = EVENT_TYPE_STYLE[ev.type] || { cls: 'bg-gray-50 border-gray-200 text-gray-700', emoji: '📌', label: ev.type };
                   const eventNode = (
                     <div className={`rounded-xl border px-3 py-2 ${style.cls}`}>
@@ -258,7 +262,7 @@ const MatchDetail = () => {
                         <span className="text-base leading-none">{style.emoji}</span>
                         <p className="text-sm font-semibold">{EVENT_TYPE_LABEL[ev.type] || style.label}</p>
                       </div>
-                      <p className="text-xs mt-1 opacity-90">{teamName} · {ev.playerName}</p>
+                      <p className="text-xs mt-1 opacity-90">{ev.playerName}</p>
                     </div>
                   );
                   return (
