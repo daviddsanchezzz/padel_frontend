@@ -113,7 +113,7 @@ const Dashboard = () => {
               <span className="text-xs text-gray-300">{comps.length}</span>
             </div>
           )}
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-2">
             {comps.map((comp) => {
               const type   = typeConfig[comp.type]   || typeConfig.league;
               const status = statusConfig[comp.status] || statusConfig.draft;
@@ -121,36 +121,26 @@ const Dashboard = () => {
                 <div
                   key={comp._id}
                   onClick={() => navigate(`/competitions/${comp._id}`)}
-                  className="card p-5 cursor-pointer hover:shadow-md transition-all duration-150 group"
+                  className="card px-4 py-3.5 flex items-center justify-between cursor-pointer hover:shadow-md transition-all group"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-800 rounded-xl flex items-center justify-center text-white flex-shrink-0 text-xl">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-800 rounded-xl flex items-center justify-center text-white flex-shrink-0 text-lg">
                       {sportEmoji(comp.sport?.slug)}
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className={`badge ${type.cls}`}>{type.label}</span>
-                      <span className={`badge ${status.cls}`}>{status.label}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-800 group-hover:text-brand-700 transition-colors truncate">{comp.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{comp.sport?.name || '—'} · {type.label}{comp.season ? ` · T.${comp.season}` : ''}</p>
                     </div>
                   </div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-brand-700 transition-colors">
-                    {comp.name}
-                  </h3>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {comp.sport?.name || '—'}{comp.season ? ` · T.${comp.season}` : ''}
-                  </p>
-                  {comp.description && (
-                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">{comp.description}</p>
-                  )}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50">
-                    <span className="text-xs text-gray-400">
-                      {new Date(comp.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </span>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                    <span className={`badge ${status.cls}`}>{status.label}</span>
                     <button
                       onClick={(e) => handleDelete(e, comp._id)}
-                      className="flex items-center gap-1 text-xs text-gray-300 hover:text-red-400 transition-colors"
+                      className="text-gray-300 hover:text-red-400 transition-colors p-1"
                     >
-                      <Icon name="trash" size={12} /> Eliminar
+                      <Icon name="trash" size={13} />
                     </button>
+                    <Icon name="chevronRight" size={14} className="text-gray-300 group-hover:text-brand-500 transition-colors" />
                   </div>
                 </div>
               );
