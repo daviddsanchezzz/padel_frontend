@@ -41,6 +41,13 @@ const EVENT_TYPE_STYLE = {
   },
 };
 
+const formatDateLabel = (value) => {
+  if (!value) return '';
+  const [y, m, d] = value.split('-');
+  if (!y || !m || !d) return value;
+  return `${d}/${m}/${y}`;
+};
+
 const MatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -148,6 +155,7 @@ const MatchDetail = () => {
   }
 
   const goals = match.result?.goals || { a: 0, b: 0 };
+  const schedulePieces = [match.location, formatDateLabel(match.matchDate), match.matchTime].filter(Boolean);
   const sortedEvents = [...events].sort((a, b) => {
     const minuteDiff = Number(a.minute || 0) - Number(b.minute || 0);
     if (minuteDiff !== 0) return minuteDiff;
@@ -166,6 +174,7 @@ const MatchDetail = () => {
           <p className="font-semibold text-gray-900">{match.teamA?.name} vs {match.teamB?.name}</p>
           <p className="text-lg font-bold text-gray-900">{goals.a} - {goals.b}</p>
         </div>
+        <p className="text-xs text-gray-500 mt-2">{schedulePieces.length > 0 ? schedulePieces.join(' · ') : 'Sin programacion'}</p>
       </div>
 
       {!eventModeEnabled && (
