@@ -184,45 +184,79 @@ const MatchDetail = () => {
 
           {isOrganizer ? (
             <form onSubmit={saveEvents} className="card p-4 space-y-3 mb-4">
-              <p className="text-sm font-semibold text-gray-900">Editar eventos</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-gray-900">Editar eventos</p>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
+                  onClick={addEvent}
+                >
+                  <Icon name="plus" size={12} />
+                  Anadir evento
+                </button>
+              </div>
 
               {draftEvents.length === 0 && <p className="text-xs text-gray-500">Sin eventos. Guarda para mantener 0-0 o anade eventos.</p>}
 
               {draftEvents.map((ev, idx) => {
                 const playerOptions = ev.teamSide === 'A' ? playersByTeam.A : playersByTeam.B;
                 return (
-                  <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                    <select className="input col-span-12 md:col-span-3" value={ev.type} onChange={(e) => updateEvent(idx, { type: e.target.value })} required>
-                      {enabledEventTypes.map((type) => <option key={type} value={type}>{EVENT_TYPE_LABEL[type] || type}</option>)}
-                    </select>
-                    <input className="input col-span-4 md:col-span-2" type="number" min="0" max="130" value={ev.minute} onChange={(e) => updateEvent(idx, { minute: e.target.value })} required />
-                    <select className="input col-span-8 md:col-span-2" value={ev.teamSide} onChange={(e) => updateEvent(idx, { teamSide: e.target.value, playerName: '' })}>
-                      <option value="A">{match.teamA?.name || 'Equipo A'}</option>
-                      <option value="B">{match.teamB?.name || 'Equipo B'}</option>
-                    </select>
-                    <select className="input col-span-10 md:col-span-4" value={ev.playerName} onChange={(e) => updateEvent(idx, { playerName: e.target.value })} required disabled={playerOptions.length === 0}>
-                      <option value="">{playerOptions.length === 0 ? 'Sin jugadores en equipo' : 'Jugador'}</option>
-                      {playerOptions.map((name) => <option key={name} value={name}>{name}</option>)}
-                    </select>
-                    <button type="button" className="col-span-2 md:col-span-1 text-red-500 text-xs" onClick={() => removeEvent(idx)}>X</button>
+                  <div key={idx} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-gray-500">Evento {idx + 1}</p>
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-red-600 hover:text-red-700"
+                        onClick={() => removeEvent(idx)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                      <div className="md:col-span-4">
+                        <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">Tipo</label>
+                        <select className="input mt-1 w-full" value={ev.type} onChange={(e) => updateEvent(idx, { type: e.target.value })} required>
+                          {enabledEventTypes.map((type) => <option key={type} value={type}>{EVENT_TYPE_LABEL[type] || type}</option>)}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 md:col-span-4">
+                        <div>
+                          <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">Minuto</label>
+                          <input className="input mt-1 w-full" type="number" min="0" max="130" value={ev.minute} onChange={(e) => updateEvent(idx, { minute: e.target.value })} required />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">Equipo</label>
+                          <select className="input mt-1 w-full" value={ev.teamSide} onChange={(e) => updateEvent(idx, { teamSide: e.target.value, playerName: '' })}>
+                            <option value="A">{match.teamA?.name || 'Equipo A'}</option>
+                            <option value="B">{match.teamB?.name || 'Equipo B'}</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="md:col-span-4">
+                        <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">Jugador</label>
+                        <select className="input mt-1 w-full" value={ev.playerName} onChange={(e) => updateEvent(idx, { playerName: e.target.value })} required disabled={playerOptions.length === 0}>
+                          <option value="">{playerOptions.length === 0 ? 'Sin jugadores en equipo' : 'Selecciona jugador'}</option>
+                          {playerOptions.map((name) => <option key={name} value={name}>{name}</option>)}
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
 
-              <button type="button" className="text-xs text-brand-600 hover:underline font-medium" onClick={addEvent}>
-                + Anadir evento
-              </button>
-
-              <div className="flex items-center justify-end gap-2">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
                 <button type="button" onClick={() => setDraftEvents(events.map((ev) => ({
                   type: ev.type,
                   minute: ev.minute,
                   teamSide: ev.team?.toString() === teamAId ? 'A' : 'B',
                   playerName: ev.playerName || '',
-                })))} className="btn-secondary">
+                })))} className="btn-secondary w-full sm:w-auto">
                   Restaurar
                 </button>
-                <button type="submit" disabled={saving} className="btn-primary">
+                <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto">
                   {saving ? 'Guardando...' : 'Guardar eventos'}
                 </button>
               </div>
