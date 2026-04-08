@@ -1,32 +1,53 @@
 import React from 'react';
 import {
-  Trophy, Medal, GitMerge, CalendarDays, CircleCheck,
-  ChevronLeft, ChevronRight, LayoutList, Dumbbell,
-  Plus, SlidersHorizontal, ChevronsRight, TrendingUp,
-  Users2, Trash2, Loader2, AlertTriangle, Zap, Pencil,
+  Trophy,
+  Medal,
+  GitMerge,
+  CalendarDays,
+  CircleCheck,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  LayoutList,
+  Dumbbell,
+  Plus,
+  SlidersHorizontal,
+  ChevronsRight,
+  TrendingUp,
+  Users2,
+  Trash2,
+  Loader2,
+  AlertTriangle,
+  Zap,
+  Pencil,
+  EllipsisVertical,
 } from 'lucide-react';
 
 const ICONS = {
-  alert:        AlertTriangle,   // advertencia visible
-  bracket:      GitMerge,        // ramas que se fusionan = bracket
-  calendar:     CalendarDays,    // calendario con días
-  check:        CircleCheck,    // check dentro de círculo
-  edit:         Pencil,
-  chevronLeft:  ChevronLeft,
+  alert: AlertTriangle,
+  bracket: GitMerge,
+  calendar: CalendarDays,
+  check: CircleCheck,
+  edit: Pencil,
+  chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
-  division:     LayoutList,      // filas estructuradas = divisiones
-  league:       Medal,           // medalla = liga/clasificación
-  match:        Zap,             // acción/energía = partido
-  plus:         Plus,
-  settings:     SlidersHorizontal, // sliders = configuración
-  skip:         ChevronsRight,   // doble flecha = bye/saltar
-  sport:        Dumbbell,        // deporte físico
-  standings:    TrendingUp,      // subida = clasificación
-  team:         Users2,          // dos personas = pareja de pádel
-  tournament:   Trophy,          // copa = torneo
-  trash:        Trash2,
-  trophy:       Trophy,
-  spinner:      Loader2,
+  chevronDown: ChevronDown,
+  chevronUp: ChevronUp,
+  division: LayoutList,
+  league: Medal,
+  match: Zap,
+  more: EllipsisVertical,
+  plus: Plus,
+  settings: SlidersHorizontal,
+  skip: ChevronsRight,
+  sport: Dumbbell,
+  standings: TrendingUp,
+  team: Users2,
+  tournament: Trophy,
+  trash: Trash2,
+  trophy: Trophy,
+  spinner: Loader2,
 };
 
 const Icon = ({ name, size = 16, className = '' }) => {
@@ -36,17 +57,16 @@ const Icon = ({ name, size = 16, className = '' }) => {
 };
 
 const SPORT_EMOJIS = {
-  padel:      '🏓',
-  tennis:     '🎾',
-  football:   '⚽',
-  basketball: '🏀',
-  volleyball: '🏐',
-  badminton:  '🏸',
-  squash:     '🏸',
-  tabletennis:'🏓',
+  padel: '??',
+  tennis: '??',
+  football: '?',
+  basketball: '??',
+  volleyball: '??',
+  badminton: '??',
+  squash: '??',
+  tabletennis: '??',
 };
 
-export const sportEmoji = (slug) => SPORT_EMOJIS[slug?.toLowerCase()] ?? '🏆';
+export const sportEmoji = (slug) => SPORT_EMOJIS[slug?.toLowerCase()] ?? '??';
 
 export default Icon;
-

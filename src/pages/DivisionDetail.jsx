@@ -126,6 +126,8 @@ const DivisionDetail = () => {
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [editingTeamName, setEditingTeamName] = useState('');
   const [editingPlayerNames, setEditingPlayerNames] = useState([]);
+  const [expandedTeams, setExpandedTeams] = useState({});
+  const [teamActionsTarget, setTeamActionsTarget] = useState(null);
 
   const isTournament = division?.competition?.type === 'tournament';
   const scoringType = division?.competition?.sport?.scoringType || 'sets';
@@ -228,6 +230,32 @@ const DivisionDetail = () => {
     setEditingPlayerNames([]);
   };
 
+  const toggleTeamExpanded = (teamId) => {
+    setExpandedTeams((prev) => ({ ...prev, [teamId]: !prev[teamId] }));
+  };
+
+  const openTeamActions = (team) => {
+    setTeamActionsTarget(team);
+  };
+
+  const closeTeamActions = () => {
+    setTeamActionsTarget(null);
+  };
+
+  const chooseEditTeam = () => {
+    if (!teamActionsTarget) return;
+    startEditTeam(teamActionsTarget);
+    setExpandedTeams((prev) => ({ ...prev, [teamActionsTarget._id]: true }));
+    closeTeamActions();
+  };
+
+  const chooseDeleteTeam = async () => {
+    if (!teamActionsTarget) return;
+    const teamId = teamActionsTarget._id;
+    closeTeamActions();
+    await handleDeleteTeam(teamId);
+  };
+
   const saveTeamEdit = async (teamId) => {
     try {
       const payload = {};
@@ -257,9 +285,13 @@ const DivisionDetail = () => {
   };
 
   const handleDeleteTeam = async (teamId) => {
-    if (!confirm('Eliminar este equipo?')) return;
     await deleteTeam(teamId);
     setTeams((prev) => prev.filter((team) => team._id !== teamId));
+    setExpandedTeams((prev) => {
+      const next = { ...prev };
+      delete next[teamId];
+      return next;
+    });
   };
 
   const handleJoinTeam = async (teamId, position) => {
@@ -449,8 +481,18 @@ const DivisionDetail = () => {
                   />
                 )}
 
-                <button type="submit" className="btn-primary w-full">Guardar equipo</button>
-                <button type="button" onClick={() => setShowTeamForm(false)} className="btn-secondary w-full">Cancelar</button>
+                <div className="pt-1 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTeamForm(false)}
+                    className="btn-secondary text-xs py-1.5 px-3"
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn-primary text-xs py-1.5 px-3">
+                    Guardar {teamSize === 1 ? 'jugador' : teamSize === 2 ? 'pareja' : 'equipo'}
+                  </button>
+                </div>
               </div>
             </form>
           )}
@@ -471,123 +513,151 @@ const DivisionDetail = () => {
           ) : (
             <div className="space-y-2">
               {teams.map((team) => (
-                <div key={team._id} className={`card px-4 py-3 flex items-start justify-between gap-2 ${myTeamId && team._id?.toString() === myTeamId ? 'border-brand-300 bg-brand-50' : ''}`}>
-                  <div className="min-w-0 flex-1">
-                    {editingTeamId === team._id ? (
-                      <div className="space-y-2">
-                        {teamSize > 2 && (
-                          <input
-                            type="text"
-                            className="input text-sm h-8"
-                            value={editingTeamName}
-                            onChange={(e) => setEditingTeamName(e.target.value)}
-                            placeholder="Nombre del equipo"
-                            autoFocus
-                          />
-                        )}
+                <div key={team._id} className={`card px-4 py-3 ${myTeamId && team._id?.toString() === myTeamId ? 'border-brand-300 bg-brand-50' : ''}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleTeamExpanded(team._id)}
+                      className="flex items-center gap-2 text-left min-w-0 flex-1"
+                    >
+                      <Icon name={expandedTeams[team._id] ? 'chevronUp' : 'chevronDown'} size={14} className="text-gray-400" />
+                      <p className="font-semibold text-gray-900 text-sm truncate">{team.name}</p>
+                    </button>
 
-                        {Array.from({ length: teamSize <= 2 ? teamSize : editingPlayerNames.length }, (_, idx) => (
-                          <input
-                            key={idx}
-                            type="text"
-                            className="input text-sm h-8"
-                            value={editingPlayerNames[idx] || ''}
-                            onChange={(e) => {
-                              const names = [...editingPlayerNames];
-                              names[idx] = e.target.value;
-                              setEditingPlayerNames(names);
-                            }}
-                            placeholder={`Jugador ${idx + 1}`}
-                          />
-                        ))}
-
-                        {teamSize > 2 && editingPlayerNames.length < teamSize && (
-                          <button
-                            type="button"
-                            onClick={() => setEditingPlayerNames((prev) => [...prev, ''])}
-                            className="text-xs text-brand-600 font-semibold"
-                          >
-                            + Anadir jugador
-                          </button>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => saveTeamEdit(team._id)} className="btn-primary text-xs py-1">Guardar</button>
-                          <button type="button" onClick={cancelEditTeam} className="btn-secondary text-xs py-1">Cancelar</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="font-semibold text-gray-900 text-sm truncate">{team.name}</p>
-                        {team.playerNames?.length > 0 && (
-                          <div className="flex items-center gap-1 flex-wrap mt-1">
-                            {team.playerNames.map((name, idx) => {
-                              const isMe = team.players[idx] && team.players[idx]._id === user?.id;
-                              return (
-                                <React.Fragment key={idx}>
-                                  {idx > 0 && <span className="text-gray-300 text-xs">/</span>}
-                                  <span className={`text-xs font-medium ${isMe ? 'text-brand-700' : 'text-gray-600'}`}>{name}</span>
-                                </React.Fragment>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </>
+                    {isOrganizer && (
+                      <button
+                        type="button"
+                        onClick={() => openTeamActions(team)}
+                        className="text-gray-400 hover:text-gray-700 transition-colors"
+                        title="Acciones"
+                      >
+                        <Icon name="more" size={16} />
+                      </button>
                     )}
                   </div>
 
-                  <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
-                    {isOrganizer ? (
-                      <>
-                        {editingTeamId !== team._id && (
-                          <button onClick={() => startEditTeam(team)} className="text-gray-300 hover:text-brand-400 transition-colors" title="Editar equipo">
-                            <Icon name="edit" size={14} />
-                          </button>
-                        )}
-                        <button onClick={() => handleDeleteTeam(team._id)} className="text-gray-300 hover:text-red-400 transition-colors">
-                          <Icon name="trash" size={14} />
-                        </button>
-                      </>
-                    ) : (
-                      (() => {
-                        const userInThisTeam = team.players.some((p) => p && p._id === user?.id);
-                        const userInOtherTeam = teams.some((t) => t.players.some((p) => p && p._id === user?.id) && t._id !== team._id);
+                  {expandedTeams[team._id] && (
+                    <div className="mt-3 border-t border-gray-100 pt-3 space-y-2">
+                      {editingTeamId === team._id ? (
+                        <div className="space-y-2">
+                          {teamSize > 2 && (
+                            <input
+                              type="text"
+                              className="input text-sm h-8"
+                              value={editingTeamName}
+                              onChange={(e) => setEditingTeamName(e.target.value)}
+                              placeholder="Nombre del equipo"
+                              autoFocus
+                            />
+                          )}
 
-                        if (userInThisTeam) {
-                          return (
-                            <span className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded font-medium flex items-center gap-1">
-                              <Icon name="check" size={12} /> Confirmado
-                            </span>
-                          );
-                        }
+                          {Array.from({ length: teamSize <= 2 ? teamSize : editingPlayerNames.length }, (_, idx) => (
+                            <input
+                              key={idx}
+                              type="text"
+                              className="input text-sm h-8"
+                              value={editingPlayerNames[idx] || ''}
+                              onChange={(e) => {
+                                const names = [...editingPlayerNames];
+                                names[idx] = e.target.value;
+                                setEditingPlayerNames(names);
+                              }}
+                              placeholder={`Jugador ${idx + 1}`}
+                            />
+                          ))}
 
-                        if (userInOtherTeam) return null;
+                          {teamSize > 2 && editingPlayerNames.length < teamSize && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingPlayerNames((prev) => [...prev, ''])}
+                              className="text-xs text-brand-600 font-semibold"
+                            >
+                              + Anadir jugador
+                            </button>
+                          )}
 
-                        return (
-                          team.playerNames && team.playerNames.length > 0 && (
-                            <div className="flex gap-1">
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => saveTeamEdit(team._id)} className="btn-primary text-xs py-1">Guardar</button>
+                            <button type="button" onClick={cancelEditTeam} className="btn-secondary text-xs py-1">Cancelar</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {team.playerNames?.length > 0 ? (
+                            <div className="flex items-center gap-1 flex-wrap">
                               {team.playerNames.map((name, idx) => {
-                                const isPositionFilled = !!team.players[idx];
-                                const filledPlayerName = isPositionFilled ? team.players[idx]?.name : null;
-
-                                return isPositionFilled ? (
-                                  <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">{filledPlayerName}</span>
-                                ) : (
-                                  <button key={idx} onClick={() => handleJoinTeam(team._id, idx)} className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors">
-                                    Soy {name}
-                                  </button>
+                                const isMe = team.players[idx] && team.players[idx]._id === user?.id;
+                                return (
+                                  <React.Fragment key={idx}>
+                                    {idx > 0 && <span className="text-gray-300 text-xs">/</span>}
+                                    <span className={`text-xs font-medium ${isMe ? 'text-brand-700' : 'text-gray-600'}`}>{name}</span>
+                                  </React.Fragment>
                                 );
                               })}
                             </div>
-                          )
-                        );
-                      })()
-                    )}
-                  </div>
+                          ) : (
+                            <p className="text-xs text-gray-500">Sin jugadores definidos</p>
+                          )}
+
+                          {!isOrganizer && (() => {
+                            const userInThisTeam = team.players.some((p) => p && p._id === user?.id);
+                            const userInOtherTeam = teams.some((t) => t.players.some((p) => p && p._id === user?.id) && t._id !== team._id);
+
+                            if (userInThisTeam) {
+                              return (
+                                <span className="inline-flex mt-1 text-xs px-2 py-1 bg-green-50 text-green-700 rounded font-medium items-center gap-1">
+                                  <Icon name="check" size={12} /> Confirmado
+                                </span>
+                              );
+                            }
+
+                            if (userInOtherTeam) return null;
+
+                            return (
+                              team.playerNames && team.playerNames.length > 0 && (
+                                <div className="flex gap-1 mt-1 flex-wrap">
+                                  {team.playerNames.map((name, idx) => {
+                                    const isPositionFilled = !!team.players[idx];
+                                    const filledPlayerName = isPositionFilled ? team.players[idx]?.name : null;
+
+                                    return isPositionFilled ? (
+                                      <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">{filledPlayerName}</span>
+                                    ) : (
+                                      <button key={idx} onClick={() => handleJoinTeam(team._id, idx)} className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors">
+                                        Soy {name}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )
+                            );
+                          })()}
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {teamActionsTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={closeTeamActions} />
+          <div className="relative w-full max-w-xs bg-white rounded-xl shadow-xl border border-gray-100 p-4 space-y-2">
+            <p className="text-sm font-semibold text-gray-900 mb-2">Acciones del equipo</p>
+            <button type="button" onClick={chooseEditTeam} className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700">
+              Editar
+            </button>
+            <button type="button" onClick={chooseDeleteTeam} className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600">
+              Eliminar
+            </button>
+            <button type="button" onClick={closeTeamActions} className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-500">
+              Cancelar
+            </button>
+          </div>
         </div>
       )}
 
