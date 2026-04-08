@@ -1,20 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Building2, MapPin, FileText, Globe, Save, Loader2, CheckCircle, Upload, X, Palette } from 'lucide-react';
+import { Building2, MapPin, FileText, Globe, Save, Loader2, CheckCircle, Upload, X, ExternalLink, Copy } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
 import { useOrg } from '../context/OrgContext';
 import { updateOrganization } from '../api/organizations';
-
-const PRESET_COLORS = [
-  '#16a34a', '#2563eb', '#dc2626', '#d97706',
-  '#7c3aed', '#0891b2', '#db2777', '#0f172a',
-];
 
 const OrganizationSettings = () => {
   const { activeOrg, orgCreated } = useOrg();
   const fileRef = useRef(null);
 
   const [form, setForm] = useState({
-    name: '',
     description: '',
     city: '',
     country: '',
@@ -32,7 +26,6 @@ const OrganizationSettings = () => {
   useEffect(() => {
     if (!activeOrg) return;
     setForm({
-      name: activeOrg.name ?? '',
       description: activeOrg.description ?? '',
       city: activeOrg.location?.city ?? '',
       country: activeOrg.location?.country ?? '',
@@ -103,127 +96,126 @@ const OrganizationSettings = () => {
     }
   };
 
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
   return (
     <AppLayout title="Configuracion">
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-3xl space-y-5">
 
-        {/* Header card */}
-        <div className="card p-5 flex items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-            style={{ backgroundColor: form.primaryColor || '#16a34a' }}
-          >
-            {logoPreview
-              ? <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
-              : <Building2 size={24} className="text-white" />
-            }
-          </div>
-          <div className="min-w-0">
-            <p className="font-bold text-gray-900 text-lg leading-tight truncate">{activeOrg.name}</p>
-            <p className="text-sm text-gray-400 mt-0.5">
-              ID interno: <span className="font-mono text-xs text-gray-500">{activeOrg.authOrgId}</span>
-            </p>
+        {/* Club header */}
+        <div className="card overflow-hidden">
+          {/* Color band */}
+          <div className="h-2" style={{ backgroundColor: form.primaryColor || '#16a34a' }} />
+          <div className="p-5 flex items-center gap-4">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm"
+              style={{ backgroundColor: form.primaryColor || '#16a34a' }}
+            >
+              {logoPreview
+                ? <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
+                : <Building2 size={22} className="text-white" />
+              }
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-gray-900 text-lg leading-tight truncate">{activeOrg.name}</p>
+              <p className="text-xs text-gray-400 mt-0.5 font-mono">{activeOrg.authOrgId}</p>
+            </div>
+            {form.isPublic && (
+              <a
+                href={publicPageUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 text-xs text-brand-600 font-medium hover:text-brand-800 transition-colors flex-shrink-0"
+              >
+                <ExternalLink size={13} /> Ver pagina
+              </a>
+            )}
           </div>
         </div>
 
-        {/* Identity section */}
-        <div className="card p-6">
-          <h2 className="text-sm font-bold text-gray-700 mb-5 uppercase tracking-wider">Identidad visual</h2>
+        {error && (
+          <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
+            {error}
+          </div>
+        )}
 
-          <div className="space-y-5">
-            {/* Logo */}
-            <div>
-              <label className="label">Logo del club</label>
-              <div className="flex items-center gap-4">
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100"
-                  style={{ backgroundColor: form.primaryColor || '#16a34a' }}
-                >
-                  {logoPreview
-                    ? <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
-                    : <Building2 size={22} className="text-white" />
-                  }
-                </div>
-                <div className="flex flex-col gap-2">
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleLogoFile}
-                  />
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* Identity */}
+          <div className="card divide-y divide-gray-100">
+            <div className="px-5 py-4">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Identidad visual</p>
+            </div>
+
+            {/* Logo row */}
+            <div className="px-5 py-4 flex items-center gap-4">
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                style={{ backgroundColor: form.primaryColor || '#16a34a' }}
+              >
+                {logoPreview
+                  ? <img src={logoPreview} alt="logo" className="w-full h-full object-cover" />
+                  : <Building2 size={20} className="text-white" />
+                }
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800">Logo del club</p>
+                <p className="text-xs text-gray-400 mt-0.5">PNG, JPG o SVG · Max 2 MB</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {logoPreview && (
                   <button
                     type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+                    onClick={clearLogo}
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                   >
-                    <Upload size={13} /> Subir imagen
+                    <X size={15} />
                   </button>
-                  {logoPreview && (
-                    <button
-                      type="button"
-                      onClick={clearLogo}
-                      className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors"
-                    >
-                      <X size={12} /> Quitar logo
-                    </button>
-                  )}
-                  <p className="text-[11px] text-gray-400">PNG, JPG o SVG · Max 2 MB</p>
-                </div>
+                )}
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoFile} />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
+                >
+                  <Upload size={13} /> Subir
+                </button>
               </div>
             </div>
 
-            {/* Color */}
-            <div>
-              <label className="label flex items-center gap-1.5">
-                <Palette size={13} className="text-gray-400" /> Color del club
-              </label>
-              <div className="flex items-center gap-3 flex-wrap">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, primaryColor: c }))}
-                    className="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
-                    style={{
-                      backgroundColor: c,
-                      borderColor: form.primaryColor === c ? '#111' : 'transparent',
-                      boxShadow: form.primaryColor === c ? '0 0 0 2px white, 0 0 0 4px ' + c : 'none',
-                    }}
-                  />
-                ))}
-                <label className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-200 cursor-pointer hover:scale-110 transition-transform" title="Color personalizado">
-                  <input
-                    type="color"
-                    value={form.primaryColor || '#16a34a'}
-                    onChange={(e) => setForm((f) => ({ ...f, primaryColor: e.target.value }))}
-                    className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                  />
-                  <div
-                    className="w-full h-full flex items-center justify-center text-white text-xs font-bold"
-                    style={{ backgroundColor: form.primaryColor || '#16a34a' }}
-                  >
-                    +
-                  </div>
-                </label>
+            {/* Color row */}
+            <div className="px-5 py-4 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden">
+                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: form.primaryColor || '#16a34a' }} />
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-800">Color del club</p>
+                <p className="text-xs text-gray-400 mt-0.5 font-mono">{form.primaryColor || '#16a34a'}</p>
+              </div>
+              <label className="flex-shrink-0 cursor-pointer">
+                <input
+                  type="color"
+                  value={form.primaryColor || '#16a34a'}
+                  onChange={(e) => set('primaryColor', e.target.value)}
+                  className="sr-only"
+                />
+                <div
+                  className="w-10 h-10 rounded-xl border-2 border-white shadow-md ring-1 ring-gray-200 transition-transform hover:scale-105 cursor-pointer"
+                  style={{ backgroundColor: form.primaryColor || '#16a34a' }}
+                />
+              </label>
             </div>
           </div>
-        </div>
 
-        {/* Info section */}
-        <div className="card p-6">
-          <h2 className="text-sm font-bold text-gray-700 mb-5 uppercase tracking-wider">Informacion del club</h2>
-
-          {error && (
-            <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm">
-              {error}
+          {/* Info */}
+          <div className="card divide-y divide-gray-100">
+            <div className="px-5 py-4">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Informacion del club</p>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="label">Tipo de entidad</label>
+            {/* Type */}
+            <div className="px-5 py-4">
+              <p className="text-sm font-medium text-gray-700 mb-3">Tipo de entidad</p>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { value: 'club', label: 'Club' },
@@ -233,11 +225,11 @@ const OrganizationSettings = () => {
                   <button
                     key={t.value}
                     type="button"
-                    onClick={() => setForm({ ...form, type: t.value })}
+                    onClick={() => set('type', t.value)}
                     className={`py-2 px-3 rounded-xl border text-sm font-medium transition-all ${
                       form.type === t.value
                         ? 'border-brand-500 bg-brand-50 text-brand-700'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
                     }`}
                   >
                     {t.label}
@@ -246,61 +238,58 @@ const OrganizationSettings = () => {
               </div>
             </div>
 
-            <div>
-              <label className="label">Descripcion</label>
-              <div className="relative">
-                <FileText size={15} className="absolute left-3 top-3 text-gray-400" />
-                <textarea
-                  className="input pl-9 resize-none"
-                  rows={3}
-                  placeholder="Cuentanos sobre tu club..."
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
-              </div>
+            {/* Description */}
+            <div className="px-5 py-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">Descripcion</p>
+              <textarea
+                className="input resize-none text-sm"
+                rows={3}
+                placeholder="Cuentanos sobre tu club..."
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label">Ciudad</label>
+            {/* Location */}
+            <div className="px-5 py-4">
+              <p className="text-sm font-medium text-gray-700 mb-3">Ubicacion</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="relative">
-                  <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    className="input pl-9"
-                    placeholder="Madrid"
+                    className="input pl-9 text-sm"
+                    placeholder="Ciudad"
                     value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    onChange={(e) => set('city', e.target.value)}
                   />
                 </div>
-              </div>
-              <div>
-                <label className="label">Pais</label>
                 <div className="relative">
-                  <Globe size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    className="input pl-9"
-                    placeholder="Espana"
+                    className="input pl-9 text-sm"
+                    placeholder="Pais"
                     value={form.country}
-                    onChange={(e) => setForm({ ...form, country: e.target.value })}
+                    onChange={(e) => set('country', e.target.value)}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-gray-50 border border-gray-200">
-              <div>
+            {/* Public toggle */}
+            <div className="px-5 py-4 flex items-center justify-between gap-4">
+              <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-800">Pagina publica</p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Permite que cualquiera vea el perfil publico de tu club y sus competiciones
+                  Cualquiera puede ver el perfil de tu club y sus competiciones activas
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setForm({ ...form, isPublic: !form.isPublic })}
+                onClick={() => set('isPublic', !form.isPublic)}
                 className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                  form.isPublic ? 'bg-brand-600' : 'bg-gray-300'
+                  form.isPublic ? 'bg-brand-600' : 'bg-gray-200'
                 }`}
               >
                 <span
@@ -310,35 +299,46 @@ const OrganizationSettings = () => {
                 />
               </button>
             </div>
+          </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              {saved && (
-                <span className="flex items-center gap-1.5 text-sm text-green-600 font-medium">
-                  <CheckCircle size={15} /> Guardado
-                </span>
-              )}
-              <button type="submit" disabled={loading} className="btn-primary">
-                {loading ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-                {loading ? 'Guardando...' : 'Guardar cambios'}
-              </button>
-            </div>
-          </form>
-        </div>
+          {/* Save */}
+          <div className="flex items-center justify-end gap-3">
+            {saved && (
+              <span className="flex items-center gap-1.5 text-sm text-green-600 font-medium">
+                <CheckCircle size={15} /> Guardado
+              </span>
+            )}
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+              {loading ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+          </div>
+        </form>
 
+        {/* Public URL */}
         {form.isPublic && (
-          <div className="card p-4 flex items-start gap-3">
-            <Globe size={16} className="text-brand-500 flex-shrink-0 mt-0.5" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-gray-800">URL publica de tu club</p>
-              <p className="text-xs text-gray-500 font-mono mt-1 break-all">{publicPageUrl}</p>
-              <div className="flex items-center gap-2 mt-3">
-                <button type="button" onClick={copyPublicUrl} className="btn-secondary text-xs py-1.5 px-3">
-                  {copied ? 'Copiado' : 'Copiar enlace'}
-                </button>
-                <a href={publicPageUrl} target="_blank" rel="noreferrer" className="btn-primary text-xs py-1.5 px-3">
-                  Ver pagina publica
-                </a>
-              </div>
+          <div className="card px-5 py-4 flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-800">URL publica</p>
+              <p className="text-xs text-gray-400 font-mono mt-0.5 truncate">{publicPageUrl}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                type="button"
+                onClick={copyPublicUrl}
+                className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                title="Copiar enlace"
+              >
+                {copied ? <CheckCircle size={16} className="text-green-500" /> : <Copy size={16} />}
+              </button>
+              <a
+                href={publicPageUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primary text-xs py-1.5 px-3"
+              >
+                <ExternalLink size={13} /> Ver
+              </a>
             </div>
           </div>
         )}
