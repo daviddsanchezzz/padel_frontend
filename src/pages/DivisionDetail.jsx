@@ -234,8 +234,8 @@ const DivisionDetail = () => {
     setExpandedTeams((prev) => ({ ...prev, [teamId]: !prev[teamId] }));
   };
 
-  const openTeamActions = (team) => {
-    setTeamActionsTarget(team);
+  const openTeamActions = (teamId) => {
+    setTeamActionsTarget((prev) => (prev === teamId ? null : teamId));
   };
 
   const closeTeamActions = () => {
@@ -244,14 +244,16 @@ const DivisionDetail = () => {
 
   const chooseEditTeam = () => {
     if (!teamActionsTarget) return;
-    startEditTeam(teamActionsTarget);
-    setExpandedTeams((prev) => ({ ...prev, [teamActionsTarget._id]: true }));
+    const team = teams.find((t) => t._id === teamActionsTarget);
+    if (!team) return;
+    startEditTeam(team);
+    setExpandedTeams((prev) => ({ ...prev, [team._id]: true }));
     closeTeamActions();
   };
 
   const chooseDeleteTeam = async () => {
     if (!teamActionsTarget) return;
-    const teamId = teamActionsTarget._id;
+    const teamId = teamActionsTarget;
     closeTeamActions();
     await handleDeleteTeam(teamId);
   };
@@ -525,14 +527,26 @@ const DivisionDetail = () => {
                     </button>
 
                     {isOrganizer && (
-                      <button
-                        type="button"
-                        onClick={() => openTeamActions(team)}
-                        className="text-gray-400 hover:text-gray-700 transition-colors"
-                        title="Acciones"
-                      >
-                        <Icon name="more" size={16} />
-                      </button>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => openTeamActions(team._id)}
+                          className="text-gray-400 hover:text-gray-700 transition-colors"
+                          title="Acciones"
+                        >
+                          <Icon name="more" size={16} />
+                        </button>
+                        {teamActionsTarget === team._id && (
+                          <div className="absolute z-20 right-0 bottom-full mb-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+                            <button type="button" onClick={chooseEditTeam} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                              Editar
+                            </button>
+                            <button type="button" onClick={chooseDeleteTeam} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">
+                              Eliminar
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 
@@ -640,24 +654,6 @@ const DivisionDetail = () => {
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {teamActionsTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={closeTeamActions} />
-          <div className="relative w-full max-w-xs bg-white rounded-xl shadow-xl border border-gray-100 p-4 space-y-2">
-            <p className="text-sm font-semibold text-gray-900 mb-2">Acciones del equipo</p>
-            <button type="button" onClick={chooseEditTeam} className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700">
-              Editar
-            </button>
-            <button type="button" onClick={chooseDeleteTeam} className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600">
-              Eliminar
-            </button>
-            <button type="button" onClick={closeTeamActions} className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-500">
-              Cancelar
-            </button>
-          </div>
         </div>
       )}
 
