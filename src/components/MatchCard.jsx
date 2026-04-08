@@ -13,6 +13,9 @@ const formatDateLabel = (value) => {
 };
 
 const formatDateTimeLabel = (match) => {
+  if (match?.matchDate && match?.matchTime) return `${formatDateLabel(match.matchDate)} ${match.matchTime}`;
+  if (match?.matchDate) return formatDateLabel(match.matchDate);
+  if (match?.matchTime) return match.matchTime;
   if (match?.scheduledDate) {
     const date = new Date(match.scheduledDate);
     if (!Number.isNaN(date.getTime())) {
@@ -20,9 +23,6 @@ const formatDateTimeLabel = (match) => {
       return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
     }
   }
-  if (match?.matchDate && match?.matchTime) return `${formatDateLabel(match.matchDate)} ${match.matchTime}`;
-  if (match?.matchDate) return formatDateLabel(match.matchDate);
-  if (match?.matchTime) return match.matchTime;
   return '';
 };
 
