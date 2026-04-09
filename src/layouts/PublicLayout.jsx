@@ -29,8 +29,8 @@ const PublicLayout = ({ orgId, orgName, orgLogo, orgColor, title, children }) =>
 
           {title && (
             <>
-              <span className="text-gray-300 text-sm select-none">/</span>
-              <span className="text-sm text-gray-500 truncate">{title}</span>
+              <span className="text-gray-300 text-sm select-none flex-shrink-0">/</span>
+              <span className="text-sm text-gray-500 truncate min-w-0">{title}</span>
             </>
           )}
         </div>

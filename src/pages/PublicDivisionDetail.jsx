@@ -41,7 +41,7 @@ const ScoreDisplay = ({ result, scoringType }) => {
   return null;
 };
 
-/* ── Single match row ───────────────────────────────────────── */
+/* ── Single match row — vertical (Sofascore style) ─────────── */
 const MatchRow = ({ match, scoringType }) => {
   const teamAName = match.teamA?.name || 'TBD';
   const teamBName = match.teamB?.name || 'TBD';
@@ -54,29 +54,43 @@ const MatchRow = ({ match, scoringType }) => {
       : winnerId.toString() === teamBId?.toString() ? 'B' : null
     : null;
 
+  const isPending = match.status === 'pending' && !displayResult;
+  const sets  = scoringType === 'sets'  && displayResult?.sets  ? displayResult.sets  : null;
+  const goals = scoringType === 'goals' && displayResult?.goals ? displayResult.goals : null;
+
+  const nameClass = (side) => {
+    if (!winnerSide) return 'text-gray-800';
+    return winnerSide === side ? 'font-bold text-gray-900' : 'text-gray-400';
+  };
+
   return (
-    <div className="flex items-center gap-2 px-4 py-2.5">
-      {/* Team A */}
-      <p className={`flex-1 text-right text-sm truncate ${
-        winnerSide === 'A' ? 'font-bold text-gray-900' : winnerSide ? 'text-gray-400' : 'text-gray-700'
-      }`}>
-        {teamAName}
-      </p>
+    <div className="px-4 py-2.5">
+      <div className="flex items-start gap-2">
+        {/* Team names stacked */}
+        <div className="flex-1 min-w-0 space-y-0.5">
+          <p className={`text-sm truncate ${nameClass('A')}`}>{teamAName}</p>
+          <p className={`text-sm truncate ${nameClass('B')}`}>{teamBName}</p>
+        </div>
 
-      {/* Score */}
-      <div className="w-[90px] flex-shrink-0 flex items-center justify-center">
-        {match.status === 'pending' && !displayResult
-          ? <span className="text-[10px] text-gray-300 font-semibold uppercase tracking-wider">Pdte</span>
-          : <ScoreDisplay result={displayResult} scoringType={scoringType} />
-        }
+        {/* Scores — fixed columns, stacked per set */}
+        <div className="flex-shrink-0 flex gap-2 items-start">
+          {isPending ? (
+            <span className="text-[10px] font-semibold text-gray-300 uppercase tracking-wide mt-1.5">PDTE</span>
+          ) : sets ? (
+            sets.map((s, i) => (
+              <div key={i} className="flex flex-col items-center gap-0.5">
+                <span className={`text-sm w-5 text-center leading-none ${s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.a}</span>
+                <span className={`text-sm w-5 text-center leading-none ${s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.b}</span>
+              </div>
+            ))
+          ) : goals ? (
+            <div className="flex flex-col items-center gap-0.5">
+              <span className={`text-sm w-5 text-center leading-none ${goals.a > goals.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
+              <span className={`text-sm w-5 text-center leading-none ${goals.b > goals.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.b}</span>
+            </div>
+          ) : null}
+        </div>
       </div>
-
-      {/* Team B */}
-      <p className={`flex-1 text-sm truncate ${
-        winnerSide === 'B' ? 'font-bold text-gray-900' : winnerSide ? 'text-gray-400' : 'text-gray-700'
-      }`}>
-        {teamBName}
-      </p>
     </div>
   );
 };

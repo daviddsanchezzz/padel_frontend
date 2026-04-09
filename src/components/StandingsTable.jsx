@@ -51,8 +51,8 @@ const StandingsTable = ({ standings, promotionSpots = 0, relegationSpots = 0, is
                       {row.position}
                     </div>
                   </td>
-                  <td className="py-3">
-                    <span className={`font-semibold ${isMyTeam ? 'text-brand-700' : 'text-gray-800'}`}>
+                  <td className="py-3 max-w-0 w-full">
+                    <span className={`font-semibold block truncate ${isMyTeam ? 'text-brand-700' : 'text-gray-800'}`}>
                       {row.team.playerNames?.length > 0 ? row.team.playerNames.join(' / ') : row.team.name}
                     </span>
                   </td>
