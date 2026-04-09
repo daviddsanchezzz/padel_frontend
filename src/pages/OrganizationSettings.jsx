@@ -103,7 +103,7 @@ const OrganizationSettings = () => {
 
   return (
     <AppLayout title="Configuracion">
-      <div className="max-w-3xl space-y-5">
+      <div className="space-y-5">
 
         {/* Club header */}
         <div className="card overflow-hidden">
