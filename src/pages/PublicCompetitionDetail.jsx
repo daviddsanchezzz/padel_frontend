@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { getPublicCompetition } from '../api/organizations';
 import PublicLayout from '../layouts/PublicLayout';
-import Icon, { sportEmoji } from '../components/Icon';
+import Icon, { SportIcon } from '../components/Icon';
 
 const Skeleton = ({ className }) => (
   <div className={`bg-gray-200 rounded-xl animate-pulse ${className}`} />
@@ -78,7 +78,7 @@ const PublicCompetitionDetail = () => {
       ) : (
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-2xl leading-none">{sportEmoji(competition.sport?.slug)}</span>
+            <SportIcon slug={competition.sport?.slug} size={26} color={color} />
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{competition.name}</h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap mt-1">
