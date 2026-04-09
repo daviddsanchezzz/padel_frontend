@@ -107,7 +107,7 @@ const StandingsTable = ({
                     </div>
                   </td>
                   <td className="py-3.5 max-w-0 w-full">
-                    <span className={`font-medium block truncate text-xs ${isMyTeam ? 'text-brand-700' : 'text-gray-700'}`}>
+                    <span className={`font-semibold block truncate text-xs ${isMyTeam ? 'text-brand-700' : 'text-gray-800'}`}>
                       {teamName}
                     </span>
                   </td>
