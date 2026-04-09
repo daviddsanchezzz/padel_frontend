@@ -59,6 +59,25 @@ const Icon = ({ name, size = 16, className = '' }) => {
   return <Comp size={size} className={className} />;
 };
 
+export const PadelBallIcon = ({ size = 24, className = '', color = 'currentColor' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="9" fill={color} />
+    <path
+      d="M6.1 7.9c1.8 2.2 1.8 6.1 0 8.3M17.9 7.9c-1.8 2.2-1.8 6.1 0 8.3"
+      stroke="white"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
 const SimplePadelRacketIcon = ({ size = 24, className = '', color = 'currentColor' }) => (
   <svg
     width={size}
@@ -150,6 +169,7 @@ const SPORT_EMOJIS = {
 
 export const SportIcon = ({ slug, size = 22, color = 'currentColor', className = '' }) => {
   if (slug?.toLowerCase() === 'padel') {
+    if (size <= 26) return <PadelBallIcon size={size} color={color} className={className} />;
     return <PadelRacketIcon size={size} color={color} className={className} />;
   }
 
