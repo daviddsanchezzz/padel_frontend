@@ -59,7 +59,32 @@ const Icon = ({ name, size = 16, className = '' }) => {
   return <Comp size={size} className={className} />;
 };
 
+const SimplePadelRacketIcon = ({ size = 24, className = '', color = 'currentColor' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    className={className}
+  >
+    <rect x="3.2" y="1.6" width="17.6" height="13.4" rx="6.2" fill={color} />
+    <circle cx="8.2" cy="5.6" r="1.05" fill="white" />
+    <circle cx="12" cy="5.6" r="1.05" fill="white" />
+    <circle cx="15.8" cy="5.6" r="1.05" fill="white" />
+    <circle cx="8.2" cy="9.1" r="1.05" fill="white" />
+    <circle cx="12" cy="9.1" r="1.05" fill="white" />
+    <circle cx="15.8" cy="9.1" r="1.05" fill="white" />
+    <rect x="10.7" y="15" width="2.6" height="2.1" rx="1" fill={color} />
+    <rect x="9.1" y="17.1" width="5.8" height="5.2" rx="2.4" fill={color} />
+  </svg>
+);
+
 export const PadelRacketIcon = ({ size = 24, className = '', color = 'currentColor' }) => {
+  if (size <= 30) {
+    return <SimplePadelRacketIcon size={size} className={className} color={color} />;
+  }
+
   const strokeWidth = Math.min(56, Math.max(18, (595.3 / size) * 1.35));
 
   return (
