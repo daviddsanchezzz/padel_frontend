@@ -101,30 +101,30 @@ const StandingsTable = ({
 
               return (
                 <tr key={row.team._id} className={isMyTeam ? 'bg-brand-50' : ''}>
-                  <td className="py-2.5 pr-1 w-7">
+                  <td className="py-3.5 pr-2 w-7">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${positionCircleClass(zone)}`}>
                       {row.position}
                     </div>
                   </td>
-                  <td className="py-2.5 max-w-0 w-full">
-                    <span className={`font-semibold block truncate text-sm ${isMyTeam ? 'text-brand-700' : 'text-gray-800'}`}>
+                  <td className="py-3.5 max-w-0 w-full">
+                    <span className={`font-medium block truncate text-xs ${isMyTeam ? 'text-brand-700' : 'text-gray-700'}`}>
                       {teamName}
                     </span>
                   </td>
-                  <td className="py-2.5 text-center text-gray-500 text-sm">{row.played}</td>
-                  <td className="py-2.5 text-center text-green-600 font-semibold text-sm">{row.won}</td>
-                  <td className="py-2.5 text-center text-red-400 text-sm">{row.lost}</td>
+                  <td className="py-3.5 text-center text-gray-500 text-xs">{row.played}</td>
+                  <td className="py-3.5 text-center text-green-600 font-semibold text-xs">{row.won}</td>
+                  <td className="py-3.5 text-center text-red-400 text-xs">{row.lost}</td>
                   {expanded && (
                     <>
-                      <td className="py-2.5 text-center text-gray-400 text-sm">{row.setsWon}</td>
-                      <td className="py-2.5 text-center text-gray-400 text-sm">{row.setsLost}</td>
-                      <td className={`py-2.5 text-center font-semibold text-sm ${
+                      <td className="py-3.5 text-center text-gray-400 text-xs">{row.setsWon}</td>
+                      <td className="py-3.5 text-center text-gray-400 text-xs">{row.setsLost}</td>
+                      <td className={`py-3.5 text-center font-semibold text-xs ${
                         row.setDiff > 0 ? 'text-green-600' : row.setDiff < 0 ? 'text-red-400' : 'text-gray-300'
                       }`}>
                         {row.setDiff > 0 ? `+${row.setDiff}` : row.setDiff}
                       </td>
                       {hasForm && (
-                        <td className="py-2.5">
+                        <td className="py-3.5">
                           <div className="flex items-center gap-0.5 justify-center">
                             {form.slice(0, FORM_LEN).map((r, i) => (
                               <FormPill key={i} result={r} />
@@ -134,8 +134,8 @@ const StandingsTable = ({
                       )}
                     </>
                   )}
-                  <td className="py-2.5 text-center">
-                    <span className={`inline-flex items-center justify-center w-8 h-6 rounded-md text-sm font-bold ${ptsBadgeClass(zone)}`}>
+                  <td className="py-3.5 text-center">
+                    <span className={`inline-flex items-center justify-center w-8 h-6 rounded-md text-xs font-bold ${ptsBadgeClass(zone)}`}>
                       {row.points}
                     </span>
                   </td>
