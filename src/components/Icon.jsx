@@ -69,12 +69,22 @@ export const PadelRacketIcon = ({ size = 24, className = '', color = 'currentCol
     aria-hidden="true"
     className={className}
   >
-    {/* Round head — solid, no holes (too detailed at small sizes) */}
-    <circle cx="12" cy="9.5" r="7.5" fill={color} />
+    {/* Head — wide rounded rectangle */}
+    <rect x="2" y="0.5" width="20" height="15" rx="6" fill={color} />
+    {/* Hole grid 3×3 */}
+    <circle cx="7.5"  cy="5"  r="1.15" fill="white" />
+    <circle cx="12"   cy="5"  r="1.15" fill="white" />
+    <circle cx="16.5" cy="5"  r="1.15" fill="white" />
+    <circle cx="7.5"  cy="8"  r="1.15" fill="white" />
+    <circle cx="12"   cy="8"  r="1.15" fill="white" />
+    <circle cx="16.5" cy="8"  r="1.15" fill="white" />
+    <circle cx="7.5"  cy="11" r="1.15" fill="white" />
+    <circle cx="12"   cy="11" r="1.15" fill="white" />
+    <circle cx="16.5" cy="11" r="1.15" fill="white" />
     {/* Neck */}
-    <rect x="10.5" y="16" width="3" height="2" fill={color} />
+    <rect x="10.5" y="15.5" width="3" height="2" fill={color} />
     {/* Handle */}
-    <rect x="9" y="18" width="6" height="5.5" rx="3" fill={color} />
+    <rect x="9" y="17.5" width="6" height="6" rx="2.5" fill={color} />
   </svg>
 );
 
