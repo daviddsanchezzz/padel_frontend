@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCompetitions, deleteCompetition } from '../api/competitions';
 import AppLayout from '../layouts/AppLayout';
 import Icon, { SportIcon } from '../components/Icon';
+import CompetitionModal from '../components/CompetitionModal';
 
 const typeConfig = {
   league:     { label: 'Liga',   icon: 'league',     cls: 'bg-brand-100 text-brand-700' },
@@ -29,6 +30,7 @@ const StatCard = ({ value, label, iconName, colorClass = 'text-brand-600' }) => 
 const Dashboard = () => {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const typeFilter = searchParams.get('type'); // 'league' | 'tournament' | null
@@ -62,14 +64,23 @@ const Dashboard = () => {
   const sportGroups = Object.entries(bySport).sort(([a], [b]) => a.localeCompare(b));
 
   const actions = (
-    <button onClick={() => navigate('/competitions/new')} className="btn-primary">
+    <button onClick={() => setShowModal(true)} className="btn-primary">
       <Icon name="plus" size={15} />
-      <span className="hidden sm:inline">Nueva competición</span>
+      <span className="hidden sm:inline">Nueva competicion</span>
     </button>
   );
 
   return (
     <AppLayout title="Dashboard" actions={actions}>
+      {showModal && (
+        <CompetitionModal
+          onClose={() => setShowModal(false)}
+          onCreated={(comp) => {
+            setShowModal(false);
+            navigate(`/competitions/${comp._id}`);
+          }}
+        />
+      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard value={competitions.length} label="Total"       iconName="trophy"      colorClass="text-gray-600" />
         <StatCard value={active}              label="Activas"     iconName="check"       colorClass="text-brand-600" />
