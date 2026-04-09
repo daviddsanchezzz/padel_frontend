@@ -64,29 +64,29 @@ const MatchRow = ({ match, scoringType }) => {
   };
 
   return (
-    <div className="px-4 py-2.5">
+    <div className="px-4 py-3">
       <div className="flex items-start gap-2">
         {/* Team names stacked */}
-        <div className="flex-1 min-w-0 space-y-0.5">
-          <p className={`text-sm truncate ${nameClass('A')}`}>{teamAName}</p>
-          <p className={`text-sm truncate ${nameClass('B')}`}>{teamBName}</p>
+        <div className="flex-1 min-w-0 space-y-1">
+          <p className={`text-xs font-semibold truncate ${nameClass('A')}`}>{teamAName}</p>
+          <p className={`text-xs font-semibold truncate ${nameClass('B')}`}>{teamBName}</p>
         </div>
 
         {/* Scores — fixed columns, stacked per set */}
         <div className="flex-shrink-0 flex gap-2 items-start">
           {isPending ? (
-            <span className="text-[10px] font-semibold text-gray-300 uppercase tracking-wide mt-1.5">PDTE</span>
+            <span className="text-[10px] font-semibold text-gray-300 uppercase tracking-wide mt-1">PDTE</span>
           ) : sets ? (
             sets.map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-0.5">
-                <span className={`text-sm w-5 text-center leading-none ${s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.a}</span>
-                <span className={`text-sm w-5 text-center leading-none ${s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.b}</span>
+              <div key={i} className="flex flex-col items-center gap-1">
+                <span className={`text-xs w-4 text-center leading-none ${s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.a}</span>
+                <span className={`text-xs w-4 text-center leading-none ${s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.b}</span>
               </div>
             ))
           ) : goals ? (
-            <div className="flex flex-col items-center gap-0.5">
-              <span className={`text-sm w-5 text-center leading-none ${goals.a > goals.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
-              <span className={`text-sm w-5 text-center leading-none ${goals.b > goals.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.b}</span>
+            <div className="flex flex-col items-center gap-1">
+              <span className={`text-xs w-4 text-center leading-none ${goals.a > goals.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
+              <span className={`text-xs w-4 text-center leading-none ${goals.b > goals.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.b}</span>
             </div>
           ) : null}
         </div>
@@ -298,7 +298,7 @@ const PublicDivisionDetail = () => {
 
       {/* Division title */}
       {!loading && division && (
-        <h1 className="text-lg font-bold text-gray-900 tracking-tight mb-4">{division.name}</h1>
+        <h1 className="text-base font-bold text-gray-900 tracking-tight mb-4">{division.name}</h1>
       )}
 
       {/* Tabs */}
@@ -404,7 +404,7 @@ const PublicDivisionDetail = () => {
                   >
                     {i + 1}
                   </div>
-                  <p className="text-sm font-semibold text-gray-800">{displayName}</p>
+                  <p className="text-xs font-semibold text-gray-800">{displayName}</p>
                 </div>
               );
             })}

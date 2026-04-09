@@ -78,8 +78,8 @@ const PublicCompetitionDetail = () => {
       ) : (
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <SportIcon slug={competition.sport?.slug} size={26} color={color} />
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{competition.name}</h1>
+            <SportIcon slug={competition.sport?.slug} size={22} color={color} />
+            <h1 className="text-lg font-bold text-gray-900 tracking-tight">{competition.name}</h1>
           </div>
           <div className="flex items-center gap-2 flex-wrap mt-1">
             <span
@@ -101,7 +101,7 @@ const PublicCompetitionDetail = () => {
             )}
           </div>
           {competition.description && (
-            <p className="text-sm text-gray-500 mt-2 leading-relaxed">{competition.description}</p>
+            <p className="text-xs text-gray-400 mt-2 leading-relaxed">{competition.description}</p>
           )}
         </div>
       )}
