@@ -191,6 +191,29 @@ const PublicDivisionDetail = () => {
 
   const isTournament = competition?.type === 'tournament';
   const scoringType  = competition?.sport?.scoringType || 'sets';
+
+  // Form map: teamId -> ['W','L',...] ordered oldest→newest, last 5 played matches
+  const formMap = (() => {
+    if (isTournament || !standings.length || !matches.length) return {};
+    const map = {};
+    standings.forEach(({ team }) => {
+      const tid = team._id?.toString();
+      if (!tid) return;
+      map[tid] = matches
+        .filter(m =>
+          m.status === 'played' &&
+          (m.teamA?._id?.toString() === tid || m.teamB?._id?.toString() === tid)
+        )
+        .sort((a, b) => (b.round ?? 0) - (a.round ?? 0))
+        .slice(0, 3)
+        .reverse()
+        .map(m => {
+          const w = m.winner?._id?.toString() || m.winner?.toString();
+          return w === tid ? 'W' : 'L';
+        });
+    });
+    return map;
+  })();
   const settings     = competition?.settings || {};
   const promotionSpots  = settings.promotionSpots || 0;
   const relegationSpots = settings.relegationSpots || 0;
@@ -308,6 +331,7 @@ const PublicDivisionDetail = () => {
                 relegationSpots={relegationSpots}
                 isTopDivision={isTopDivision}
                 isBottomDivision={isBottomDivision}
+                formMap={formMap}
               />
             </div>
           </div>
