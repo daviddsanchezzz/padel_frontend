@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCompetitions, deleteCompetition } from '../api/competitions';
 import AppLayout from '../layouts/AppLayout';
-import Icon, { sportEmoji } from '../components/Icon';
+import Icon, { SportIcon } from '../components/Icon';
 
 const typeConfig = {
   league:     { label: 'Liga',   icon: 'league',     cls: 'bg-brand-100 text-brand-700' },
@@ -124,8 +124,8 @@ const Dashboard = () => {
                   className="card px-4 py-3.5 flex items-center justify-between cursor-pointer hover:shadow-md transition-all group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-800 rounded-xl flex items-center justify-center text-white flex-shrink-0 text-lg">
-                      {sportEmoji(comp.sport?.slug)}
+                    <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-800 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                      <SportIcon slug={comp.sport?.slug} size={20} color="white" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-gray-800 group-hover:text-brand-700 transition-colors truncate">{comp.name}</p>

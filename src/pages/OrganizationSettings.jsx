@@ -9,6 +9,7 @@ const OrganizationSettings = () => {
   const fileRef = useRef(null);
 
   const [form, setForm] = useState({
+    name: '',
     description: '',
     city: '',
     country: '',
@@ -26,6 +27,7 @@ const OrganizationSettings = () => {
   useEffect(() => {
     if (!activeOrg) return;
     setForm({
+      name: activeOrg.name ?? '',
       description: activeOrg.description ?? '',
       city: activeOrg.location?.city ?? '',
       country: activeOrg.location?.country ?? '',
@@ -65,6 +67,7 @@ const OrganizationSettings = () => {
     setLoading(true);
     try {
       const res = await updateOrganization(activeOrg._id, {
+        name: form.name,
         description: form.description,
         location: { city: form.city, country: form.country },
         type: form.type,
@@ -117,7 +120,7 @@ const OrganizationSettings = () => {
               }
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-gray-900 text-lg leading-tight truncate">{activeOrg.name}</p>
+              <p className="font-bold text-gray-900 text-lg leading-tight truncate">{form.name || activeOrg.name}</p>
               <p className="text-xs text-gray-400 mt-0.5 font-mono">{activeOrg.authOrgId}</p>
             </div>
             {form.isPublic && (
@@ -211,6 +214,18 @@ const OrganizationSettings = () => {
           <div className="card divide-y divide-gray-100">
             <div className="px-5 py-4">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Informacion del club</p>
+            </div>
+
+            {/* Name */}
+            <div className="px-5 py-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">Nombre del club</p>
+              <input
+                type="text"
+                className="input text-sm"
+                placeholder="Nombre del club"
+                value={form.name}
+                onChange={(e) => set('name', e.target.value)}
+              />
             </div>
 
             {/* Type */}
