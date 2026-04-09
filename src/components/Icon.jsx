@@ -68,11 +68,11 @@ export const PadelBallIcon = ({ size = 24, className = '', color = 'currentColor
     aria-hidden="true"
     className={className}
   >
-    <circle cx="12" cy="12" r="9" fill={color} />
+    <circle cx="12" cy="12" r="9" fill={color} stroke="rgba(17,24,39,0.28)" strokeWidth="1.1" />
     <path
       d="M6.1 7.9c1.8 2.2 1.8 6.1 0 8.3M17.9 7.9c-1.8 2.2-1.8 6.1 0 8.3"
-      stroke="white"
-      strokeWidth="1.8"
+      stroke="rgba(17,24,39,0.36)"
+      strokeWidth="1.55"
       strokeLinecap="round"
     />
   </svg>
