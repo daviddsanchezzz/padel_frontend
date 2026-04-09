@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Trophy,
   Medal,
@@ -70,19 +69,12 @@ export const PadelRacketIcon = ({ size = 24, className = '', color = 'currentCol
     aria-hidden="true"
     className={className}
   >
-    {/* Racket head */}
-    <ellipse cx="12" cy="10" rx="8.5" ry="9" fill={color} />
-    {/* Holes — 2 rows of 3 */}
-    <circle cx="8.5"  cy="7.5"  r="1.3" fill="white" />
-    <circle cx="12"   cy="7.5"  r="1.3" fill="white" />
-    <circle cx="15.5" cy="7.5"  r="1.3" fill="white" />
-    <circle cx="8.5"  cy="12"   r="1.3" fill="white" />
-    <circle cx="12"   cy="12"   r="1.3" fill="white" />
-    <circle cx="15.5" cy="12"   r="1.3" fill="white" />
+    {/* Round head — solid, no holes (too detailed at small sizes) */}
+    <circle cx="12" cy="9.5" r="7.5" fill={color} />
     {/* Neck */}
-    <rect x="10.5" y="18.5" width="3" height="1.5" fill={color} />
+    <rect x="10.5" y="16" width="3" height="2" fill={color} />
     {/* Handle */}
-    <rect x="10" y="20" width="4" height="3.5" rx="2" fill={color} />
+    <rect x="9" y="18" width="6" height="5.5" rx="3" fill={color} />
   </svg>
 );
 
