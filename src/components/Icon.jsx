@@ -68,11 +68,8 @@ const SimplePadelRacketIcon = ({ size = 24, className = '', color = 'currentColo
     aria-hidden="true"
     className={className}
   >
-    {/* Cabeza de pala con forma mas realista (tipo lagrima) */}
-    <path
-      d="M12 2.2c-4.3 0-7.8 3.1-7.8 7.1c0 2.4 1.3 4.5 2.8 6.2c1.2 1.5 2.4 2.9 3.2 4.6c.3.7.8 1 1.8 1s1.5-.3 1.8-1c.8-1.7 2-3.1 3.2-4.6c1.5-1.8 2.8-3.8 2.8-6.2c0-4-3.5-7.1-7.8-7.1z"
-      fill={color}
-    />
+    {/* Cabeza de pala */}
+    <ellipse cx="12" cy="8.1" rx="6.8" ry="6.1" fill={color} />
     {/* Perforaciones simples para legibilidad en tamano pequeno */}
     <circle cx="12" cy="6.6" r="1.05" fill="white" />
     <circle cx="8.6" cy="8.4" r="0.95" fill="white" />
@@ -80,9 +77,11 @@ const SimplePadelRacketIcon = ({ size = 24, className = '', color = 'currentColo
     <circle cx="12" cy="10.2" r="0.95" fill="white" />
     <circle cx="9.5" cy="12.1" r="0.85" fill="white" />
     <circle cx="14.5" cy="12.1" r="0.85" fill="white" />
-    {/* Cuello + mango */}
-    <rect x="10.9" y="17.1" width="2.2" height="2" rx="0.9" fill={color} />
-    <rect x="9.7" y="19" width="4.6" height="4.1" rx="1.8" fill={color} />
+    {/* Cuello + mango visibles */}
+    <rect x="10.95" y="13.6" width="2.1" height="3.2" rx="1" fill={color} />
+    <rect x="9.85" y="16.7" width="4.3" height="6.1" rx="1.9" fill={color} />
+    {/* Corte visual para separar cabeza y mango */}
+    <rect x="9.8" y="13.15" width="4.4" height="0.95" rx="0.45" fill="white" opacity="0.95" />
   </svg>
 );
 
