@@ -81,23 +81,27 @@ const PublicCompetitionDetail = () => {
             <SportIcon slug={competition.sport?.slug} size={22} color={color} />
             <h1 className="text-lg font-bold text-gray-900 tracking-tight">{competition.name}</h1>
           </div>
-          <div className="flex items-center gap-2 flex-wrap mt-1">
+          <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
             <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-              style={{ backgroundColor: `${color}18`, color }}
+              className="text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide"
+              style={{ backgroundColor: `${color}15`, color }}
             >
               {isLeague ? 'Liga' : 'Torneo'}
             </span>
             {competition.sport && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 uppercase tracking-wide">
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 uppercase tracking-wide">
                 {competition.sport.name}
               </span>
             )}
             {isLeague && settings.promotionSpots > 0 && (
-              <span className="text-[10px] font-semibold text-green-600">↑ {settings.promotionSpots} ascienden</span>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 uppercase tracking-wide">
+                ↑ {settings.promotionSpots} ascienden
+              </span>
             )}
             {isLeague && settings.relegationSpots > 0 && (
-              <span className="text-[10px] font-semibold text-red-500">↓ {settings.relegationSpots} descienden</span>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 text-red-600 uppercase tracking-wide">
+                ↓ {settings.relegationSpots} descienden
+              </span>
             )}
           </div>
           {competition.description && (
@@ -142,7 +146,7 @@ const PublicCompetitionDetail = () => {
               <span className="flex-1 font-semibold text-gray-800 text-sm group-hover:text-gray-900 transition-colors">
                 {div.name}
               </span>
-              <ChevronRight size={15} className="text-gray-300 flex-shrink-0" />
+              <ChevronRight size={15} className="text-gray-300 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all duration-150 flex-shrink-0" />
             </button>
           ))}
         </div>
