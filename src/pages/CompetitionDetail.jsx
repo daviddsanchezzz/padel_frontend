@@ -433,14 +433,14 @@ const CompetitionDetail = () => {
             )}
             {/* Quick settings summary */}
             {isLeague && (settings.promotionSpots > 0 || settings.relegationSpots > 0) && (
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-1.5 mt-2">
                 {settings.promotionSpots > 0 && (
-                  <span className="text-[11px] text-brand-600 font-semibold flex items-center gap-0.5">
+                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 uppercase tracking-wide">
                     ↑ {settings.promotionSpots} ascienden
                   </span>
                 )}
                 {settings.relegationSpots > 0 && (
-                  <span className="text-[11px] text-red-500 font-semibold flex items-center gap-0.5">
+                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 text-red-600 uppercase tracking-wide">
                     ↓ {settings.relegationSpots} descienden
                   </span>
                 )}
@@ -535,37 +535,29 @@ const CompetitionDetail = () => {
           </button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
           {divisions.map((div, i) => (
             <div
               key={div._id}
-              className="card px-4 py-3.5 flex items-center justify-between cursor-pointer hover:shadow-md transition-all group"
+              className="px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors group"
               onClick={() => navigate(`/divisions/${div._id}`)}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-xs font-bold flex-shrink-0">
-                  {i + 1}
-                </div>
-                <span className="font-semibold text-gray-800 group-hover:text-brand-700 transition-colors">
-                  {div.name}
-                </span>
+              <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                {i + 1}
               </div>
+              <span className="flex-1 font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
+                {div.name}
+              </span>
               <div className="flex items-center gap-3">
-                <Link
-                  to={`/divisions/${div._id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 text-sm text-brand-600 font-semibold hover:text-brand-800"
-                >
-                  Ver <Icon name="chevronRight" size={13} />
-                </Link>
                 {isOrganizer && (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDeleteDivision(div._id); }}
-                    className="text-gray-300 hover:text-red-400 transition-colors"
+                    className="text-gray-300 hover:text-red-400 transition-colors p-1"
                   >
                     <Icon name="trash" size={14} />
                   </button>
                 )}
+                <Icon name="chevronRight" size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
               </div>
             </div>
           ))}

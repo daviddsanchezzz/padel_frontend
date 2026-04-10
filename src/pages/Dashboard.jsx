@@ -124,7 +124,7 @@ const Dashboard = () => {
               <span className="text-xs text-gray-300">{comps.length}</span>
             </div>
           )}
-          <div className="space-y-2">
+          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
             {comps.map((comp) => {
               const type   = typeConfig[comp.type]   || typeConfig.league;
               const status = statusConfig[comp.status] || statusConfig.draft;
@@ -132,18 +132,16 @@ const Dashboard = () => {
                 <div
                   key={comp._id}
                   onClick={() => navigate(`/competitions/${comp._id}`)}
-                  className="card px-4 py-3.5 flex items-center justify-between cursor-pointer hover:shadow-md transition-all group"
+                  className="px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors group"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-800 rounded-xl flex items-center justify-center text-white flex-shrink-0">
-                      <SportIcon slug={comp.sport?.slug} size={20} color="white" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-gray-800 group-hover:text-brand-700 transition-colors truncate">{comp.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{comp.sport?.name || '—'} · {type.label}{comp.season ? ` · T.${comp.season}` : ''}</p>
-                    </div>
+                  <div className="w-9 h-9 bg-brand-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <SportIcon slug={comp.sport?.slug} size={20} color="#158055" />
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors truncate">{comp.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{comp.sport?.name || '—'} · {type.label}{comp.season ? ` · T.${comp.season}` : ''}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`badge ${status.cls}`}>{status.label}</span>
                     <button
                       onClick={(e) => handleDelete(e, comp._id)}
@@ -151,7 +149,7 @@ const Dashboard = () => {
                     >
                       <Icon name="trash" size={13} />
                     </button>
-                    <Icon name="chevronRight" size={14} className="text-gray-300 group-hover:text-brand-500 transition-colors" />
+                    <Icon name="chevronRight" size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
                   </div>
                 </div>
               );

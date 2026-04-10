@@ -26,17 +26,22 @@ const formatDateTimeLabel = (match) => {
   return '';
 };
 
-const ScoreDisplay = ({ result, scoringType }) => {
-  if (!result) return <span className="text-xs font-semibold text-gray-300 tracking-widest">VS</span>;
+// Stacked score: per-team rows on the right, matching the public view
+const StackedScore = ({ result, scoringType, isPending }) => {
+  if (isPending) {
+    return (
+      <span className="text-[10px] font-semibold text-gray-300 uppercase tracking-wide mt-0.5">PDTE</span>
+    );
+  }
+  if (!result) return null;
 
   if (scoringType === 'sets' && result.sets) {
     return (
-      <div className="flex items-center gap-1.5 flex-wrap justify-center">
+      <div className="flex gap-1.5 items-start">
         {result.sets.map((s, i) => (
-          <div key={i} className="flex items-center gap-0.5 text-sm">
-            <span className={s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}>{s.a}</span>
-            <span className="text-gray-200">-</span>
-            <span className={s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}>{s.b}</span>
+          <div key={i} className="flex flex-col items-center gap-1.5">
+            <span className={`text-xs w-4 text-center leading-none ${s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.a}</span>
+            <span className={`text-xs w-4 text-center leading-none ${s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.b}</span>
           </div>
         ))}
       </div>
@@ -46,11 +51,10 @@ const ScoreDisplay = ({ result, scoringType }) => {
   if (scoringType === 'goals' && result.goals) {
     const { a, b } = result.goals;
     return (
-      <span className="text-base font-bold text-gray-900">
-        <span className={a > b ? 'text-gray-900' : 'text-gray-400'}>{a}</span>
-        <span className="text-gray-300 mx-1">-</span>
-        <span className={b > a ? 'text-gray-900' : 'text-gray-400'}>{b}</span>
-      </span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className={`text-xs w-5 text-center leading-none ${a > b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{a}</span>
+        <span className={`text-xs w-5 text-center leading-none ${b > a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{b}</span>
+      </div>
     );
   }
 
@@ -199,20 +203,31 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const displayResult = match.status === 'awaiting_confirmation' ? match.pendingResult : match.result;
   const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
 
+  const isPending = !displayResult && match.status === 'pending';
+
   return (
     <div onClick={handleCardClick} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden cursor-pointer md:cursor-default">
       <div className="px-3 md:px-5 py-3 md:py-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
-            <div className={`flex-1 text-right text-xs md:text-sm font-medium truncate ${winnerSide === 'A' ? 'font-bold text-gray-900' : 'text-gray-600'} ${isMyTeamA ? 'text-brand-700 font-bold' : ''} ${!match.teamA ? 'italic text-gray-300' : ''}`}>{teamAName}</div>
-            <div className={`flex-shrink-0 flex flex-col items-center w-[80px] md:w-[100px] gap-1 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
-              <ScoreDisplay result={displayResult} scoringType={scoringType} />
+        <div className="flex items-start gap-3">
+
+          {/* Teams + scores — stacked left/right like public view */}
+          <div className="flex-1 min-w-0 flex items-start gap-2">
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <p className={`text-xs md:text-sm font-semibold truncate ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-500'} ${isMyTeamA ? 'text-brand-700' : ''} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
+                {teamAName}
+              </p>
+              <p className={`text-xs md:text-sm font-semibold truncate ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-500'} ${isMyTeamB ? 'text-brand-700' : ''} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
+                {teamBName}
+              </p>
             </div>
-            <div className={`flex-1 text-xs md:text-sm font-medium truncate ${winnerSide === 'B' ? 'font-bold text-gray-900' : 'text-gray-600'} ${isMyTeamB ? 'text-brand-700 font-bold' : ''} ${!match.teamB ? 'italic text-gray-300' : ''}`}>{teamBName}</div>
+            <div className={`flex-shrink-0 flex items-start pt-0.5 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+              <StackedScore result={displayResult} scoringType={scoringType} isPending={isPending} />
+            </div>
           </div>
 
+          {/* Action buttons */}
           {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled) && (
-            <div className="flex items-center justify-end flex-shrink-0">
+            <div className="flex-shrink-0 flex items-center self-center">
               {eventModeEnabled ? (
                 <button onClick={() => navigate(`/matches/${match._id}`)} className="hidden md:inline-flex text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
                   Ver detalle
@@ -224,11 +239,13 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                       + Resultado
                     </button>
                   )}
-                  {match.status === 'awaiting_confirmation' && isProposingTeam && <span className="text-xs text-orange-500 font-medium">Esperando confirmacion...</span>}
+                  {match.status === 'awaiting_confirmation' && isProposingTeam && (
+                    <span className="text-xs text-orange-500 font-medium">Esperando...</span>
+                  )}
                   {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
-                    <div className="flex gap-2">
-                      {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
-                      {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50">Rechazar</button>}
+                    <div className="flex gap-1.5">
+                      {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
+                      {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50">Rechazar</button>}
                     </div>
                   )}
                 </>
@@ -237,8 +254,8 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
           )}
         </div>
 
-        {error && <p className="text-red-500 text-xs mt-2 text-center">{error}</p>}
-        {schedulePieces.length > 0 && <div className="mt-2 text-xs text-gray-500">{schedulePieces.join(' - ')}</div>}
+        {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+        {schedulePieces.length > 0 && <div className="mt-2 text-xs text-gray-400">{schedulePieces.join(' · ')}</div>}
       </div>
 
       {!eventModeEnabled && showForm && (
