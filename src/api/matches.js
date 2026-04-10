@@ -12,6 +12,10 @@ export const getBracket      = (competitionId) => api.get(`/competitions/${compe
 export const generateDivisionBracket = (divisionId) => api.post(`/divisions/${divisionId}/bracket/generate`);
 export const getDivisionBracket      = (divisionId) => api.get(`/divisions/${divisionId}/bracket`);
 
+// Tournament group stage
+export const generateDivisionGroups  = (divisionId) => api.post(`/divisions/${divisionId}/groups/generate`);
+export const getDivisionGroups       = (divisionId) => api.get(`/divisions/${divisionId}/groups`);
+
 // Shared
 export const getMatch         = (matchId)       => api.get(`/matches/${matchId}`);
 export const updateMatchSchedule = (matchId, data) => api.put(`/matches/${matchId}/schedule`, data);

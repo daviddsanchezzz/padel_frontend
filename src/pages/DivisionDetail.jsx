@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getDivision, getDivisions } from '../api/divisions';
 import { getDivisionTeams, createDivisionTeam, deleteTeam, joinTeam, updateTeam } from '../api/teams';
-import { getDivisionMatches, generateLeagueMatches, generateDivisionBracket, getDivisionBracket } from '../api/matches';
+import { getDivisionMatches, generateLeagueMatches, generateDivisionBracket, getDivisionBracket, generateDivisionGroups, getDivisionGroups } from '../api/matches';
 import { getStandings } from '../api/standings';
 import AppLayout from '../layouts/AppLayout';
 import MatchCard from '../components/MatchCard';
 import StandingsTable from '../components/StandingsTable';
+import VisualBracket from '../components/VisualBracket';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 
@@ -21,12 +22,204 @@ const TOURNAMENT_TABS = [
   { key: 'bracket', label: 'Bracket', icon: 'bracket' },
 ];
 
-const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded, scoringType }) => {
+const TOURNAMENT_GROUPS_TABS = [
+  { key: 'teams', label: 'Equipos', icon: 'team' },
+  { key: 'groups', label: 'Grupos', icon: 'standings' },
+  { key: 'bracket', label: 'Bracket', icon: 'bracket' },
+];
+
+// ── Format config panel (organizer only, tournament) ─────────────────────────
+const FormatConfig = ({ compSettings, onSave, saving }) => {
+  const [open, setOpen] = React.useState(false);
+  const [fmt, setFmt] = React.useState(compSettings.tournamentFormat || 'elimination');
+  const [tpg, setTpg] = React.useState(compSettings.teamsPerGroup || 4);
+  const [adv, setAdv] = React.useState(compSettings.teamsAdvancing || 2);
+
+  const handleSave = () => {
+    onSave({ tournamentFormat: fmt, teamsPerGroup: Number(tpg), teamsAdvancing: Number(adv) });
+    setOpen(false);
+  };
+
+  return (
+    <div className="card mb-4 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <span className="flex items-center gap-2">
+          <Icon name="settings" size={14} className="text-gray-400" />
+          Formato del torneo
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${fmt === 'groups_and_elimination' ? 'bg-brand-100 text-brand-700' : 'bg-gray-100 text-gray-500'}`}>
+            {fmt === 'groups_and_elimination' ? 'Grupos + Eliminatoria' : 'Eliminación directa'}
+          </span>
+        </span>
+        <Icon name={open ? 'chevronUp' : 'chevronDown'} size={14} className="text-gray-400" />
+      </button>
+      {open && (
+        <div className="border-t border-gray-100 px-4 py-4 bg-gray-50 space-y-4">
+          <div>
+            <label className="label mb-1">Formato</label>
+            <div className="flex gap-2">
+              {[
+                { value: 'elimination', label: 'Eliminación directa' },
+                { value: 'groups_and_elimination', label: 'Grupos + Eliminatoria' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setFmt(opt.value)}
+                  className={`flex-1 text-xs py-2 px-3 rounded-lg border font-medium transition-colors ${fmt === opt.value ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {fmt === 'groups_and_elimination' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Equipos por grupo</label>
+                <input type="number" min="3" max="8" className="input" value={tpg} onChange={(e) => setTpg(e.target.value)} />
+              </div>
+              <div>
+                <label className="label">Clasifican por grupo</label>
+                <input type="number" min="1" max="4" className="input" value={adv} onChange={(e) => setAdv(e.target.value)} />
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => setOpen(false)} className="btn-secondary text-xs py-1.5">Cancelar</button>
+            <button type="button" onClick={handleSave} disabled={saving} className="btn-primary text-xs py-1.5">
+              {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Groups tab view ───────────────────────────────────────────────────────────
+const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing, setTab }) => {
+  if (!groups.length) {
+    return (
+      <div className="card p-10 text-center">
+        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3 text-gray-300">
+          <Icon name="standings" size={22} />
+        </div>
+        <p className="font-semibold text-gray-800 mb-1">Grupos no generados</p>
+        <p className="text-gray-400 text-sm mb-4">Realiza el sorteo de grupos para empezar la fase de grupos.</p>
+        {isOrganizer && (
+          <button onClick={onGenerate} disabled={generating} className="btn-primary mx-auto text-sm">
+            <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Realizar sorteo'}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {isOrganizer && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-400">{groups.length} grupos</span>
+          <div className="flex gap-2">
+            <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5">
+              <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Nuevo sorteo'}
+            </button>
+            <button onClick={() => { onGenerateBracket(); }} disabled={generating} className="btn-primary text-xs py-1.5">
+              <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {groups.map((group) => {
+        const pending = group.matches.filter((m) => m.status === 'pending').length;
+        const played  = group.matches.filter((m) => m.status === 'played').length;
+        const rounds  = [...new Set(group.matches.map((m) => m.round))].sort((a, b) => a - b);
+
+        return (
+          <div key={group.name} className="card overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-brand-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
+                  {group.name}
+                </div>
+                <span className="text-sm font-semibold text-gray-800">Grupo {group.name}</span>
+              </div>
+              <span className="text-xs text-gray-400">{played}/{group.matches.length} jugados</span>
+            </div>
+
+            {/* Standings mini-table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left px-4 py-2 font-semibold text-gray-400 w-6">#</th>
+                    <th className="text-left px-2 py-2 font-semibold text-gray-400">Equipo</th>
+                    <th className="text-center px-2 py-2 font-semibold text-gray-400">PJ</th>
+                    <th className="text-center px-2 py-2 font-semibold text-gray-400">G</th>
+                    <th className="text-center px-2 py-2 font-semibold text-gray-400">E</th>
+                    <th className="text-center px-2 py-2 font-semibold text-gray-400">P</th>
+                    <th className="text-center px-3 py-2 font-semibold text-gray-700">Pts</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {group.standings.map((row, idx) => {
+                    const advances = idx < teamsAdvancing;
+                    return (
+                      <tr key={row.teamId} className={advances ? 'bg-brand-50' : ''}>
+                        <td className="px-4 py-2.5">
+                          <span className={`text-[10px] font-bold ${advances ? 'text-brand-600' : 'text-gray-300'}`}>{idx + 1}</span>
+                        </td>
+                        <td className="px-2 py-2.5 font-medium text-gray-800 truncate max-w-[140px]">{row.teamName}</td>
+                        <td className="text-center px-2 py-2.5 text-gray-500">{row.played}</td>
+                        <td className="text-center px-2 py-2.5 text-gray-500">{row.won}</td>
+                        <td className="text-center px-2 py-2.5 text-gray-500">{row.drawn}</td>
+                        <td className="text-center px-2 py-2.5 text-gray-500">{row.lost}</td>
+                        <td className="text-center px-3 py-2.5 font-bold text-gray-900">{row.points}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Group matches grouped by round */}
+            <div className="border-t border-gray-100 px-4 py-3 space-y-3 bg-gray-50">
+              {rounds.map((round) => {
+                const roundMatches = group.matches.filter((m) => m.round === round);
+                return (
+                  <div key={round}>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Jornada {round}</p>
+                    <div className="space-y-1.5">
+                      {roundMatches.map((match) => (
+                        <MatchCard key={match._id} match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded, scoringType, isGroupFormat }) => {
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'visual'
   const rounds = Object.keys(bracket).map(Number).sort((a, b) => a - b);
   const maxRound = rounds[rounds.length - 1] || 1;
   const hasMatches = rounds.length > 0;
   const champion = (bracket[maxRound] || [])[0]?.winner;
   const pending = Object.values(bracket).flat().filter((m) => m.status === 'pending' && m.teamA && m.teamB).length;
+
+  const generateLabel = isGroupFormat ? 'Generar bracket desde grupos' : 'Generar bracket';
+  const regenerateLabel = isGroupFormat ? 'Regenerar bracket' : 'Regenerar bracket';
 
   if (!hasMatches) {
     return (
@@ -35,10 +228,12 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
           <Icon name="bracket" size={22} />
         </div>
         <p className="font-semibold text-gray-800 mb-1">Bracket no generado</p>
-        <p className="text-gray-400 text-sm mb-4">{teams.length < 2 ? 'Anade al menos 2 equipos.' : 'Genera el bracket para empezar.'}</p>
-        {teams.length >= 2 && (
+        <p className="text-gray-400 text-sm mb-4">
+          {isGroupFormat ? 'Completa la fase de grupos y genera el bracket.' : teams.length < 2 ? 'Anade al menos 2 equipos.' : 'Genera el bracket para empezar.'}
+        </p>
+        {(isGroupFormat || teams.length >= 2) && (
           <button onClick={onGenerate} disabled={generating} className="btn-primary mx-auto text-sm">
-            <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
+            <Icon name="bracket" size={13} /> {generating ? 'Generando...' : generateLabel}
           </button>
         )}
       </div>
@@ -60,12 +255,23 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-gray-500">{pending} partido(s) pendiente(s)</span>
-        <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5">
-          <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Regenerar bracket'}
-        </button>
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+          <button onClick={() => setViewMode('list')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Lista</button>
+          <button onClick={() => setViewMode('visual')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'visual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Cuadro</button>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400">{pending} pendiente(s)</span>
+          <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5">
+            <Icon name="bracket" size={13} /> {generating ? 'Generando...' : regenerateLabel}
+          </button>
+        </div>
       </div>
 
+      {viewMode === 'visual' ? (
+        <div className="pt-8">
+          <VisualBracket bracket={bracket} scoringType={scoringType} />
+        </div>
+      ) : (
       <div className="space-y-8">
         {rounds.map((round) => {
           const roundMatches = bracket[round] || [];
@@ -98,6 +304,7 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
           );
         })}
       </div>
+      )}
     </div>
   );
 };
@@ -112,7 +319,9 @@ const DivisionDetail = () => {
   const [matches, setMatches] = useState([]);
   const [bracket, setBracket] = useState({});
   const [standings, setStandings] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [allDivisions, setAllDivisions] = useState([]);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const [tab, setTab] = useState('teams');
   const [loading, setLoading] = useState(true);
@@ -134,7 +343,12 @@ const DivisionDetail = () => {
 
   const isTournament = division?.competition?.type === 'tournament';
   const scoringType = division?.competition?.sport?.scoringType || 'sets';
-  const tabs = isTournament ? TOURNAMENT_TABS : LEAGUE_TABS;
+  const compSettings = division?.competition?.settings || {};
+  const tournamentFormat = compSettings.tournamentFormat || 'elimination';
+  const isGroupFormat = isTournament && tournamentFormat === 'groups_and_elimination';
+  const tabs = isTournament
+    ? (isGroupFormat ? TOURNAMENT_GROUPS_TABS : TOURNAMENT_TABS)
+    : LEAGUE_TABS;
   const isOrganizer = user?.role === 'organizer' && division?.competition?.organizer?.toString() === user?.id;
 
   const settings = division?.competition?.settings || {};
@@ -173,9 +387,17 @@ const DivisionDetail = () => {
       }
 
       if (div.data?.competition?.type === 'tournament') {
-        const [t, b] = await Promise.all([getDivisionTeams(id), getDivisionBracket(id)]);
-        setTeams(t.data);
-        setBracket(b.data);
+        const fmt = div.data.competition?.settings?.tournamentFormat || 'elimination';
+        if (fmt === 'groups_and_elimination') {
+          const [t, b, g] = await Promise.all([getDivisionTeams(id), getDivisionBracket(id), getDivisionGroups(id)]);
+          setTeams(t.data);
+          setBracket(b.data);
+          setGroups(g.data);
+        } else {
+          const [t, b] = await Promise.all([getDivisionTeams(id), getDivisionBracket(id)]);
+          setTeams(t.data);
+          setBracket(b.data);
+        }
       } else {
         const [t, m, s] = await Promise.all([getDivisionTeams(id), getDivisionMatches(id), getStandings(id)]);
         setTeams(t.data);
@@ -378,7 +600,10 @@ const DivisionDetail = () => {
   };
 
   const handleGenerateBracket = async () => {
-    if (!confirm(`Generar bracket con ${teams.length} equipos? Se eliminara el bracket actual.`)) return;
+    const msg = isGroupFormat
+      ? 'Generar bracket desde los clasificados de grupos? Se eliminara el bracket actual.'
+      : `Generar bracket con ${teams.length} equipos? Se eliminara el bracket actual.`;
+    if (!confirm(msg)) return;
     setGenerating(true);
     setError('');
     try {
@@ -393,10 +618,46 @@ const DivisionDetail = () => {
     }
   };
 
+  const handleGenerateGroups = async () => {
+    if (!confirm('Realizar el sorteo de grupos? Se eliminaran los grupos actuales y sus partidos.')) return;
+    setGenerating(true);
+    setError('');
+    try {
+      await generateDivisionGroups(id);
+      const [g, t] = await Promise.all([getDivisionGroups(id), getDivisionTeams(id)]);
+      setGroups(g.data);
+      setTeams(t.data);
+      setTab('groups');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al generar grupos');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleSaveFormat = async (newSettings) => {
+    setSavingSettings(true);
+    setError('');
+    try {
+      const { updateCompetition } = await import('../api/competitions');
+      await updateCompetition(division.competition._id, { settings: { ...compSettings, ...newSettings } });
+      const div = await getDivision(id);
+      setDivision(div.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al guardar configuracion');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   const onResultRecorded = async () => {
     if (isTournament) {
       const b = await getDivisionBracket(id);
       setBracket(b.data);
+      if (isGroupFormat) {
+        const g = await getDivisionGroups(id);
+        setGroups(g.data);
+      }
     } else {
       const [m, s] = await Promise.all([getDivisionMatches(id), getStandings(id)]);
       setMatches(m.data);
@@ -480,6 +741,15 @@ const DivisionDetail = () => {
 
       {tab === 'teams' && (
         <div>
+          {/* Tournament format config — organizer only */}
+          {isTournament && isOrganizer && (
+            <FormatConfig
+              compSettings={compSettings}
+              onSave={handleSaveFormat}
+              saving={savingSettings}
+            />
+          )}
+
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-500">{teams.length} equipo(s)</p>
             {isOrganizer && (
@@ -489,7 +759,12 @@ const DivisionDetail = () => {
                     <Icon name="match" size={13} /> {generating ? 'Generando...' : 'Generar calendario'}
                   </button>
                 )}
-                {isTournament && teams.length >= 2 && (
+                {isGroupFormat && teams.length >= 4 && (
+                  <button onClick={handleGenerateGroups} disabled={generating} className="btn-secondary text-xs py-1.5">
+                    <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Sorteo de grupos'}
+                  </button>
+                )}
+                {isTournament && !isGroupFormat && teams.length >= 2 && (
                   <button onClick={handleGenerateBracket} disabled={generating} className="btn-secondary text-xs py-1.5">
                     <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
                   </button>
@@ -828,6 +1103,20 @@ const DivisionDetail = () => {
         </div>
       )}
 
+      {tab === 'groups' && isGroupFormat && (
+        <GroupsView
+          groups={groups}
+          generating={generating}
+          onGenerate={handleGenerateGroups}
+          onGenerateBracket={handleGenerateBracket}
+          onResultRecorded={onResultRecorded}
+          scoringType={scoringType}
+          isOrganizer={isOrganizer}
+          teamsAdvancing={Number(compSettings.teamsAdvancing) || 2}
+          setTab={setTab}
+        />
+      )}
+
       {tab === 'bracket' && isTournament && (
         <BracketView
           bracket={bracket}
@@ -836,6 +1125,7 @@ const DivisionDetail = () => {
           onGenerate={handleGenerateBracket}
           onResultRecorded={onResultRecorded}
           scoringType={scoringType}
+          isGroupFormat={isGroupFormat}
         />
       )}
 
