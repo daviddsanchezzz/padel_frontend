@@ -461,52 +461,15 @@ const CompetitionDetail = () => {
       {/* Mobile actions */}
       {isOrganizer && <div className="md:hidden mb-4">{organizerActions}</div>}
 
-      {/* Info card */}
-      <div className="card p-4 md:p-5 mb-4">
-        <div className="flex items-start gap-3 md:gap-4">
-          <div className="w-11 h-11 bg-gradient-to-br from-brand-500 to-brand-800 rounded-xl flex items-center justify-center text-white flex-shrink-0">
-            <Icon name={isLeague ? 'league' : 'tournament'} size={20} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="font-bold text-gray-900 text-lg leading-none">{competition.name}</h2>
-              <span className={`badge ${st.cls}`}>{st.label}</span>
-              <span className="badge bg-gray-100 text-gray-500">{isLeague ? 'Liga' : 'Torneo'}</span>
-              {competition.sport && (
-                <span className="badge bg-gray-100 text-gray-500 flex items-center gap-1">
-                  <Icon name="sport" size={10} />{competition.sport.name}
-                </span>
-              )}
-            </div>
-            {competition.season && (
-              <div className="flex items-center gap-1 text-sm text-gray-400 mt-1.5">
-                <Icon name="calendar" size={12} /> Temporada {competition.season}
-              </div>
-            )}
-            {competition.description && (
-              <p className="text-sm text-gray-500 mt-1">{competition.description}</p>
-            )}
-            {/* Quick settings summary */}
-            {isLeague && (settings.promotionSpots > 0 || settings.relegationSpots > 0) && (
-              <div className="flex items-center gap-1.5 mt-2">
-                {settings.promotionSpots > 0 && (
-                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 uppercase tracking-wide">
-                    ↑ {settings.promotionSpots} ascienden
-                  </span>
-                )}
-                {settings.relegationSpots > 0 && (
-                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 text-red-600 uppercase tracking-wide">
-                    ↓ {settings.relegationSpots} descienden
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="text-right flex-shrink-0 text-xs text-gray-400">
-            <p className="font-semibold text-gray-700 text-base">{divisions.length}</p>
-            <p>{isLeague ? 'divisiones' : 'categorías'}</p>
-          </div>
-        </div>
+      {/* Header */}
+      <div className="flex items-center gap-2 flex-wrap mb-5">
+        <span className={`badge ${st.cls}`}>{st.label}</span>
+        {competition.sport && (
+          <span className="badge bg-gray-100 text-gray-500">{competition.sport.name}</span>
+        )}
+        {competition.season && (
+          <span className="badge bg-gray-100 text-gray-500">T. {competition.season}</span>
+        )}
       </div>
 
       {!isOrganizer && !playerDivisionId && (

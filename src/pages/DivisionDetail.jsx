@@ -652,37 +652,27 @@ const DivisionDetail = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4 md:mb-6">
-        <div className="card p-3 md:p-4 text-center">
-          <p className="text-xl md:text-xl font-bold text-gray-900">{teams.length}</p>
-          <p className="text-xs text-gray-400">Equipos</p>
-        </div>
-        <div className="card p-3 md:p-4 text-center">
-          <p className="text-xl font-bold text-brand-600">{played}</p>
-          <p className="text-xs text-gray-400">Jugados</p>
-        </div>
-        <div className="card p-3 md:p-4 text-center">
-          <p className="text-xl font-bold text-amber-500">{pending}</p>
-          <p className="text-xs text-gray-400">Pendientes</p>
-        </div>
-      </div>
-
       {error && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
           <Icon name="alert" size={14} /> {error}
         </div>
       )}
 
-      <div className="flex gap-1 border-b border-gray-200 mb-4 md:mb-6 overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1 border-b border-gray-200 mb-4 md:mb-6 overflow-x-auto scrollbar-none">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${tab === t.key ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${tab === t.key ? 'border-brand-600 text-brand-700' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
           >
             <Icon name={t.icon} size={14} /> {t.label}
           </button>
         ))}
+        {pending > 0 && (
+          <span className="ml-auto flex-shrink-0 text-xs text-amber-500 font-medium pb-px pr-1">
+            {pending} pendiente{pending !== 1 ? 's' : ''}
+          </span>
+        )}
       </div>
 
       {tab === 'teams' && (

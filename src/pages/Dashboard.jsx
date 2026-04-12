@@ -15,17 +15,6 @@ const statusConfig = {
   finished: { label: 'Finalizada', cls: 'bg-blue-100 text-blue-700' },
 };
 
-const StatCard = ({ value, label, iconName, colorClass = 'text-brand-600' }) => (
-  <div className="card p-3 md:p-5 text-center md:text-left md:flex md:items-center md:gap-4">
-    <div className={`hidden md:flex w-10 h-10 rounded-xl items-center justify-center bg-gray-50 flex-shrink-0 ${colorClass}`}>
-      <Icon name={iconName} size={18} />
-    </div>
-    <div>
-      <p className={`text-2xl font-bold ${colorClass}`}>{value}</p>
-      <p className="text-xs text-gray-400 font-medium">{label}</p>
-    </div>
-  </div>
-);
 
 const Dashboard = () => {
   const [competitions, setCompetitions] = useState([]);
@@ -46,9 +35,7 @@ const Dashboard = () => {
     setCompetitions(competitions.filter((c) => c._id !== id));
   };
 
-  const leagues     = competitions.filter((c) => c.type === 'league').length;
-  const tournaments = competitions.filter((c) => c.type === 'tournament').length;
-  const active      = competitions.filter((c) => c.status === 'active').length;
+  const active = competitions.filter((c) => c.status === 'active').length;
 
   const filtered = typeFilter
     ? competitions.filter((c) => c.type === typeFilter)
@@ -81,18 +68,11 @@ const Dashboard = () => {
           }}
         />
       )}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard value={competitions.length} label="Total"       iconName="trophy"      colorClass="text-gray-600" />
-        <StatCard value={active}              label="Activas"     iconName="check"       colorClass="text-brand-600" />
-        <StatCard value={leagues}             label="Ligas"       iconName="league"      colorClass="text-brand-600" />
-        <StatCard value={tournaments}         label="Torneos"     iconName="tournament"  colorClass="text-amber-600" />
-      </div>
-
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-semibold text-gray-900">
+        <h2 className="text-sm font-semibold text-gray-900">
           {typeFilter === 'league' ? 'Ligas' : typeFilter === 'tournament' ? 'Torneos' : 'Competiciones'}
         </h2>
-        <span className="text-xs text-gray-400 font-medium">{filtered.length} total</span>
+        <span className="text-xs text-gray-400">{filtered.length} · {active} activa{active !== 1 ? 's' : ''}</span>
       </div>
 
       {loading && (
