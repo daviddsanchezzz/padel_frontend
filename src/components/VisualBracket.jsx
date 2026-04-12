@@ -210,7 +210,6 @@ const VisualBracket = ({ bracket, scoringType }) => {
             ))
           )}
         </div>
-      </div>
     </div>
   );
 };
