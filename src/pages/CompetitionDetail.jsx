@@ -388,19 +388,24 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
             </section>
           )}
 
+          {/* Capacidad */}
+          <section>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Capacidad</p>
+            <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Equipos max. por division/categoria</p>
+                <p className="text-xs text-gray-400 mt-0.5">{s.maxTeamsPerDivision === 0 ? 'Sin limite' : `${s.maxTeamsPerDivision} equipos`}</p>
+              </div>
+              <Stepper value={s.maxTeamsPerDivision} onChange={(v) => set('maxTeamsPerDivision', v)} max={128} />
+            </div>
+          </section>
+
           {/* Divisiones (liga) */}
           {isLeague && (
             <section>
               <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Divisiones</p>
               <div className="space-y-3">
 
-                <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Equipos máx. por división</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{s.maxTeamsPerDivision === 0 ? 'Sin límite' : `${s.maxTeamsPerDivision} equipos`}</p>
-                  </div>
-                  <Stepper value={s.maxTeamsPerDivision} onChange={(v) => set('maxTeamsPerDivision', v)} max={32} />
-                </div>
 
                 <div className="bg-brand-50 rounded-xl p-4 flex items-center justify-between">
                   <div>
