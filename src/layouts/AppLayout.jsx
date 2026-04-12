@@ -219,38 +219,7 @@ const AppLayout = ({ children, title, actions }) => {
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">{actions}</div>
         </header>
-        <main className="flex-1 overflow-y-auto p-3 md:p-6 md:pb-6" style={{ paddingBottom: 'max(5.5rem, calc(3.5rem + env(safe-area-inset-bottom)))' }}>{children}</main>
-
-        {/* Bottom nav — mobile only */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex z-20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          {isOrganizer ? (
-            <>
-              <Link to="/dashboard" className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-semibold transition-colors ${location.pathname === '/dashboard' && !location.search ? 'text-brand-600' : 'text-gray-400'}`}>
-                <LayoutDashboard size={20} />
-                <span>Inicio</span>
-              </Link>
-              <Link to="/dashboard?type=league" className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-semibold transition-colors ${location.search === '?type=league' ? 'text-brand-600' : 'text-gray-400'}`}>
-                <Medal size={20} />
-                <span>Ligas</span>
-              </Link>
-              <Link to="/dashboard?type=tournament" className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-semibold transition-colors ${location.search === '?type=tournament' ? 'text-brand-600' : 'text-gray-400'}`}>
-                <Trophy size={20} />
-                <span>Torneos</span>
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link to="/player/matches" className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-semibold transition-colors ${location.pathname === '/player/matches' || location.pathname === '/player' ? 'text-brand-600' : 'text-gray-400'}`}>
-                <User size={20} />
-                <span>Mis partidos</span>
-              </Link>
-              <Link to="/player/competitions" className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-semibold transition-colors ${location.pathname === '/player/competitions' ? 'text-brand-600' : 'text-gray-400'}`}>
-                <Trophy size={20} />
-                <span>Competiciones</span>
-              </Link>
-            </>
-          )}
-        </nav>
+        <main className="flex-1 overflow-y-auto p-3 md:p-6 md:pb-6">{children}</main>
       </div>
     </div>
   );
