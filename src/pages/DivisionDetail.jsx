@@ -29,7 +29,58 @@ const TOURNAMENT_GROUPS_TABS = [
 ];
 
 // ── Groups tab view ───────────────────────────────────────────────────────────
-const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing, setTab }) => {
+const GroupStandingsTable = ({ group, teamsAdvancing }) => (
+  <div className="card overflow-hidden">
+    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 bg-brand-600 text-white rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0">
+          {group.name}
+        </div>
+        <span className="text-sm font-semibold text-gray-800">Grupo {group.name}</span>
+      </div>
+      <span className="text-xs text-gray-400">
+        {group.matches.filter((m) => m.status === 'played').length}/{group.matches.length} jugados
+      </span>
+    </div>
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="border-b border-gray-100">
+            <th className="text-left px-4 py-2 font-semibold text-gray-400 w-6">#</th>
+            <th className="text-left px-2 py-2 font-semibold text-gray-400">Equipo</th>
+            <th className="text-center px-2 py-2 font-semibold text-gray-400">PJ</th>
+            <th className="text-center px-2 py-2 font-semibold text-gray-400">G</th>
+            <th className="text-center px-2 py-2 font-semibold text-gray-400">E</th>
+            <th className="text-center px-2 py-2 font-semibold text-gray-400">P</th>
+            <th className="text-center px-3 py-2 font-semibold text-gray-700">Pts</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-50">
+          {group.standings.map((row, idx) => {
+            const advances = idx < teamsAdvancing;
+            return (
+              <tr key={row.teamId} className={advances ? 'bg-brand-50' : ''}>
+                <td className="px-4 py-2.5">
+                  <span className={`text-[10px] font-bold ${advances ? 'text-brand-600' : 'text-gray-300'}`}>{idx + 1}</span>
+                </td>
+                <td className="px-2 py-2.5 font-medium text-gray-800 truncate max-w-[160px]">{row.teamName}</td>
+                <td className="text-center px-2 py-2.5 text-gray-500">{row.played}</td>
+                <td className="text-center px-2 py-2.5 text-gray-500">{row.won}</td>
+                <td className="text-center px-2 py-2.5 text-gray-500">{row.drawn}</td>
+                <td className="text-center px-2 py-2.5 text-gray-500">{row.lost}</td>
+                <td className="text-center px-3 py-2.5 font-bold text-gray-900">{row.points}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing }) => {
+  const [subTab, setSubTab] = useState('standings'); // 'standings' | 'matches'
+
   if (!groups.length) {
     return (
       <div className="card p-10 text-center">
@@ -47,93 +98,86 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
     );
   }
 
+  // All rounds across all groups, deduplicated and sorted
+  const allRounds = [...new Set(groups.flatMap((g) => g.matches.map((m) => m.round)))].sort((a, b) => a - b);
+  const totalPlayed  = groups.reduce((s, g) => s + g.matches.filter((m) => m.status === 'played').length, 0);
+  const totalMatches = groups.reduce((s, g) => s + g.matches.length, 0);
+
   return (
-    <div className="space-y-6">
-      {isOrganizer && (
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-400">{groups.length} grupos</span>
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Sub-tab toggle */}
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+          <button
+            onClick={() => setSubTab('standings')}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${subTab === 'standings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Clasificación
+          </button>
+          <button
+            onClick={() => setSubTab('matches')}
+            className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${subTab === 'matches' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Partidos <span className="ml-1 text-gray-400">{totalPlayed}/{totalMatches}</span>
+          </button>
+        </div>
+
+        {/* Organizer actions */}
+        {isOrganizer && (
           <div className="flex gap-2">
             <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5">
               <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Nuevo sorteo'}
             </button>
-            <button onClick={() => { onGenerateBracket(); }} disabled={generating} className="btn-primary text-xs py-1.5">
+            <button onClick={onGenerateBracket} disabled={generating} className="btn-primary text-xs py-1.5">
               <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
             </button>
           </div>
+        )}
+      </div>
+
+      {/* Clasificación — group tables in a 2-col grid */}
+      {subTab === 'standings' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {groups.map((group) => (
+            <GroupStandingsTable key={group.name} group={group} teamsAdvancing={teamsAdvancing} />
+          ))}
         </div>
       )}
 
-      {groups.map((group) => {
-        const pending = group.matches.filter((m) => m.status === 'pending').length;
-        const played  = group.matches.filter((m) => m.status === 'played').length;
-        const rounds  = [...new Set(group.matches.map((m) => m.round))].sort((a, b) => a - b);
-
-        return (
-          <div key={group.name} className="card overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-brand-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
-                  {group.name}
+      {/* Partidos — all matches by round, label shows which group */}
+      {subTab === 'matches' && (
+        <div className="space-y-5">
+          {allRounds.map((round) => {
+            const roundMatches = groups.flatMap((g) =>
+              g.matches.filter((m) => m.round === round).map((m) => ({ ...m, _groupName: g.name }))
+            );
+            return (
+              <div key={round}>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Jornada {round}</span>
+                  <div className="flex-1 h-px bg-gray-100" />
+                  <span className="text-xs text-gray-300">
+                    {roundMatches.filter((m) => m.status === 'played').length}/{roundMatches.length}
+                  </span>
                 </div>
-                <span className="text-sm font-semibold text-gray-800">Grupo {group.name}</span>
-              </div>
-              <span className="text-xs text-gray-400">{played}/{group.matches.length} jugados</span>
-            </div>
-
-            {/* Standings mini-table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="text-left px-4 py-2 font-semibold text-gray-400 w-6">#</th>
-                    <th className="text-left px-2 py-2 font-semibold text-gray-400">Equipo</th>
-                    <th className="text-center px-2 py-2 font-semibold text-gray-400">PJ</th>
-                    <th className="text-center px-2 py-2 font-semibold text-gray-400">G</th>
-                    <th className="text-center px-2 py-2 font-semibold text-gray-400">E</th>
-                    <th className="text-center px-2 py-2 font-semibold text-gray-400">P</th>
-                    <th className="text-center px-3 py-2 font-semibold text-gray-700">Pts</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {group.standings.map((row, idx) => {
-                    const advances = idx < teamsAdvancing;
-                    return (
-                      <tr key={row.teamId} className={advances ? 'bg-brand-50' : ''}>
-                        <td className="px-4 py-2.5">
-                          <span className={`text-[10px] font-bold ${advances ? 'text-brand-600' : 'text-gray-300'}`}>{idx + 1}</span>
-                        </td>
-                        <td className="px-2 py-2.5 font-medium text-gray-800 truncate max-w-[140px]">{row.teamName}</td>
-                        <td className="text-center px-2 py-2.5 text-gray-500">{row.played}</td>
-                        <td className="text-center px-2 py-2.5 text-gray-500">{row.won}</td>
-                        <td className="text-center px-2 py-2.5 text-gray-500">{row.drawn}</td>
-                        <td className="text-center px-2 py-2.5 text-gray-500">{row.lost}</td>
-                        <td className="text-center px-3 py-2.5 font-bold text-gray-900">{row.points}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Group matches grouped by round */}
-            <div className="border-t border-gray-100 px-4 py-3 space-y-3 bg-gray-50">
-              {rounds.map((round) => {
-                const roundMatches = group.matches.filter((m) => m.round === round);
-                return (
-                  <div key={round}>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Jornada {round}</p>
-                    <div className="space-y-1.5">
-                      {roundMatches.map((match) => (
-                        <MatchCard key={match._id} match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} />
-                      ))}
+                <div className="space-y-2">
+                  {roundMatches.map((match) => (
+                    <div key={match._id} className="flex items-start gap-2">
+                      <div className="w-5 h-5 mt-3 bg-brand-100 text-brand-700 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                        {match._groupName}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <MatchCard match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
