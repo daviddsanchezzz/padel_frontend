@@ -18,6 +18,7 @@ import MatchDetail       from './pages/MatchDetail';
 import PublicOrganization        from './pages/PublicOrganization';
 import PublicCompetitionDetail  from './pages/PublicCompetitionDetail';
 import PublicDivisionDetail     from './pages/PublicDivisionDetail';
+import PublicRegistration       from './pages/PublicRegistration';
 
 /** Redirects organizers without a club to onboarding. */
 const RequireOrg = ({ children }) => {
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/organizations/:id/public" element={<PublicOrganization />} />
           <Route path="/organizations/:orgId/competitions/:compId/public" element={<PublicCompetitionDetail />} />
           <Route path="/organizations/:orgId/divisions/:divId/public" element={<PublicDivisionDetail />} />
+          <Route path="/organizations/:orgId/competitions/:compId/register" element={<PublicRegistration />} />
 
           {/* Onboarding — organizer without org lands here */}
           <Route path="/onboarding" element={

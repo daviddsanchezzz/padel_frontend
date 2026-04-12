@@ -7,6 +7,7 @@ import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useOrg } from '../context/OrgContext';
 
 const statusOptions = ['draft', 'active', 'finished'];
 const statusConfig = {
@@ -353,6 +354,7 @@ const CompetitionDetail = () => {
   const [playerDivisionId, setPlayerDivisionId] = useState(null);
 
   const isOrganizer = user?.role === 'organizer' && competition?.organizer?.toString() === user?.id;
+  const { activeOrg } = useOrg();
 
   useEffect(() => {
     const fetch = async () => {
@@ -423,9 +425,9 @@ const CompetitionDetail = () => {
     <div className="flex items-center gap-2 w-full md:w-auto">
       <button
         onClick={() => {
-          const url = `${window.location.origin}/register?competition=${id}`;
+          const url = `${window.location.origin}/organizations/${activeOrg?._id}/competitions/${id}/register`;
           navigator.clipboard.writeText(url);
-          alert('Enlace de invitación copiado al portapapeles. Comparte este enlace con los jugadores para que se registren y se unan.');
+          alert('Enlace de inscripción copiado. Compártelo con los jugadores para que se inscriban directamente.');
         }}
         className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
       >
