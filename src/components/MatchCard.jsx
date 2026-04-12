@@ -281,21 +281,41 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
           {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled || canSchedule) && (
             <div className="flex-shrink-0 flex items-center self-center">
               {eventModeEnabled ? (
-                <div className="hidden md:flex items-center gap-1.5">
+                <>
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className="text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      className="inline-flex md:hidden items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                      title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
-                      {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
+                      <Icon name="calendar" size={12} />
                     </button>
                   )}
-                  <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
-                    Ver detalle
-                  </button>
-                </div>
+                  <div className="hidden md:flex items-center gap-1.5">
+                    {canSchedule && (
+                      <button
+                        onClick={openSchedule}
+                        className="text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
+                      </button>
+                    )}
+                    <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                      Ver detalle
+                    </button>
+                  </div>
+                </>
               ) : (
                 <>
+                  {canSchedule && (
+                    <button
+                      onClick={openSchedule}
+                      className="inline-flex md:hidden items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors mr-1"
+                      title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
+                    >
+                      <Icon name="calendar" size={12} />
+                    </button>
+                  )}
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
