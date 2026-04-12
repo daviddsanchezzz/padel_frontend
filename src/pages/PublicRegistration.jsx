@@ -131,10 +131,14 @@ const PublicRegistration = () => {
         ) : (
           <>
             <h1 className="text-base font-bold text-gray-900 mb-1">{competition?.name}</h1>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-sm text-gray-400 mb-1">
               {competition?.type === 'tournament' ? 'Inscripción al torneo' : 'Inscripción a la competición'}
               {competition?.season ? ` · T. ${competition.season}` : ''}
             </p>
+            {competition?.description && (
+              <p className="text-sm text-gray-600 mb-6 leading-relaxed">{competition.description}</p>
+            )}
+            {!competition?.description && <div className="mb-6" />}
 
             <form onSubmit={handleSubmit} className="space-y-5">
 

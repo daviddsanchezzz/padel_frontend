@@ -5,9 +5,76 @@ import { getDivisions, createDivision, deleteDivision, updateDivision } from '..
 import { getDivisionTeams } from '../api/teams';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
-import { X } from 'lucide-react';
+import { X, Copy, Check, QrCode } from 'lucide-react';
+import QRCode from 'react-qr-code';
 import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
+
+// ── Invite modal ──────────────────────────────────────────────────────────────
+const InviteModal = ({ url, onClose }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center">
+              <QrCode size={15} className="text-brand-600" />
+            </div>
+            <h2 className="font-bold text-gray-900 text-base leading-none">Invitar jugadores</h2>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 py-5 space-y-5">
+
+          {/* QR */}
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-xs text-gray-400 font-medium">Escanea para inscribirse</p>
+            <div className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+              <QRCode value={url} size={180} fgColor="#0b1d12" />
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-100" />
+            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">o copia el enlace</span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </div>
+
+          {/* Link + copy */}
+          <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
+            <p className="text-xs text-gray-500 flex-1 truncate">{url}</p>
+            <button
+              onClick={handleCopy}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 ${
+                copied
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+              }`}
+            >
+              {copied ? <><Check size={12} /> Copiado</> : <><Copy size={12} /> Copiar</>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const statusOptions = ['draft', 'active', 'finished'];
 const statusConfig = {
@@ -350,6 +417,7 @@ const CompetitionDetail = () => {
   const [divisionName, setDivisionName] = useState('');
   const [showForm, setShowForm]       = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showInvite, setShowInvite]     = useState(false);
   const [loading, setLoading]         = useState(true);
   const [playerDivisionId, setPlayerDivisionId] = useState(null);
 
@@ -424,11 +492,7 @@ const CompetitionDetail = () => {
   const organizerActions = isOrganizer ? (
     <div className="flex items-center gap-2 w-full md:w-auto">
       <button
-        onClick={() => {
-          const url = `${window.location.origin}/organizations/${activeOrg?._id}/competitions/${id}/register`;
-          navigator.clipboard.writeText(url);
-          alert('Enlace de inscripción copiado. Compártelo con los jugadores para que se inscriban directamente.');
-        }}
+        onClick={() => setShowInvite(true)}
         className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
       >
         <Icon name="share" size={13} /> Invitar
@@ -486,6 +550,14 @@ const CompetitionDetail = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Invite modal */}
+      {showInvite && (
+        <InviteModal
+          url={`${window.location.origin}/organizations/${activeOrg?._id}/competitions/${id}/register`}
+          onClose={() => setShowInvite(false)}
+        />
       )}
 
       {/* Settings modal */}
