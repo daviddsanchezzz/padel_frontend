@@ -631,9 +631,6 @@ const DivisionDetail = () => {
   const played = isTournament
     ? Object.values(bracket).flat().filter((m) => m.status === 'played').length
     : matches.filter((m) => m.status === 'played').length;
-  const pending = isTournament
-    ? Object.values(bracket).flat().filter((m) => m.status === 'pending' && m.teamA && m.teamB).length
-    : matches.filter((m) => m.status === 'pending').length;
 
   return (
     <AppLayout title={division?.name}>
@@ -670,11 +667,6 @@ const DivisionDetail = () => {
             <Icon name={t.icon} size={14} /> {t.label}
           </button>
         ))}
-        {pending > 0 && (
-          <span className="ml-auto flex-shrink-0 text-xs text-amber-500 font-medium pb-px pr-1">
-            {pending} pendiente{pending !== 1 ? 's' : ''}
-          </span>
-        )}
       </div>
 
       {tab === 'teams' && (
