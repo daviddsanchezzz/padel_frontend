@@ -5,12 +5,14 @@ import { getDivisions, createDivision, deleteDivision, updateDivision } from '..
 import { getDivisionTeams } from '../api/teams';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
-import { X, Copy, Check, QrCode } from 'lucide-react';
+import { X, Copy, Check, QrCode, Download } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
 
 // ── Invite modal ──────────────────────────────────────────────────────────────
+const QR_ID = 'invite-qr-svg';
+
 const InviteModal = ({ url, onClose }) => {
   const [copied, setCopied] = useState(false);
 
@@ -18,6 +20,31 @@ const InviteModal = ({ url, onClose }) => {
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const svg = document.getElementById(QR_ID);
+    if (!svg) return;
+    const SIZE = 512;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const svgUrl = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = SIZE;
+      canvas.height = SIZE;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, SIZE, SIZE);
+      ctx.drawImage(img, 0, 0, SIZE, SIZE);
+      URL.revokeObjectURL(svgUrl);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'qr-inscripcion.png';
+      a.click();
+    };
+    img.src = svgUrl;
   };
 
   return (
@@ -45,8 +72,14 @@ const InviteModal = ({ url, onClose }) => {
           <div className="flex flex-col items-center gap-3">
             <p className="text-xs text-gray-400 font-medium">Escanea para inscribirse</p>
             <div className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
-              <QRCode value={url} size={180} fgColor="#0b1d12" />
+              <QRCode id={QR_ID} value={url} size={180} fgColor="#0b1d12" />
             </div>
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <Download size={13} /> Descargar QR
+            </button>
           </div>
 
           {/* Divider */}
