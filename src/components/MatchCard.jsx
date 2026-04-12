@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { recordResult, confirmResult, disputeResult, updateMatchSchedule } from '../api/matches';
 import { useAuth } from '../context/AuthContext';
+import Icon from './Icon';
 
 const EMPTY_SET = { a: '', b: '' };
 
