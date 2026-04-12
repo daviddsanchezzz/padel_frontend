@@ -5,50 +5,20 @@ import { getPublicDivision } from '../api/organizations';
 import PublicLayout from '../layouts/PublicLayout';
 import Icon from '../components/Icon';
 import StandingsTable from '../components/StandingsTable';
+import VisualBracket from '../components/VisualBracket';
 
 const Skeleton = ({ className }) => (
   <div className={`bg-gray-200 rounded-xl animate-pulse ${className}`} />
 );
 
-/* ── Score renderer ─────────────────────────────────────────── */
-const ScoreDisplay = ({ result, scoringType }) => {
-  if (!result) return <span className="text-xs font-semibold text-gray-300 tracking-widest">VS</span>;
-
-  if (scoringType === 'sets' && result.sets) {
-    return (
-      <div className="flex items-center gap-1 flex-wrap justify-center">
-        {result.sets.map((s, i) => (
-          <div key={i} className="flex items-center gap-0.5 text-sm">
-            <span className={s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}>{s.a}</span>
-            <span className="text-gray-200">-</span>
-            <span className={s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}>{s.b}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (scoringType === 'goals' && result.goals) {
-    const { a, b } = result.goals;
-    return (
-      <span className="text-base font-bold">
-        <span className={a > b ? 'text-gray-900' : 'text-gray-400'}>{a}</span>
-        <span className="text-gray-300 mx-1">-</span>
-        <span className={b > a ? 'text-gray-900' : 'text-gray-400'}>{b}</span>
-      </span>
-    );
-  }
-  return null;
-};
-
-/* ── Single match row — vertical (Sofascore style) ─────────── */
+/* ── Single match row ───────────────────────────────────────── */
 const MatchRow = ({ match, scoringType }) => {
-  const teamAName = match.teamA?.name || 'TBD';
-  const teamBName = match.teamB?.name || 'TBD';
+  const teamAName  = match.teamA?.name || 'TBD';
+  const teamBName  = match.teamB?.name || 'TBD';
   const displayResult = match.status === 'awaiting_confirmation' ? match.pendingResult : match.result;
-  const winnerId  = match.winner?._id || match.winner;
-  const teamAId   = match.teamA?._id  || match.teamA;
-  const teamBId   = match.teamB?._id  || match.teamB;
+  const winnerId   = match.winner?._id || match.winner;
+  const teamAId    = match.teamA?._id  || match.teamA;
+  const teamBId    = match.teamB?._id  || match.teamB;
   const winnerSide = winnerId
     ? winnerId.toString() === teamAId?.toString() ? 'A'
       : winnerId.toString() === teamBId?.toString() ? 'B' : null
@@ -66,13 +36,10 @@ const MatchRow = ({ match, scoringType }) => {
   return (
     <div className="px-4 py-3">
       <div className="flex items-start gap-2">
-        {/* Team names stacked */}
         <div className="flex-1 min-w-0 space-y-1">
           <p className={`text-xs font-semibold truncate ${nameClass('A')}`}>{teamAName}</p>
           <p className={`text-xs font-semibold truncate ${nameClass('B')}`}>{teamBName}</p>
         </div>
-
-        {/* Scores — fixed columns, stacked per set */}
         <div className="flex-shrink-0 flex gap-2 items-start">
           {isPending ? (
             <span className="text-[10px] font-semibold text-gray-300 uppercase tracking-wide mt-1">PDTE</span>
@@ -95,8 +62,9 @@ const MatchRow = ({ match, scoringType }) => {
   );
 };
 
-/* ── Bracket view (tournament) ──────────────────────────────── */
-const PublicBracket = ({ bracket, scoringType, color }) => {
+/* ── Public bracket (list + visual toggle) ──────────────────── */
+const PublicBracket = ({ bracket, scoringType }) => {
+  const [viewMode, setViewMode] = useState('list');
   const rounds = Object.keys(bracket).map(Number).sort((a, b) => a - b);
   const maxRound = rounds[rounds.length - 1] || 1;
   const champion = (bracket[maxRound] || [])[0]?.winner;
@@ -110,7 +78,7 @@ const PublicBracket = ({ bracket, scoringType, color }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {champion && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
           <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center text-white flex-shrink-0">
@@ -123,36 +91,136 @@ const PublicBracket = ({ bracket, scoringType, color }) => {
         </div>
       )}
 
-      {rounds.map((round) => {
-        const roundMatches = bracket[round] || [];
-        const roundName = roundMatches[0]?.roundName || `Ronda ${round}`;
-        const isFinal = round === maxRound;
-        return (
-          <div key={round}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`text-[11px] font-bold uppercase tracking-widest ${isFinal ? 'text-amber-500' : 'text-gray-400'}`}>
-                {roundName}
-              </span>
-              <div className="flex-1 h-px bg-gray-100" />
-              <span className="text-xs text-gray-300">
-                {roundMatches.filter((m) => m.status === 'played').length}/{roundMatches.length}
-              </span>
+      {/* Vista toggle */}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 self-start w-fit">
+        <button onClick={() => setViewMode('list')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Lista</button>
+        <button onClick={() => setViewMode('visual')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'visual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Cuadro</button>
+      </div>
+
+      {viewMode === 'visual' ? (
+        <div className="pt-6">
+          <VisualBracket bracket={bracket} scoringType={scoringType} />
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {rounds.map((round) => {
+            const roundMatches = bracket[round] || [];
+            const roundName = roundMatches[0]?.roundName || `Ronda ${round}`;
+            const isFinal = round === maxRound;
+            return (
+              <div key={round}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-[11px] font-bold uppercase tracking-widest ${isFinal ? 'text-amber-500' : 'text-gray-400'}`}>{roundName}</span>
+                  <div className="flex-1 h-px bg-gray-100" />
+                  <span className="text-xs text-gray-300">{roundMatches.filter((m) => m.status === 'played').length}/{roundMatches.length}</span>
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
+                  {roundMatches.map((match) =>
+                    match.status === 'bye' ? (
+                      <div key={match._id} className="px-4 py-2.5 flex items-center gap-3 text-sm text-gray-400">
+                        <Icon name="skip" size={14} />
+                        <span>{match.teamA?.name || match.teamB?.name || '-'} — pasa automaticamente</span>
+                      </div>
+                    ) : (
+                      <MatchRow key={match._id} match={match} scoringType={scoringType} />
+                    )
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ── Public groups view ─────────────────────────────────────── */
+const PublicGroups = ({ groups, scoringType, teamsAdvancing }) => {
+  const [subTab, setSubTab] = useState('standings');
+
+  if (!groups.length) {
+    return (
+      <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
+        <p className="font-semibold text-gray-800">Grupos no generados</p>
+        <p className="text-sm text-gray-400 mt-1">El sorteo de grupos aún no se ha realizado.</p>
+      </div>
+    );
+  }
+
+  const allRounds = [...new Set(groups.flatMap((g) => g.matches.map((m) => m.round)))].sort((a, b) => a - b);
+  const totalPlayed  = groups.reduce((s, g) => s + g.matches.filter((m) => m.status === 'played').length, 0);
+  const totalMatches = groups.reduce((s, g) => s + g.matches.length, 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Sub-tab toggle */}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 self-start w-fit">
+        <button onClick={() => setSubTab('standings')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${subTab === 'standings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+          Clasificación
+        </button>
+        <button onClick={() => setSubTab('matches')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${subTab === 'matches' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+          Partidos <span className="ml-1 text-gray-400">{totalPlayed}/{totalMatches}</span>
+        </button>
+      </div>
+
+      {/* Clasificación — grid 2 cols */}
+      {subTab === 'standings' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {groups.map((group) => (
+            <div key={group.name} className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 bg-brand-600 text-white rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  {group.name}
+                </div>
+                <span className="text-sm font-semibold text-gray-800">Grupo {group.name}</span>
+                <span className="ml-auto text-xs text-gray-400">
+                  {group.matches.filter((m) => m.status === 'played').length}/{group.matches.length} jugados
+                </span>
+              </div>
+              <StandingsTable
+                standings={group.standings}
+                promotionSpots={teamsAdvancing}
+                relegationSpots={0}
+                isTopDivision={false}
+                isBottomDivision={true}
+              />
             </div>
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
-              {roundMatches.map((match) =>
-                match.status === 'bye' ? (
-                  <div key={match._id} className="px-4 py-2.5 flex items-center gap-3 text-sm text-gray-400">
-                    <Icon name="skip" size={14} />
-                    <span>{match.teamA?.name || match.teamB?.name || '-'} — pasa automaticamente</span>
-                  </div>
-                ) : (
-                  <MatchRow key={match._id} match={match} scoringType={scoringType} />
-                )
-              )}
-            </div>
-          </div>
-        );
-      })}
+          ))}
+        </div>
+      )}
+
+      {/* Partidos — por jornada */}
+      {subTab === 'matches' && (
+        <div className="space-y-5">
+          {allRounds.map((round) => {
+            const roundMatches = groups.flatMap((g) =>
+              g.matches.filter((m) => m.round === round).map((m) => ({ ...m, _groupName: g.name }))
+            );
+            return (
+              <div key={round}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Jornada {round}</span>
+                  <div className="flex-1 h-px bg-gray-100" />
+                  <span className="text-xs text-gray-300">{roundMatches.filter((m) => m.status === 'played').length}/{roundMatches.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {roundMatches.map((match) => (
+                    <div key={match._id} className="flex items-start gap-2">
+                      <div className="w-5 h-5 mt-3 bg-brand-100 text-brand-700 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                        {match._groupName}
+                      </div>
+                      <div className="flex-1 min-w-0 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                        <MatchRow match={match} scoringType={scoringType} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
@@ -165,10 +233,10 @@ const PublicDivisionDetail = () => {
 
   const stateOrg = location.state?.org;
 
-  const [data, setData] = useState(null);
+  const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [tab, setTab] = useState(null); // null = auto-select after load
+  const [error, setError]   = useState('');
+  const [tab, setTab]       = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -180,19 +248,22 @@ const PublicDivisionDetail = () => {
 
   const org        = data?.org || stateOrg || { name: '' };
   const color      = org.primaryColor || '#0b1d12';
-
-  const division     = data?.division;
-  const competition  = division?.competition;
+  const division   = data?.division;
+  const competition = division?.competition;
   const allDivisions = data?.allDivisions || [];
-  const teams        = data?.teams || [];
-  const matches      = data?.matches || [];
-  const standings    = data?.standings || [];
-  const bracket      = data?.bracket || {};
+  const teams      = data?.teams || [];
+  const matches    = data?.matches || [];
+  const standings  = data?.standings || [];
+  const bracket    = data?.bracket || {};
+  const groups     = data?.groups || [];
+  const tournamentFormat = data?.tournamentFormat || 'elimination';
 
-  const isTournament = competition?.type === 'tournament';
-  const scoringType  = competition?.sport?.scoringType || 'sets';
+  const isTournament  = competition?.type === 'tournament';
+  const isGroupFormat = isTournament && tournamentFormat === 'groups_and_elimination';
+  const scoringType   = competition?.sport?.scoringType || 'sets';
+  const settings      = competition?.settings || {};
+  const teamsAdvancing = Number(settings.teamsAdvancing) || 2;
 
-  // Form map: teamId -> ['W','L',...] ordered oldest→newest, last 5 played matches
   const formMap = (() => {
     if (isTournament || !standings.length || !matches.length) return {};
     const map = {};
@@ -200,34 +271,31 @@ const PublicDivisionDetail = () => {
       const tid = team._id?.toString();
       if (!tid) return;
       map[tid] = matches
-        .filter(m =>
-          m.status === 'played' &&
-          (m.teamA?._id?.toString() === tid || m.teamB?._id?.toString() === tid)
-        )
+        .filter(m => m.status === 'played' && (m.teamA?._id?.toString() === tid || m.teamB?._id?.toString() === tid))
         .sort((a, b) => (b.round ?? 0) - (a.round ?? 0))
-        .slice(0, 3)
-        .reverse()
-        .map(m => {
-          const w = m.winner?._id?.toString() || m.winner?.toString();
-          return w === tid ? 'W' : 'L';
-        });
+        .slice(0, 3).reverse()
+        .map(m => { const w = m.winner?._id?.toString() || m.winner?.toString(); return w === tid ? 'W' : 'L'; });
     });
     return map;
   })();
-  const settings     = competition?.settings || {};
+
   const promotionSpots  = settings.promotionSpots || 0;
   const relegationSpots = settings.relegationSpots || 0;
-
   const currentDivisionIndex = allDivisions.findIndex((d) => d._id === divId);
   const isTopDivision    = currentDivisionIndex === 0;
   const isBottomDivision = currentDivisionIndex === allDivisions.length - 1;
 
-  // Auto-select first tab when data arrives
   const TABS = isTournament
-    ? [
-        { key: 'bracket', label: 'Bracket',      icon: 'bracket' },
-        { key: 'teams',   label: 'Equipos',       icon: 'team' },
-      ]
+    ? isGroupFormat
+      ? [
+          { key: 'groups',  label: 'Grupos',   icon: 'standings' },
+          { key: 'bracket', label: 'Bracket',   icon: 'bracket' },
+          { key: 'teams',   label: 'Equipos',   icon: 'team' },
+        ]
+      : [
+          { key: 'bracket', label: 'Bracket',   icon: 'bracket' },
+          { key: 'teams',   label: 'Equipos',   icon: 'team' },
+        ]
     : [
         { key: 'standings', label: 'Clasificacion', icon: 'standings' },
         { key: 'matches',   label: 'Jornadas',      icon: 'match' },
@@ -236,7 +304,6 @@ const PublicDivisionDetail = () => {
 
   const activeTab = tab ?? TABS[0].key;
 
-  // Group league matches by round
   const matchesByRound = matches.reduce((acc, m) => {
     const r = m.round ?? 0;
     if (!acc[r]) acc[r] = [];
@@ -244,7 +311,6 @@ const PublicDivisionDetail = () => {
     return acc;
   }, {});
   const rounds = Object.keys(matchesByRound).map(Number).sort((a, b) => a - b);
-
   const compId = competition?._id;
 
   if (error && !loading && !data) {
@@ -259,11 +325,7 @@ const PublicDivisionDetail = () => {
   }
 
   return (
-    <PublicLayout
-      orgId={orgId}
-      orgName={org.name}
-      orgLogo={org.logo}
-      orgColor={color}
+    <PublicLayout orgId={orgId} orgName={org.name} orgLogo={org.logo} orgColor={color}
       title={loading ? undefined : `${competition?.name} · ${division?.name}`}
     >
       {/* Breadcrumb */}
@@ -276,7 +338,6 @@ const PublicDivisionDetail = () => {
           {loading ? '...' : competition?.name}
         </button>
 
-        {/* Division switcher */}
         {allDivisions.length > 1 && (
           <div className="ml-auto flex items-center gap-1 flex-wrap">
             {allDivisions.map((d) => (
@@ -296,7 +357,6 @@ const PublicDivisionDetail = () => {
         )}
       </div>
 
-      {/* Division title */}
       {!loading && division && (
         <h1 className="text-base font-bold text-gray-900 tracking-tight mb-4">{division.name}</h1>
       )}
@@ -318,11 +378,23 @@ const PublicDivisionDetail = () => {
         ))}
       </div>
 
+      {/* ── Grupos ── */}
+      {activeTab === 'groups' && isGroupFormat && (
+        loading
+          ? <div className="space-y-3">{[1,2].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}</div>
+          : <PublicGroups groups={groups} scoringType={scoringType} teamsAdvancing={teamsAdvancing} />
+      )}
+
+      {/* ── Bracket ── */}
+      {activeTab === 'bracket' && isTournament && (
+        loading
+          ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
+          : <PublicBracket bracket={bracket} scoringType={scoringType} />
+      )}
+
       {/* ── Standings ── */}
       {activeTab === 'standings' && !isTournament && (
-        loading ? (
-          <Skeleton className="h-64 rounded-2xl" />
-        ) : (
+        loading ? <Skeleton className="h-64 rounded-2xl" /> : (
           <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
             <div className="px-4 pt-4 pb-1">
               <StandingsTable
@@ -338,16 +410,14 @@ const PublicDivisionDetail = () => {
         )
       )}
 
-      {/* ── Matches / Jornadas ── */}
+      {/* ── Jornadas ── */}
       {activeTab === 'matches' && !isTournament && (
         loading ? (
-          <div className="space-y-4">
-            {[1,2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
-          </div>
+          <div className="space-y-4">{[1,2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}</div>
         ) : matches.length === 0 ? (
           <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
             <p className="font-semibold text-gray-800">Sin partidos</p>
-            <p className="text-sm text-gray-400 mt-1">El calendario aun no ha sido generado.</p>
+            <p className="text-sm text-gray-400 mt-1">El calendario aún no ha sido generado.</p>
           </div>
         ) : (
           <div className="space-y-5">
@@ -356,18 +426,12 @@ const PublicDivisionDetail = () => {
               return (
                 <div key={round}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400">
-                      Jornada {round}
-                    </span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Jornada {round}</span>
                     <div className="flex-1 h-px bg-gray-100" />
-                    <span className="text-xs text-gray-300">
-                      {rMatches.filter((m) => m.status === 'played').length}/{rMatches.length}
-                    </span>
+                    <span className="text-xs text-gray-300">{rMatches.filter((m) => m.status === 'played').length}/{rMatches.length}</span>
                   </div>
                   <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
-                    {rMatches.map((match) => (
-                      <MatchRow key={match._id} match={match} scoringType={scoringType} />
-                    ))}
+                    {rMatches.map((match) => <MatchRow key={match._id} match={match} scoringType={scoringType} />)}
                   </div>
                 </div>
               );
@@ -376,7 +440,7 @@ const PublicDivisionDetail = () => {
         )
       )}
 
-      {/* ── Teams ── */}
+      {/* ── Equipos ── */}
       {activeTab === 'teams' && (
         loading ? (
           <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
@@ -394,29 +458,24 @@ const PublicDivisionDetail = () => {
         ) : (
           <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
             {teams.map((team, i) => {
-              const playerNames = team.players?.map((p) => p.name).filter(Boolean) || [];
-              const displayName = playerNames.length > 0 ? playerNames.join(' / ') : team.name;
+              const displayName = team.players?.map((p) => p.name).filter(Boolean).join(' / ') || team.name;
+              const groupBadge = isGroupFormat && team.group;
               return (
                 <div key={team._id} className="px-4 py-3 flex items-center gap-3">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-                    style={{ backgroundColor: color }}
-                  >
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: color }}>
                     {i + 1}
                   </div>
-                  <p className="text-xs font-semibold text-gray-800">{displayName}</p>
+                  <p className="text-xs font-semibold text-gray-800 flex-1">{displayName}</p>
+                  {groupBadge && (
+                    <span className="text-[10px] font-bold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">
+                      Gr. {team.group}
+                    </span>
+                  )}
                 </div>
               );
             })}
           </div>
         )
-      )}
-
-      {/* ── Bracket ── */}
-      {activeTab === 'bracket' && isTournament && (
-        loading
-          ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
-          : <PublicBracket bracket={bracket} scoringType={scoringType} color={color} />
       )}
     </PublicLayout>
   );
