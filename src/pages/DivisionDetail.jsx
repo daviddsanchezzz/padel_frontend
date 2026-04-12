@@ -105,10 +105,10 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2">
+      {/* Toolbar — two rows on mobile, one row on desktop */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         {/* Sub-tab toggle */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 self-start">
           <button
             onClick={() => setSubTab('standings')}
             className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${subTab === 'standings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -126,10 +126,10 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
         {/* Organizer actions */}
         {isOrganizer && (
           <div className="flex gap-2">
-            <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5">
+            <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
               <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Nuevo sorteo'}
             </button>
-            <button onClick={onGenerateBracket} disabled={generating} className="btn-primary text-xs py-1.5">
+            <button onClick={onGenerateBracket} disabled={generating} className="btn-primary text-xs py-1.5 flex-1 md:flex-none justify-center">
               <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
             </button>
           </div>
