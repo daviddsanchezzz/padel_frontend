@@ -1,5 +1,4 @@
 import React from 'react';
-import { Trophy } from 'lucide-react';
 
 const MATCH_H  = 88;   // height of each match card (px)
 const MATCH_W  = 220;  // width of each match card
@@ -127,27 +126,8 @@ const VisualBracket = ({ bracket, scoringType }) => {
     (bracket[rounds[ri]] || []).forEach((_, pos) => getY(ri, pos));
   });
 
-  const champion = (() => {
-    const lastRound = rounds[rounds.length - 1];
-    const lastMatch = (bracket[lastRound] || [])[0];
-    return lastMatch?.winner;
-  })();
-
   return (
-    <div className="space-y-4">
-      {champion && (
-        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
-            <Trophy size={15} className="text-white" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest leading-none mb-0.5">Campeón</p>
-            <p className="text-sm font-bold text-gray-900">{champion.name}</p>
-          </div>
-        </div>
-      )}
-
-      <div className="overflow-x-auto pb-4">
+    <div className="overflow-x-auto pb-4">
         <div
           className="relative"
           style={{ width: totalW, height: totalH + LABEL_H + MATCH_H, minHeight: 200 }}
