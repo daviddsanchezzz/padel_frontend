@@ -214,11 +214,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
     }
   };
 
-  const handleCardClick = (e) => {
-    if (window.innerWidth >= 768) return;
-    if (e.target.closest('button, a, input, select, textarea, form')) return;
-    navigate(`/matches/${match._id}`);
-  };
+  const handleCardClick = () => {};
 
   const openSchedule = () => {
     if (isPadelStyleSchedule) {
@@ -286,11 +282,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className={`inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md border transition-colors ${
-                        schedulePieces.length > 0
-                          ? 'border-brand-300 bg-brand-50 text-brand-700'
-                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
                       <Icon name="calendar" size={14} />
@@ -315,11 +307,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className={`inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md border transition-colors mr-1 ${
-                        schedulePieces.length > 0
-                          ? 'border-brand-300 bg-brand-50 text-brand-700'
-                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors mr-1"
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
                       <Icon name="calendar" size={14} />
