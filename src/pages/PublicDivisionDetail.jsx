@@ -64,7 +64,7 @@ const MatchRow = ({ match, scoringType }) => {
         </div>
         <div className="flex-shrink-0 flex gap-2 items-start">
           {isPending ? (
-            <span className="text-[10px] font-semibold text-gray-300 uppercase tracking-wide mt-1">PDTE</span>
+            null
           ) : sets ? (
             sets.map((s, i) => (
               <div key={i} className="flex flex-col items-center gap-1">

@@ -42,9 +42,7 @@ const toDateTimeLocalValue = (match) => {
 // Stacked score: per-team rows on the right, matching the public view
 const StackedScore = ({ result, scoringType, isPending }) => {
   if (isPending) {
-    return (
-      <span className="text-[10px] font-semibold text-gray-300 uppercase tracking-wide mt-0.5">PDTE</span>
-    );
+    return null;
   }
   if (!result) return null;
 
@@ -168,7 +166,6 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const isOrganizer = user?.role === 'organizer';
   const canConfirm = match.status === 'awaiting_confirmation' && (isOrganizer || isConfirmingTeam);
   const canDispute = match.status === 'awaiting_confirmation' && isConfirmingTeam;
-  const canSchedule = isOrganizer;
 
   const resultConfig = match.competition?.settings?.resultConfig || {};
   const eventModeEnabled = scoringType === 'goals' && resultConfig.mode === 'events';
@@ -250,6 +247,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const teamAName = match.teamA?.name || 'TBD';
   const teamBName = match.teamB?.name || 'TBD';
   const displayResult = match.status === 'awaiting_confirmation' ? match.pendingResult : match.result;
+  const canSchedule = isOrganizer && !displayResult;
   const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
 
   const isPending = !displayResult && match.status === 'pending';
