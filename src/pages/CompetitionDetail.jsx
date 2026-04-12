@@ -116,6 +116,13 @@ const statusConfig = {
   finished: { label: 'Finalizada', cls: 'bg-blue-100 text-blue-700' },
 };
 
+const formatDateLabel = (value) => {
+  if (!value) return '';
+  const [y, m, d] = value.split('-');
+  if (!y || !m || !d) return value;
+  return `${d}/${m}/${y}`;
+};
+
 // ── Stepper input ─────────────────────────────────────────────────────────────
 const Stepper = ({ value, onChange, min = 0, max = 99 }) => (
   <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden w-fit">
@@ -146,6 +153,8 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
   const isTournament = competition.type === 'tournament';
 
   const [status, setStatus] = useState(competition.status);
+  const [location, setLocation] = useState(competition.location || '');
+  const [startDate, setStartDate] = useState(competition.startDate || '');
   const [s, setS] = useState({
     pointsPerWin:        defaults.pointsPerWin        ?? 3,
     pointsPerLoss:       defaults.pointsPerLoss       ?? 0,
@@ -176,6 +185,8 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
     setSaving(true);
     await onSave({
       status,
+      location,
+      startDate,
       settings: {
         ...defaults,
         ...s,
@@ -237,6 +248,32 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                   {statusConfig[opt].label}
                 </button>
               ))}
+            </div>
+          </section>
+
+          <section>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Datos de competicion</p>
+            <div className="space-y-3">
+              <div>
+                <label className="label">Ubicacion</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Ej: Ecija, Sevilla"
+                  maxLength={140}
+                />
+              </div>
+              <div>
+                <label className="label">Fecha</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
             </div>
           </section>
 
@@ -573,6 +610,12 @@ const CompetitionDetail = () => {
         )}
         {competition.season && (
           <span className="badge bg-gray-100 text-gray-500">T. {competition.season}</span>
+        )}
+        {competition.location && (
+          <span className="badge bg-gray-100 text-gray-500">{competition.location}</span>
+        )}
+        {competition.startDate && (
+          <span className="badge bg-gray-100 text-gray-500">{formatDateLabel(competition.startDate)}</span>
         )}
       </div>
 

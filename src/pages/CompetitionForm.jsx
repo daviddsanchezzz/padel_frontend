@@ -17,7 +17,7 @@ const CompetitionForm = () => {
   const { activeOrg } = useOrg();
   const [sports, setSports] = useState([]);
   const [form, setForm] = useState({
-    name: '', type: 'league', sportId: '', season: '', description: '',
+    name: '', type: 'league', sportId: '', season: '', description: '', location: '', startDate: '',
   });
   const [footballMaxPlayers, setFootballMaxPlayers] = useState(11);
   const [tennisMode, setTennisMode] = useState('singles');
@@ -232,6 +232,29 @@ const CompetitionForm = () => {
                   </div>
                 </div>
               )}
+            </section>
+
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <label className="label">Ubicacion</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={form.location}
+                  placeholder="Ej: Ecija, Sevilla"
+                  maxLength={140}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="label">Fecha</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                />
+              </div>
             </section>
 
             <section>
