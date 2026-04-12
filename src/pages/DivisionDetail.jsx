@@ -29,56 +29,29 @@ const TOURNAMENT_GROUPS_TABS = [
 ];
 
 // ── Groups tab view ───────────────────────────────────────────────────────────
-const GroupStandingsTable = ({ group, teamsAdvancing }) => (
-  <div className="card overflow-hidden">
-    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 bg-brand-600 text-white rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0">
-          {group.name}
-        </div>
-        <span className="text-sm font-semibold text-gray-800">Grupo {group.name}</span>
+const GroupStandingsTable = ({ group, teamsAdvancing, currentUserId }) => (
+  <div className="card p-4 overflow-hidden">
+    <div className="flex items-center gap-2 mb-3">
+      <div className="w-7 h-7 bg-brand-600 text-white rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0">
+        {group.name}
       </div>
-      <span className="text-xs text-gray-400">
+      <span className="text-sm font-semibold text-gray-800">Grupo {group.name}</span>
+      <span className="ml-auto text-xs text-gray-400">
         {group.matches.filter((m) => m.status === 'played').length}/{group.matches.length} jugados
       </span>
     </div>
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
-        <thead>
-          <tr className="border-b border-gray-100">
-            <th className="text-left px-4 py-2 font-semibold text-gray-400 w-6">#</th>
-            <th className="text-left px-2 py-2 font-semibold text-gray-400">Equipo</th>
-            <th className="text-center px-2 py-2 font-semibold text-gray-400">PJ</th>
-            <th className="text-center px-2 py-2 font-semibold text-gray-400">G</th>
-            <th className="text-center px-2 py-2 font-semibold text-gray-400">E</th>
-            <th className="text-center px-2 py-2 font-semibold text-gray-400">P</th>
-            <th className="text-center px-3 py-2 font-semibold text-gray-700">Pts</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {group.standings.map((row, idx) => {
-            const advances = idx < teamsAdvancing;
-            return (
-              <tr key={row.teamId} className={advances ? 'bg-brand-50' : ''}>
-                <td className="px-4 py-2.5">
-                  <span className={`text-[10px] font-bold ${advances ? 'text-brand-600' : 'text-gray-300'}`}>{idx + 1}</span>
-                </td>
-                <td className="px-2 py-2.5 font-medium text-gray-800 truncate max-w-[160px]">{row.teamName}</td>
-                <td className="text-center px-2 py-2.5 text-gray-500">{row.played}</td>
-                <td className="text-center px-2 py-2.5 text-gray-500">{row.won}</td>
-                <td className="text-center px-2 py-2.5 text-gray-500">{row.drawn}</td>
-                <td className="text-center px-2 py-2.5 text-gray-500">{row.lost}</td>
-                <td className="text-center px-3 py-2.5 font-bold text-gray-900">{row.points}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <StandingsTable
+      standings={group.standings}
+      promotionSpots={teamsAdvancing}
+      relegationSpots={0}
+      isTopDivision={false}
+      isBottomDivision={true}
+      currentUserId={currentUserId}
+    />
   </div>
 );
 
-const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing }) => {
+const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing, currentUserId }) => {
   const [subTab, setSubTab] = useState('standings'); // 'standings' | 'matches'
 
   if (!groups.length) {
@@ -140,7 +113,7 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
       {subTab === 'standings' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {groups.map((group) => (
-            <GroupStandingsTable key={group.name} group={group} teamsAdvancing={teamsAdvancing} />
+            <GroupStandingsTable key={group.name} group={group} teamsAdvancing={teamsAdvancing} currentUserId={currentUserId} />
           ))}
         </div>
       )}
@@ -1060,7 +1033,7 @@ const DivisionDetail = () => {
           scoringType={scoringType}
           isOrganizer={isOrganizer}
           teamsAdvancing={Number(compSettings.teamsAdvancing) || 2}
-          setTab={setTab}
+          currentUserId={user?.id}
         />
       )}
 
