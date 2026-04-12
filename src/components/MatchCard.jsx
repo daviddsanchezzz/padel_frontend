@@ -285,10 +285,10 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className="inline-flex md:hidden items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 h-7 px-2 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors"
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
-                      <Icon name="calendar" size={12} />
+                      {schedulePieces.length > 0 ? 'Editar' : 'Prog.'}
                     </button>
                   )}
                   <div className="hidden md:flex items-center gap-1.5">
@@ -310,10 +310,10 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className="inline-flex md:hidden items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors mr-1"
+                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 h-7 px-2 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors mr-1"
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
-                      <Icon name="calendar" size={12} />
+                      {schedulePieces.length > 0 ? 'Editar' : 'Prog.'}
                     </button>
                   )}
                   {canSchedule && (
