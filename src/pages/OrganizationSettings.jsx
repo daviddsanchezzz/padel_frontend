@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Building2, MapPin, Globe, Save, Loader2, CheckCircle, Upload, X, ExternalLink, Copy } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Building2, MapPin, Globe, Save, Loader2, CheckCircle, Upload, X, ExternalLink, Copy, CreditCard, AlertCircle } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
 import { useOrg } from '../context/OrgContext';
-import { updateOrganization } from '../api/organizations';
+import { updateOrganization, getConnectStatus, startConnectOnboard } from '../api/organizations';
 
 const OrganizationSettings = () => {
   const { activeOrg, orgCreated } = useOrg();
@@ -17,6 +17,28 @@ const OrganizationSettings = () => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [logoPreview, setLogoPreview] = useState('');
+
+  const [connectStatus, setConnectStatus] = useState(null); // null | 'not_connected' | 'pending' | 'active' | 'error'
+  const [connectLoading, setConnectLoading] = useState(false);
+
+  // Load Stripe Connect status whenever the active org changes
+  useEffect(() => {
+    if (!activeOrg?._id) return;
+    setConnectStatus(null);
+    getConnectStatus(activeOrg._id)
+      .then((res) => setConnectStatus(res.data.status))
+      .catch(() => setConnectStatus('error'));
+  }, [activeOrg?._id]);
+
+  const handleConnectOnboard = async () => {
+    setConnectLoading(true);
+    try {
+      const res = await startConnectOnboard(activeOrg._id);
+      window.location.href = res.data.url;
+    } catch {
+      setConnectLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!activeOrg) return;
@@ -284,6 +306,85 @@ const OrganizationSettings = () => {
             </div>
           </div>
         </div>
+
+        {/* ── Stripe Connect — full width ── */}
+        <div className="card divide-y divide-gray-100">
+          <div className="px-5 py-3.5 flex items-center gap-2">
+            <CreditCard size={14} className="text-gray-400" />
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Pagos · Cuenta bancaria</p>
+          </div>
+
+          <div className="px-5 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Status indicator */}
+            <div className="flex-1 min-w-0">
+              {connectStatus === 'active' && (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                    <p className="text-sm font-semibold text-gray-900">Cuenta conectada</p>
+                  </div>
+                  <p className="text-xs text-gray-400">Los pagos de inscripción se ingresan directamente en tu cuenta bancaria.</p>
+                </>
+              )}
+              {connectStatus === 'pending' && (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                    <p className="text-sm font-semibold text-gray-900">Verificación pendiente</p>
+                  </div>
+                  <p className="text-xs text-gray-400">Stripe está revisando tu información. Puedes continuar el proceso si quedó incompleto.</p>
+                </>
+              )}
+              {connectStatus === 'not_connected' && (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-gray-300 flex-shrink-0" />
+                    <p className="text-sm font-semibold text-gray-900">Sin cuenta conectada</p>
+                  </div>
+                  <p className="text-xs text-gray-400">Conecta tu cuenta bancaria para recibir los pagos de inscripción directamente.</p>
+                </>
+              )}
+              {connectStatus === 'error' && (
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
+                  <p className="text-sm text-red-500">No se pudo comprobar el estado. Inténtalo de nuevo.</p>
+                </div>
+              )}
+              {connectStatus === null && (
+                <div className="h-4 w-48 bg-gray-100 rounded animate-pulse" />
+              )}
+            </div>
+
+            {/* Action button */}
+            {connectStatus !== 'active' && (
+              <button
+                type="button"
+                onClick={handleConnectOnboard}
+                disabled={connectLoading || connectStatus === null}
+                className="btn-primary flex-shrink-0 disabled:opacity-60"
+              >
+                {connectLoading
+                  ? <><Loader2 size={14} className="animate-spin" /> Redirigiendo…</>
+                  : connectStatus === 'pending'
+                    ? <><ExternalLink size={14} /> Continuar verificación</>
+                    : <><CreditCard size={14} /> Conectar cuenta bancaria</>
+                }
+              </button>
+            )}
+            {connectStatus === 'active' && (
+              <button
+                type="button"
+                onClick={handleConnectOnboard}
+                disabled={connectLoading}
+                className="btn-secondary flex-shrink-0 text-xs disabled:opacity-60"
+              >
+                {connectLoading ? <Loader2 size={13} className="animate-spin" /> : <ExternalLink size={13} />}
+                Gestionar en Stripe
+              </button>
+            )}
+          </div>
+        </div>
+
       </form>
     </AppLayout>
   );

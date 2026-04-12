@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, ChevronDown } from 'lucide-react';
 import { getPublicCompetition, registerForCompetition } from '../api/organizations';
@@ -62,12 +62,18 @@ const PublicRegistration = () => {
 
     setSubmitting(true);
     try {
-      await registerForCompetition(orgId, compId, {
+      const res = await registerForCompetition(orgId, compId, {
         divisionId,
         players: players.map((name) => ({ name: name.trim() })),
         contactEmail: email.trim() || undefined,
       });
-      setSuccess(true);
+      if (res.data.requiresPayment && res.data.checkoutUrl) {
+        // Paid registration → redirect to Stripe Checkout
+        window.location.href = res.data.checkoutUrl;
+      } else {
+        // Free registration → show success inline
+        setSuccess(true);
+      }
     } catch (err) {
       setSubmitError(err.response?.data?.message || 'Error al inscribirse. Inténtalo de nuevo.');
     } finally {

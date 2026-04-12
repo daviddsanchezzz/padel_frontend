@@ -19,6 +19,10 @@ import PublicOrganization        from './pages/PublicOrganization';
 import PublicCompetitionDetail  from './pages/PublicCompetitionDetail';
 import PublicDivisionDetail     from './pages/PublicDivisionDetail';
 import PublicRegistration       from './pages/PublicRegistration';
+import PaymentSuccess           from './pages/PaymentSuccess';
+import PaymentCancel            from './pages/PaymentCancel';
+import ConnectReturn            from './pages/ConnectReturn';
+import ConnectRefresh           from './pages/ConnectRefresh';
 
 /** Redirects organizers without a club to onboarding. */
 const RequireOrg = ({ children }) => {
@@ -53,6 +57,10 @@ const App = () => (
           <Route path="/organizations/:orgId/competitions/:compId/public" element={<PublicCompetitionDetail />} />
           <Route path="/organizations/:orgId/divisions/:divId/public" element={<PublicDivisionDetail />} />
           <Route path="/organizations/:orgId/competitions/:compId/register" element={<PublicRegistration />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel"  element={<PaymentCancel />} />
+          <Route path="/connect/return"  element={<ProtectedRoute requiredRole="organizer"><ConnectReturn /></ProtectedRoute>} />
+          <Route path="/connect/refresh" element={<ProtectedRoute requiredRole="organizer"><ConnectRefresh /></ProtectedRoute>} />
 
           {/* Onboarding — organizer without org lands here */}
           <Route path="/onboarding" element={

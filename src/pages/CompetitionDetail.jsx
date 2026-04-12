@@ -176,6 +176,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
     tournamentFormat:    defaults.tournamentFormat     ?? 'elimination',
     teamsPerGroup:       defaults.teamsPerGroup        ?? 4,
     teamsAdvancing:      defaults.teamsAdvancing       ?? 2,
+    registrationFee:     defaults.registrationFee      ?? 0,
   });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setS((prev) => ({ ...prev, [k]: v }));
@@ -206,6 +207,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
         tournamentFormat: s.tournamentFormat,
         teamsPerGroup: s.teamsPerGroup,
         teamsAdvancing: s.teamsAdvancing,
+        registrationFee: Number(s.registrationFee) || 0,
       },
     });
     setSaving(false);
@@ -485,6 +487,35 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
               </div>
             </section>
           )}
+
+          {/* Inscripción — precio */}
+          <section>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Inscripción</p>
+            <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Precio de inscripción</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {Number(s.registrationFee) === 0 ? 'Gratuita — no se requiere pago' : `${Number(s.registrationFee).toFixed(2)} € por equipo`}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <span className="text-sm text-gray-400">€</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={s.registrationFee}
+                  onChange={(e) => set('registrationFee', e.target.value)}
+                  className="w-20 text-center text-sm font-semibold text-gray-800 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+              </div>
+            </div>
+            {Number(s.registrationFee) > 0 && (
+              <p className="text-[11px] text-amber-600 mt-2 px-1">
+                Los jugadores serán redirigidos a Stripe Checkout al inscribirse. Asegúrate de tener configuradas las variables de Stripe en el servidor.
+              </p>
+            )}
+          </section>
         </div>
 
         {/* Footer */}
