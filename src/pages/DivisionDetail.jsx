@@ -122,7 +122,7 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
 
       {/* Clasificación — group tables in a 2-col grid */}
       {subTab === 'standings' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`grid grid-cols-1 gap-4 ${groups.length > 1 ? 'md:grid-cols-2' : ''}`}>
           {groups.map((group) => (
             <GroupStandingsTable key={group.name} group={group} teamsAdvancing={teamsAdvancing} currentUserId={currentUserId} />
           ))}

@@ -11,6 +11,27 @@ const Skeleton = ({ className }) => (
   <div className={`bg-gray-200 rounded-xl animate-pulse ${className}`} />
 );
 
+const formatDateLabel = (value) => {
+  if (!value) return '';
+  const [y, m, d] = value.split('-');
+  if (!y || !m || !d) return value;
+  return `${d}/${m}/${y}`;
+};
+
+const formatDateTimeLabel = (match) => {
+  if (match?.matchDate && match?.matchTime) return `${formatDateLabel(match.matchDate)} ${match.matchTime}`;
+  if (match?.matchDate) return formatDateLabel(match.matchDate);
+  if (match?.matchTime) return match.matchTime;
+  if (match?.scheduledDate) {
+    const date = new Date(match.scheduledDate);
+    if (!Number.isNaN(date.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+  }
+  return '';
+};
+
 /* ── Single match row ───────────────────────────────────────── */
 const MatchRow = ({ match, scoringType }) => {
   const teamAName  = match.teamA?.name || 'TBD';
@@ -25,6 +46,7 @@ const MatchRow = ({ match, scoringType }) => {
     : null;
 
   const isPending = match.status === 'pending' && !displayResult;
+  const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
   const sets  = scoringType === 'sets'  && displayResult?.sets  ? displayResult.sets  : null;
   const goals = scoringType === 'goals' && displayResult?.goals ? displayResult.goals : null;
 
@@ -58,6 +80,9 @@ const MatchRow = ({ match, scoringType }) => {
           ) : null}
         </div>
       </div>
+      {schedulePieces.length > 0 && (
+        <p className="mt-2 text-[11px] text-gray-400">{schedulePieces.join(' - ')}</p>
+      )}
     </div>
   );
 };
@@ -166,7 +191,7 @@ const PublicGroups = ({ groups, scoringType, teamsAdvancing }) => {
 
       {/* Clasificación — grid 2 cols */}
       {subTab === 'standings' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`grid grid-cols-1 gap-4 ${groups.length > 1 ? 'md:grid-cols-2' : ''}`}>
           {groups.map((group) => (
             <div key={group.name} className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden p-4">
               <div className="flex items-center gap-2 mb-3">
