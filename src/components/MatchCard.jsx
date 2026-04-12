@@ -148,6 +148,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const isOrganizer = user?.role === 'organizer';
   const canConfirm = match.status === 'awaiting_confirmation' && (isOrganizer || isConfirmingTeam);
   const canDispute = match.status === 'awaiting_confirmation' && isConfirmingTeam;
+  const canSchedule = isOrganizer;
 
   const resultConfig = match.competition?.settings?.resultConfig || {};
   const eventModeEnabled = scoringType === 'goals' && resultConfig.mode === 'events';
@@ -226,14 +227,32 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
           </div>
 
           {/* Action buttons */}
-          {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled) && (
+          {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled || canSchedule) && (
             <div className="flex-shrink-0 flex items-center self-center">
               {eventModeEnabled ? (
-                <button onClick={() => navigate(`/matches/${match._id}`)} className="hidden md:inline-flex text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
-                  Ver detalle
-                </button>
+                <div className="hidden md:flex items-center gap-1.5">
+                  {canSchedule && (
+                    <button
+                      onClick={() => navigate(`/matches/${match._id}`)}
+                      className="text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
+                    </button>
+                  )}
+                  <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                    Ver detalle
+                  </button>
+                </div>
               ) : (
                 <>
+                  {canSchedule && (
+                    <button
+                      onClick={() => navigate(`/matches/${match._id}`)}
+                      className="hidden md:inline-flex text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors mr-1.5"
+                    >
+                      {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
+                    </button>
+                  )}
                   {match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
                     <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
                       + Resultado
