@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { recordResult, confirmResult, disputeResult } from '../api/matches';
+import { recordResult, confirmResult, disputeResult, updateMatchSchedule } from '../api/matches';
 import { useAuth } from '../context/AuthContext';
 
 const EMPTY_SET = { a: '', b: '' };
@@ -21,6 +21,18 @@ const formatDateTimeLabel = (match) => {
     if (!Number.isNaN(date.getTime())) {
       const pad = (n) => String(n).padStart(2, '0');
       return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+  }
+  return '';
+};
+
+const toDateTimeLocalValue = (match) => {
+  if (match?.matchDate && match?.matchTime) return `${match.matchDate}T${match.matchTime}`;
+  if (match?.scheduledDate) {
+    const date = new Date(match.scheduledDate);
+    if (!Number.isNaN(date.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     }
   }
   return '';
@@ -124,8 +136,15 @@ const ResultForm = ({ scoringType, teamAName, teamBName, onSubmit, onCancel, sav
 
 const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = null, forceCanRecord = false }) => {
   const [showForm, setShowForm] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
+  const [scheduleForm, setScheduleForm] = useState({
+    location: match?.location || '',
+    dateTime: toDateTimeLocalValue(match),
+  });
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -152,6 +171,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
 
   const resultConfig = match.competition?.settings?.resultConfig || {};
   const eventModeEnabled = scoringType === 'goals' && resultConfig.mode === 'events';
+  const isPadelStyleSchedule = scoringType === 'sets';
 
   const handleSubmit = async (result) => {
     setError('');
@@ -199,6 +219,37 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
     navigate(`/matches/${match._id}`);
   };
 
+  const openSchedule = () => {
+    if (isPadelStyleSchedule) {
+      setScheduleError('');
+      setScheduleForm({
+        location: match?.location || '',
+        dateTime: toDateTimeLocalValue(match),
+      });
+      setShowScheduleModal(true);
+      return;
+    }
+    navigate(`/matches/${match._id}`);
+  };
+
+  const handleSaveSchedule = async (e) => {
+    e.preventDefault();
+    setScheduleError('');
+    setScheduleSaving(true);
+    try {
+      await updateMatchSchedule(match._id, {
+        location: scheduleForm.location,
+        dateTime: scheduleForm.dateTime,
+      });
+      setShowScheduleModal(false);
+      onResultRecorded && onResultRecorded();
+    } catch (err) {
+      setScheduleError(err.response?.data?.message || 'Error al guardar programacion');
+    } finally {
+      setScheduleSaving(false);
+    }
+  };
+
   const teamAName = match.teamA?.name || 'TBD';
   const teamBName = match.teamB?.name || 'TBD';
   const displayResult = match.status === 'awaiting_confirmation' ? match.pendingResult : match.result;
@@ -233,7 +284,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 <div className="hidden md:flex items-center gap-1.5">
                   {canSchedule && (
                     <button
-                      onClick={() => navigate(`/matches/${match._id}`)}
+                      onClick={openSchedule}
                       className="text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                     >
                       {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
@@ -247,7 +298,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 <>
                   {canSchedule && (
                     <button
-                      onClick={() => navigate(`/matches/${match._id}`)}
+                      onClick={openSchedule}
                       className="hidden md:inline-flex text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors mr-1.5"
                     >
                       {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
@@ -289,6 +340,42 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
             saving={saving}
             error={error}
           />
+        </div>
+      )}
+
+      {showScheduleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowScheduleModal(false)} />
+          <form onSubmit={handleSaveSchedule} className="relative w-full max-w-sm rounded-2xl bg-white shadow-2xl border border-gray-100 p-4 space-y-3">
+            <p className="text-sm font-semibold text-gray-900">Programar partido</p>
+            <div>
+              <label className="label">Ubicacion</label>
+              <input
+                type="text"
+                className="input h-10 text-sm"
+                value={scheduleForm.location}
+                maxLength={140}
+                onChange={(e) => setScheduleForm((prev) => ({ ...prev, location: e.target.value }))}
+                placeholder="Ej: Pista 2"
+              />
+            </div>
+            <div>
+              <label className="label">Fecha y hora</label>
+              <input
+                type="datetime-local"
+                className="input h-10 text-sm"
+                value={scheduleForm.dateTime}
+                onChange={(e) => setScheduleForm((prev) => ({ ...prev, dateTime: e.target.value }))}
+              />
+            </div>
+            {scheduleError && <p className="text-xs text-red-500">{scheduleError}</p>}
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button type="button" onClick={() => setShowScheduleModal(false)} className="btn-secondary text-sm">Cancelar</button>
+              <button type="submit" disabled={scheduleSaving} className="btn-primary text-sm">
+                {scheduleSaving ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
