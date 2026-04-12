@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Building2, ChevronRight } from 'lucide-react';
 import { getPublicOrganization } from '../api/organizations';
 import { SportIcon } from '../components/Icon';
@@ -17,7 +17,9 @@ const Skeleton = ({ className }) => (
 const PublicOrganization = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [org, setOrg] = useState(null);
+  const location = useLocation();
+  const stateOrg = location.state?.org || null;
+  const [org, setOrg] = useState(stateOrg);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [typeFilter, setTypeFilter] = useState(null);
@@ -45,7 +47,7 @@ const PublicOrganization = () => {
     );
   }
 
-  const color = org?.primaryColor || '#16a34a';
+  const color = org?.primaryColor || stateOrg?.primaryColor || '#0b1d12';
   const comps = org?.activeCompetitions || [];
   const filtered = typeFilter ? comps.filter((c) => c.type === typeFilter) : comps;
   const locationStr = org ? [org.location?.city, org.location?.country].filter(Boolean).join(', ') : '';

@@ -63,7 +63,7 @@ const PublicCompetitionDetail = () => {
     >
       {/* Back */}
       <button
-        onClick={() => navigate(`/organizations/${orgId}/public`)}
+        onClick={() => navigate(`/organizations/${orgId}/public`, { state: { org } })}
         className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-5"
       >
         <Icon name="chevronLeft" size={13} /> {org.name || '...'}
