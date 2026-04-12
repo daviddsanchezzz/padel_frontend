@@ -42,6 +42,8 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
   const isLeague = competition.type === 'league';
   const defaultResultConfig = defaults.resultConfig || {};
 
+  const isTournament = competition.type === 'tournament';
+
   const [status, setStatus] = useState(competition.status);
   const [s, setS] = useState({
     pointsPerWin:        defaults.pointsPerWin        ?? 3,
@@ -53,6 +55,9 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
     relegationSpots:     defaults.relegationSpots      ?? 1,
     resultMode:          defaultResultConfig.mode      ?? 'manual',
     enabledEventTypes:   defaultResultConfig.enabledEventTypes ?? ['goal', 'assist', 'yellow_card', 'red_card'],
+    tournamentFormat:    defaults.tournamentFormat     ?? 'elimination',
+    teamsPerGroup:       defaults.teamsPerGroup        ?? 4,
+    teamsAdvancing:      defaults.teamsAdvancing       ?? 2,
   });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setS((prev) => ({ ...prev, [k]: v }));
@@ -77,6 +82,9 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
           mode: s.resultMode,
           enabledEventTypes: s.enabledEventTypes,
         },
+        tournamentFormat: s.tournamentFormat,
+        teamsPerGroup: s.teamsPerGroup,
+        teamsAdvancing: s.teamsAdvancing,
       },
     });
     setSaving(false);
@@ -225,6 +233,53 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                           {item.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Formato del torneo */}
+          {isTournament && (
+            <section>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Formato del torneo</p>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  {[
+                    { value: 'elimination', label: 'Eliminación directa' },
+                    { value: 'groups_and_elimination', label: 'Grupos + Eliminatoria' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => set('tournamentFormat', opt.value)}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${
+                        s.tournamentFormat === opt.value
+                          ? 'bg-brand-600 text-white border-brand-600'
+                          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {s.tournamentFormat === 'groups_and_elimination' && (
+                  <div className="space-y-2">
+                    <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">Equipos por grupo</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Máximo de equipos en cada grupo</p>
+                      </div>
+                      <Stepper value={s.teamsPerGroup} onChange={(v) => set('teamsPerGroup', v)} min={3} max={8} />
+                    </div>
+                    <div className="bg-brand-50 rounded-xl p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-brand-800">Clasifican por grupo</p>
+                        <p className="text-xs text-brand-500 mt-0.5">Equipos que pasan a eliminatoria</p>
+                      </div>
+                      <Stepper value={s.teamsAdvancing} onChange={(v) => set('teamsAdvancing', v)} min={1} max={4} />
                     </div>
                   </div>
                 )}

@@ -28,78 +28,6 @@ const TOURNAMENT_GROUPS_TABS = [
   { key: 'bracket', label: 'Bracket', icon: 'bracket' },
 ];
 
-// ── Format config panel (organizer only, tournament) ─────────────────────────
-const FormatConfig = ({ compSettings, onSave, saving }) => {
-  const [open, setOpen] = React.useState(false);
-  const [fmt, setFmt] = React.useState(compSettings.tournamentFormat || 'elimination');
-  const [tpg, setTpg] = React.useState(compSettings.teamsPerGroup || 4);
-  const [adv, setAdv] = React.useState(compSettings.teamsAdvancing || 2);
-
-  const handleSave = () => {
-    onSave({ tournamentFormat: fmt, teamsPerGroup: Number(tpg), teamsAdvancing: Number(adv) });
-    setOpen(false);
-  };
-
-  return (
-    <div className="card mb-4 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-      >
-        <span className="flex items-center gap-2">
-          <Icon name="settings" size={14} className="text-gray-400" />
-          Formato del torneo
-          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${fmt === 'groups_and_elimination' ? 'bg-brand-100 text-brand-700' : 'bg-gray-100 text-gray-500'}`}>
-            {fmt === 'groups_and_elimination' ? 'Grupos + Eliminatoria' : 'Eliminación directa'}
-          </span>
-        </span>
-        <Icon name={open ? 'chevronUp' : 'chevronDown'} size={14} className="text-gray-400" />
-      </button>
-      {open && (
-        <div className="border-t border-gray-100 px-4 py-4 bg-gray-50 space-y-4">
-          <div>
-            <label className="label mb-1">Formato</label>
-            <div className="flex gap-2">
-              {[
-                { value: 'elimination', label: 'Eliminación directa' },
-                { value: 'groups_and_elimination', label: 'Grupos + Eliminatoria' },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setFmt(opt.value)}
-                  className={`flex-1 text-xs py-2 px-3 rounded-lg border font-medium transition-colors ${fmt === opt.value ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {fmt === 'groups_and_elimination' && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="label">Equipos por grupo</label>
-                <input type="number" min="3" max="8" className="input" value={tpg} onChange={(e) => setTpg(e.target.value)} />
-              </div>
-              <div>
-                <label className="label">Clasifican por grupo</label>
-                <input type="number" min="1" max="4" className="input" value={adv} onChange={(e) => setAdv(e.target.value)} />
-              </div>
-            </div>
-          )}
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setOpen(false)} className="btn-secondary text-xs py-1.5">Cancelar</button>
-            <button type="button" onClick={handleSave} disabled={saving} className="btn-primary text-xs py-1.5">
-              {saving ? 'Guardando...' : 'Guardar'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // ── Groups tab view ───────────────────────────────────────────────────────────
 const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing, setTab }) => {
   if (!groups.length) {
@@ -321,7 +249,6 @@ const DivisionDetail = () => {
   const [standings, setStandings] = useState([]);
   const [groups, setGroups] = useState([]);
   const [allDivisions, setAllDivisions] = useState([]);
-  const [savingSettings, setSavingSettings] = useState(false);
 
   const [tab, setTab] = useState('teams');
   const [loading, setLoading] = useState(true);
@@ -635,21 +562,6 @@ const DivisionDetail = () => {
     }
   };
 
-  const handleSaveFormat = async (newSettings) => {
-    setSavingSettings(true);
-    setError('');
-    try {
-      const { updateCompetition } = await import('../api/competitions');
-      await updateCompetition(division.competition._id, { settings: { ...compSettings, ...newSettings } });
-      const div = await getDivision(id);
-      setDivision(div.data);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar configuracion');
-    } finally {
-      setSavingSettings(false);
-    }
-  };
-
   const onResultRecorded = async () => {
     if (isTournament) {
       const b = await getDivisionBracket(id);
@@ -741,16 +653,7 @@ const DivisionDetail = () => {
 
       {tab === 'teams' && (
         <div>
-          {/* Tournament format config — organizer only */}
-          {isTournament && isOrganizer && (
-            <FormatConfig
-              compSettings={compSettings}
-              onSave={handleSaveFormat}
-              saving={savingSettings}
-            />
-          )}
-
-          <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-500">{teams.length} equipo(s)</p>
             {isOrganizer && (
               <div className="flex gap-2">
