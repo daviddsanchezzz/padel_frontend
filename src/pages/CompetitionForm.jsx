@@ -17,7 +17,7 @@ const CompetitionForm = () => {
   const { activeOrg } = useOrg();
   const [sports, setSports] = useState([]);
   const [form, setForm] = useState({
-    name: '', type: 'league', sportId: '', season: '', description: '', location: '', startDate: '',
+    name: '', type: 'league', sportId: '', season: '', description: '', location: '', startDate: '', endDate: '',
   });
   const [footballMaxPlayers, setFootballMaxPlayers] = useState(11);
   const [tennisMode, setTennisMode] = useState('singles');
@@ -234,7 +234,7 @@ const CompetitionForm = () => {
               )}
             </section>
 
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <section className="grid grid-cols-1 gap-4">
               <div>
                 <label className="label">Ubicacion</label>
                 <input
@@ -246,14 +246,26 @@ const CompetitionForm = () => {
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
                 />
               </div>
-              <div>
-                <label className="label">Fecha</label>
-                <input
-                  type="date"
-                  className="input"
-                  value={form.startDate}
-                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <label className="label">Fecha inicio</label>
+                  <input
+                    type="date"
+                    className="input"
+                    value={form.startDate}
+                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="label">Fecha fin</label>
+                  <input
+                    type="date"
+                    className="input"
+                    value={form.endDate}
+                    min={form.startDate || undefined}
+                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                  />
+                </div>
               </div>
             </section>
 

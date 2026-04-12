@@ -123,6 +123,13 @@ const formatDateLabel = (value) => {
   return `${d}/${m}/${y}`;
 };
 
+const formatDateRange = (startDate, endDate) => {
+  const from = formatDateLabel(startDate);
+  const to = formatDateLabel(endDate);
+  if (from && to) return `${from} - ${to}`;
+  return from || to || '';
+};
+
 // ── Stepper input ─────────────────────────────────────────────────────────────
 const Stepper = ({ value, onChange, min = 0, max = 99 }) => (
   <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden w-fit">
@@ -155,6 +162,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
   const [status, setStatus] = useState(competition.status);
   const [location, setLocation] = useState(competition.location || '');
   const [startDate, setStartDate] = useState(competition.startDate || '');
+  const [endDate, setEndDate] = useState(competition.endDate || '');
   const [s, setS] = useState({
     pointsPerWin:        defaults.pointsPerWin        ?? 3,
     pointsPerLoss:       defaults.pointsPerLoss       ?? 0,
@@ -187,6 +195,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
       status,
       location,
       startDate,
+      endDate,
       settings: {
         ...defaults,
         ...s,
@@ -266,13 +275,22 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                 />
               </div>
               <div>
-                <label className="label">Fecha</label>
-                <input
-                  type="date"
-                  className="input"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
+                <label className="label">Rango de fechas</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    className="input"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    className="input"
+                    value={endDate}
+                    min={startDate || undefined}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           </section>
@@ -614,8 +632,8 @@ const CompetitionDetail = () => {
         {competition.location && (
           <span className="badge bg-gray-100 text-gray-500">{competition.location}</span>
         )}
-        {competition.startDate && (
-          <span className="badge bg-gray-100 text-gray-500">{formatDateLabel(competition.startDate)}</span>
+        {formatDateRange(competition.startDate, competition.endDate) && (
+          <span className="badge bg-gray-100 text-gray-500">{formatDateRange(competition.startDate, competition.endDate)}</span>
         )}
       </div>
 

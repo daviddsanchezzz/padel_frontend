@@ -11,7 +11,16 @@ const normalizeSportName = (value = '') =>
 const CompetitionModal = ({ onClose, onCreated }) => {
   const { activeOrg } = useOrg();
   const [sports, setSports] = useState([]);
-  const [form, setForm] = useState({ name: '', type: 'league', sportId: '', season: '', description: '' });
+  const [form, setForm] = useState({
+    name: '',
+    type: 'league',
+    sportId: '',
+    season: '',
+    description: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+  });
   const [footballMaxPlayers, setFootballMaxPlayers] = useState(11);
   const [tennisMode, setTennisMode] = useState('singles');
   const [error, setError] = useState('');
@@ -172,6 +181,42 @@ const CompetitionModal = ({ onClose, onCreated }) => {
               )}
             </div>
           )}
+
+          {/* Location + Date range */}
+          <div className="grid grid-cols-1 gap-3">
+            <div>
+              <label className="label">Ubicacion</label>
+              <input
+                type="text"
+                className="input"
+                value={form.location}
+                maxLength={140}
+                placeholder="Ej: Ecija, Sevilla"
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label">Fecha inicio</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="label">Fecha fin</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={form.endDate}
+                  min={form.startDate || undefined}
+                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Description */}
           <div>

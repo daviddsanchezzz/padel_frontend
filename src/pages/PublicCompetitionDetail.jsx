@@ -9,6 +9,20 @@ const Skeleton = ({ className }) => (
   <div className={`bg-gray-200 rounded-xl animate-pulse ${className}`} />
 );
 
+const formatDateLabel = (value) => {
+  if (!value) return '';
+  const [y, m, d] = value.split('-');
+  if (!y || !m || !d) return value;
+  return `${d}/${m}/${y}`;
+};
+
+const formatDateRange = (startDate, endDate) => {
+  const from = formatDateLabel(startDate);
+  const to = formatDateLabel(endDate);
+  if (from && to) return `${from} - ${to}`;
+  return from || to || '';
+};
+
 const PublicCompetitionDetail = () => {
   const { orgId, compId } = useParams();
   const navigate = useNavigate();
@@ -35,6 +49,7 @@ const PublicCompetitionDetail = () => {
   const isLeague = competition?.type === 'league';
   const settings = competition?.settings || {};
   const color = org.primaryColor || '#0b1d12';
+  const dateRange = formatDateRange(competition?.startDate, competition?.endDate);
 
   const navigateToDiv = (divId) => {
     navigate(`/organizations/${orgId}/divisions/${divId}/public`, {
@@ -106,6 +121,11 @@ const PublicCompetitionDetail = () => {
           </div>
           {competition.description && (
             <p className="text-xs text-gray-400 mt-2 leading-relaxed">{competition.description}</p>
+          )}
+          {(competition.location || dateRange) && (
+            <p className="text-xs text-gray-500 mt-2">
+              {[competition.location, dateRange].filter(Boolean).join(' - ')}
+            </p>
           )}
         </div>
       )}
