@@ -211,18 +211,20 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-4">
+        {/* Toggle Vista */}
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 self-start">
           <button onClick={() => setViewMode('list')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Lista</button>
           <button onClick={() => setViewMode('visual')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'visual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Cuadro</button>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400">{pending} pendiente(s)</span>
+        {/* Acciones */}
+        <div className="flex items-center gap-2">
+          {pending > 0 && <span className="text-xs text-gray-400">{pending} pendiente{pending !== 1 ? 's' : ''}</span>}
           <button
             onClick={onGenerate}
             disabled={generating || hasPlayedBracketMatches}
             title={hasPlayedBracketMatches ? 'No se puede regenerar el bracket con resultados registrados' : undefined}
-            className="btn-secondary text-xs py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Icon name="bracket" size={13} /> {generating ? 'Generando...' : regenerateLabel}
           </button>
@@ -677,31 +679,33 @@ const DivisionDetail = () => {
 
       {tab === 'teams' && (
         <div>
-              <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-500">{teams.length} equipo(s)</p>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-4">
+            {/* Contador */}
+            <p className="text-sm text-gray-500">{teams.length} equipo{teams.length !== 1 ? 's' : ''}</p>
+            {/* Acciones */}
             {isOrganizer && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {!isTournament && teams.length >= 2 && (
-                  <button onClick={handleGenerateMatches} disabled={generating} className="btn-secondary text-xs py-1.5">
+                  <button onClick={handleGenerateMatches} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
                     <Icon name="match" size={13} /> {generating ? 'Generando...' : 'Generar calendario'}
                   </button>
                 )}
                 {isGroupFormat && teams.length >= 4 && (
-                  <button onClick={handleGenerateGroups} disabled={generating} className="btn-secondary text-xs py-1.5">
+                  <button onClick={handleGenerateGroups} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
                     <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Sorteo de grupos'}
                   </button>
                 )}
                 {isTournament && !isGroupFormat && teams.length >= 2 && (
-                  <button onClick={handleGenerateBracket} disabled={generating} className="btn-secondary text-xs py-1.5">
+                  <button onClick={handleGenerateBracket} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
                     <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
                   </button>
                 )}
                 <button
                   onClick={() => setShowTeamForm((v) => !v)}
                   disabled={maxTeamsPerDivision > 0 && teams.length >= maxTeamsPerDivision}
-                  className="btn-primary text-xs py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-primary text-xs py-1.5 flex-1 md:flex-none justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Icon name="plus" size={13} /> Anadir {teamSize === 1 ? 'jugador' : teamSize === 2 ? 'pareja' : 'equipo'}
+                  <Icon name="plus" size={13} /> Añadir {teamSize === 1 ? 'jugador' : teamSize === 2 ? 'pareja' : 'equipo'}
                 </button>
               </div>
             )}
