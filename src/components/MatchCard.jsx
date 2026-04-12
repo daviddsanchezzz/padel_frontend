@@ -285,10 +285,14 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 h-7 px-2 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors"
+                      className={`inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md border transition-colors ${
+                        schedulePieces.length > 0
+                          ? 'border-brand-300 bg-brand-50 text-brand-700'
+                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
-                      {schedulePieces.length > 0 ? 'Editar' : 'Prog.'}
+                      <Icon name="calendar" size={14} />
                     </button>
                   )}
                   <div className="hidden md:flex items-center gap-1.5">
@@ -310,10 +314,14 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 h-7 px-2 rounded-md border border-gray-200 text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors mr-1"
+                      className={`inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md border transition-colors mr-1 ${
+                        schedulePieces.length > 0
+                          ? 'border-brand-300 bg-brand-50 text-brand-700'
+                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
-                      {schedulePieces.length > 0 ? 'Editar' : 'Prog.'}
+                      <Icon name="calendar" size={14} />
                     </button>
                   )}
                   {canSchedule && (
