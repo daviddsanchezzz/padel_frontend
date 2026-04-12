@@ -54,6 +54,8 @@ const GroupStandingsTable = ({ group, teamsAdvancing, currentUserId }) => (
 const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing, currentUserId }) => {
   const [subTab, setSubTab] = useState('standings'); // 'standings' | 'matches'
 
+  const hasPlayedMatches = groups.some((g) => g.matches.some((m) => m.status === 'played'));
+
   if (!groups.length) {
     return (
       <div className="card p-10 text-center">
@@ -99,10 +101,19 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
         {/* Organizer actions */}
         {isOrganizer && (
           <div className="flex gap-2">
-            <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
+            <button
+              onClick={onGenerate}
+              disabled={generating || hasPlayedMatches}
+              title={hasPlayedMatches ? 'No se puede rehacer el sorteo con resultados registrados' : undefined}
+              className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Nuevo sorteo'}
             </button>
-            <button onClick={onGenerateBracket} disabled={generating} className="btn-primary text-xs py-1.5 flex-1 md:flex-none justify-center">
+            <button
+              onClick={onGenerateBracket}
+              disabled={generating}
+              className="btn-primary text-xs py-1.5 flex-1 md:flex-none justify-center"
+            >
               <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
             </button>
           </div>
@@ -162,6 +173,7 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
   const hasMatches = rounds.length > 0;
   const champion = (bracket[maxRound] || [])[0]?.winner;
   const pending = Object.values(bracket).flat().filter((m) => m.status === 'pending' && m.teamA && m.teamB).length;
+  const hasPlayedBracketMatches = Object.values(bracket).flat().some((m) => m.status === 'played');
 
   const generateLabel = isGroupFormat ? 'Generar bracket desde grupos' : 'Generar bracket';
   const regenerateLabel = isGroupFormat ? 'Regenerar bracket' : 'Regenerar bracket';
@@ -206,7 +218,12 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-400">{pending} pendiente(s)</span>
-          <button onClick={onGenerate} disabled={generating} className="btn-secondary text-xs py-1.5">
+          <button
+            onClick={onGenerate}
+            disabled={generating || hasPlayedBracketMatches}
+            title={hasPlayedBracketMatches ? 'No se puede regenerar el bracket con resultados registrados' : undefined}
+            className="btn-secondary text-xs py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             <Icon name="bracket" size={13} /> {generating ? 'Generando...' : regenerateLabel}
           </button>
         </div>
