@@ -250,90 +250,120 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   return (
     <div onClick={handleCardClick} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden cursor-pointer md:cursor-default">
       <div className="px-3 md:px-5 py-3 md:py-4">
-        <div className="flex items-start gap-3">
 
-          {/* Teams + scores — stacked left/right like public view */}
-          <div className="flex-1 min-w-0 flex items-start gap-2">
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <p className={`text-xs md:text-sm font-semibold truncate ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-500'} ${isMyTeamA ? 'text-brand-700' : ''} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
+        {scoringType === 'goals' ? (
+          /* ── Football layout: Team A — Score — Team B ── */
+          <div className="space-y-2.5">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              {/* Team A */}
+              <p className={`text-xs md:text-sm font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
                 {teamAName}
               </p>
-              <p className={`text-xs md:text-sm font-semibold truncate ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-500'} ${isMyTeamB ? 'text-brand-700' : ''} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
+              {/* Score */}
+              <div className={`flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-gray-50 border border-gray-100 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+                {displayResult?.goals != null ? (
+                  <>
+                    <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.a}</span>
+                    <span className="text-xs text-gray-300 font-medium">–</span>
+                    <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.b}</span>
+                  </>
+                ) : (
+                  <span className="text-sm font-semibold text-gray-300 tracking-widest">– –</span>
+                )}
+              </div>
+              {/* Team B */}
+              <p className={`text-xs md:text-sm font-semibold text-left truncate ${isMyTeamB ? 'text-brand-700' : winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
                 {teamBName}
               </p>
             </div>
-            <div className={`flex-shrink-0 flex items-start pt-0.5 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
-              <StackedScore result={displayResult} scoringType={scoringType} isPending={isPending} />
-            </div>
-          </div>
 
-          {/* Action buttons */}
-          {(match.status === 'pending' || match.status === 'awaiting_confirmation' || eventModeEnabled || canSchedule) && (
-            <div className="flex-shrink-0 flex items-center self-center">
-              {eventModeEnabled ? (
-                <>
-                  {canSchedule && (
-                    <button
-                      onClick={openSchedule}
-                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors mr-1"
-                      title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
-                    >
-                      <Icon name="calendar" size={14} />
-                    </button>
-                  )}
-                  {canSchedule && (
-                    <button
-                      onClick={openSchedule}
-                      className="hidden md:inline-flex text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors mr-1.5"
-                    >
-                      {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
-                    </button>
-                  )}
+            {schedulePieces.length > 0 && (
+              <p className="text-xs text-gray-400 text-center">{schedulePieces.join(' · ')}</p>
+            )}
+
+            {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+
+            {/* Actions */}
+            {(match.status === 'pending' || match.status === 'awaiting_confirmation' || canSchedule) && (
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                {canSchedule && (
+                  <button onClick={openSchedule} className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                    {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
+                  </button>
+                )}
+                {eventModeEnabled && (
                   <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
                     Ver detalle
                   </button>
-                </>
-              ) : (
-                <>
-                  {canSchedule && (
-                    <button
-                      onClick={openSchedule}
-                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors mr-1"
-                      title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
-                    >
-                      <Icon name="calendar" size={14} />
-                    </button>
-                  )}
-                  {canSchedule && (
-                    <button
-                      onClick={openSchedule}
-                      className="hidden md:inline-flex text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors mr-1.5"
-                    >
-                      {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
-                    </button>
-                  )}
-                  {match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
-                    <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
-                      + Resultado
-                    </button>
-                  )}
-                  {match.status === 'awaiting_confirmation' && isProposingTeam && (
-                    <span className="text-xs text-orange-500 font-medium">Esperando...</span>
-                  )}
-                  {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
-                    <div className="flex gap-1.5">
-                      {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
-                      {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50">Rechazar</button>}
-                    </div>
-                  )}
-                </>
-              )}
+                )}
+                {!eventModeEnabled && match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
+                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                    + Resultado
+                  </button>
+                )}
+                {match.status === 'awaiting_confirmation' && isProposingTeam && (
+                  <span className="text-xs text-orange-500 font-medium">Esperando...</span>
+                )}
+                {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
+                  <div className="flex gap-1.5">
+                    {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">Confirmar</button>}
+                    {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50">Rechazar</button>}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ── Padel / Tennis layout: stacked teams ── */
+          <div className="flex items-start gap-3">
+            <div className="flex-1 min-w-0 flex items-start gap-2">
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <p className={`text-xs md:text-sm font-semibold truncate ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-500'} ${isMyTeamA ? 'text-brand-700' : ''} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
+                  {teamAName}
+                </p>
+                <p className={`text-xs md:text-sm font-semibold truncate ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-500'} ${isMyTeamB ? 'text-brand-700' : ''} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
+                  {teamBName}
+                </p>
+              </div>
+              <div className={`flex-shrink-0 flex items-start pt-0.5 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+                <StackedScore result={displayResult} scoringType={scoringType} isPending={isPending} />
+              </div>
             </div>
-          )}
-        </div>
 
-        {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
-        {schedulePieces.length > 0 && <div className="mt-2 text-xs text-gray-400">{schedulePieces.join(' · ')}</div>}
+            {/* Action buttons */}
+            {(match.status === 'pending' || match.status === 'awaiting_confirmation' || canSchedule) && (
+              <div className="flex-shrink-0 flex items-center self-center">
+                {canSchedule && (
+                  <button onClick={openSchedule} className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors mr-1" title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}>
+                    <Icon name="calendar" size={14} />
+                  </button>
+                )}
+                {canSchedule && (
+                  <button onClick={openSchedule} className="hidden md:inline-flex text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors mr-1.5">
+                    {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
+                  </button>
+                )}
+                {match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
+                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                    + Resultado
+                  </button>
+                )}
+                {match.status === 'awaiting_confirmation' && isProposingTeam && (
+                  <span className="text-xs text-orange-500 font-medium">Esperando...</span>
+                )}
+                {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
+                  <div className="flex gap-1.5">
+                    {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50">Confirmar</button>}
+                    {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50">Rechazar</button>}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {scoringType !== 'goals' && error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+        {scoringType !== 'goals' && schedulePieces.length > 0 && <div className="mt-2 text-xs text-gray-400">{schedulePieces.join(' · ')}</div>}
       </div>
 
       {!eventModeEnabled && showForm && (
