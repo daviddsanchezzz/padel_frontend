@@ -43,11 +43,10 @@ const formatDateTimeLabel = (match) => {
   return '';
 };
 
-const TOTAL_STEPS = 3;
-
 const AddEventModal = ({
   match,
   enabledEventTypes,
+  assistEnabled,
   playersByTeam,
   onConfirm,
   onDelete,
@@ -57,12 +56,28 @@ const AddEventModal = ({
   title = 'Anadir evento',
 }) => {
   const [step, setStep] = useState(1);
-  const [ev, setEv] = useState(initialEvent || { type: enabledEventTypes[0] || 'goal', teamSide: 'A', minute: '', playerName: '' });
+  const [ev, setEv] = useState(
+    initialEvent || {
+      type: enabledEventTypes[0] || 'goal',
+      teamSide: 'A',
+      minute: '',
+      playerName: '',
+      assistPlayerName: '',
+    },
+  );
 
   useEffect(() => {
     setStep(1);
-    setEv(initialEvent || { type: enabledEventTypes[0] || 'goal', teamSide: 'A', minute: '', playerName: '' });
-  }, [initialEvent, enabledEventTypes]);
+    setEv(
+      initialEvent || {
+        type: enabledEventTypes[0] || 'goal',
+        teamSide: 'A',
+        minute: '',
+        playerName: '',
+        assistPlayerName: '',
+      },
+    );
+  }, [initialEvent, enabledEventTypes, assistEnabled]);
 
   useEffect(() => {
     const h = (e) => {
@@ -73,11 +88,14 @@ const AddEventModal = ({
   }, [onClose]);
 
   const players = playersByTeam[ev.teamSide] || [];
+  const shouldShowAssistStep = assistEnabled && ev.type === 'goal';
+  const totalSteps = shouldShowAssistStep ? 4 : 3;
   const canNext1 = !!ev.type;
   const canNext2 = !!ev.teamSide && ev.minute !== '';
   const canConfirm = !!ev.playerName || players.length === 0;
+  const canConfirmAssist = !shouldShowAssistStep || players.length === 0 || ev.assistPlayerName === '' || !!ev.assistPlayerName;
 
-  const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS));
+  const next = () => setStep((s) => Math.min(s + 1, totalSteps));
   const back = () => setStep((s) => Math.max(s - 1, 1));
 
   const teamName = (side) => (side === 'A' ? match.teamA?.name || 'Equipo A' : match.teamB?.name || 'Equipo B');
@@ -95,7 +113,7 @@ const AddEventModal = ({
             )}
             <div>
               <p className="text-sm font-bold text-gray-900">{title}</p>
-              <p className="text-xs text-gray-400">Paso {step} de {TOTAL_STEPS}</p>
+              <p className="text-xs text-gray-400">Paso {step} de {totalSteps}</p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
@@ -104,7 +122,7 @@ const AddEventModal = ({
         </div>
 
         <div className="flex gap-1 px-5 pt-3">
-          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+          {Array.from({ length: totalSteps }, (_, i) => (
             <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i + 1 <= step ? 'bg-brand-500' : 'bg-gray-200'}`} />
           ))}
         </div>
@@ -148,7 +166,7 @@ const AddEventModal = ({
                     <button
                       key={side}
                       type="button"
-                      onClick={() => setEv((e) => ({ ...e, teamSide: side, playerName: '' }))}
+                      onClick={() => setEv((e) => ({ ...e, teamSide: side, playerName: '', assistPlayerName: '' }))}
                       className={`px-4 py-3.5 rounded-xl border-2 text-sm font-semibold transition-all truncate ${
                         selected
                           ? 'bg-brand-50 border-brand-500 text-brand-700 ring-2 ring-offset-1 ring-brand-200'
@@ -225,7 +243,80 @@ const AddEventModal = ({
                   })}
                 </div>
               )}
-              <button type="button" onClick={() => onConfirm(ev)} disabled={!canConfirm || saving} className="btn-primary w-full justify-center mt-1 disabled:opacity-50">
+              {!shouldShowAssistStep ? (
+                <button type="button" onClick={() => onConfirm(ev)} disabled={!canConfirm || saving} className="btn-primary w-full justify-center mt-1 disabled:opacity-50">
+                  {saving ? (
+                    <>
+                      <Icon name="spinner" size={14} className="animate-spin" /> Guardando...
+                    </>
+                  ) : (
+                    'Confirmar'
+                  )}
+                </button>
+              ) : (
+                <button type="button" onClick={next} disabled={!canConfirm} className="btn-primary w-full justify-center mt-1 disabled:opacity-50">
+                  Siguiente
+                </button>
+              )}
+              {onDelete && !shouldShowAssistStep && (
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  disabled={saving}
+                  className="btn-secondary w-full justify-center border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50"
+                >
+                  Eliminar evento
+                </button>
+              )}
+            </>
+          )}
+
+          {step === 4 && shouldShowAssistStep && (
+            <>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                Asistencia - <span className="text-gray-400 font-normal normal-case">{teamName(ev.teamSide)}</span>
+              </p>
+              {players.length === 0 ? (
+                <div>
+                  <label className="label">Asistente (opcional)</label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="Nombre del asistente"
+                    value={ev.assistPlayerName}
+                    onChange={(e) => setEv((cur) => ({ ...cur, assistPlayerName: e.target.value }))}
+                    autoFocus
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => setEv((cur) => ({ ...cur, assistPlayerName: '' }))}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all ${
+                      ev.assistPlayerName === '' ? 'bg-gray-100 border-gray-300' : 'bg-white border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="text-sm font-semibold text-gray-700">Sin asistencia</span>
+                  </button>
+                  {players.map((p) => {
+                    const selected = ev.assistPlayerName === p.name;
+                    return (
+                      <button
+                        key={`assist-${p.name}`}
+                        type="button"
+                        onClick={() => setEv((cur) => ({ ...cur, assistPlayerName: p.name }))}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all ${
+                          selected ? 'bg-brand-50 border-brand-500 ring-2 ring-offset-1 ring-brand-200' : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <span className={`text-sm font-semibold ${selected ? 'text-brand-700' : 'text-gray-800'}`}>{p.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <button type="button" onClick={() => onConfirm(ev)} disabled={!canConfirmAssist || saving} className="btn-primary w-full justify-center mt-1 disabled:opacity-50">
                 {saving ? (
                   <>
                     <Icon name="spinner" size={14} className="animate-spin" /> Guardando...
@@ -264,6 +355,7 @@ const MatchDetail = () => {
   const [error, setError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEventIdx, setEditingEventIdx] = useState(null);
+  const [editingAssistIdx, setEditingAssistIdx] = useState(null);
   const [addSaving, setAddSaving] = useState(false);
 
   const teamAId = match?.teamA?._id?.toString() || match?.teamA?.toString();
@@ -275,6 +367,12 @@ const MatchDetail = () => {
     Array.isArray(resultConfig.enabledEventTypes) && resultConfig.enabledEventTypes.length > 0
       ? resultConfig.enabledEventTypes.filter((t) => DEFAULT_EVENT_TYPES.includes(t))
       : DEFAULT_EVENT_TYPES;
+  const assistEnabled = enabledEventTypes.includes('assist');
+  const editingType = editingEventIdx != null ? events[editingEventIdx]?.type : null;
+  const modalEventTypes =
+    assistEnabled && editingType !== 'assist'
+      ? enabledEventTypes.filter((t) => t !== 'assist')
+      : enabledEventTypes;
 
   const isOrganizer = user?.role === 'organizer' && match?.competition?.organizer?.toString() === user?.id;
 
@@ -321,12 +419,36 @@ const MatchDetail = () => {
         playerName: newEv.playerName,
       };
 
-      
-      const payload = editingEventIdx == null ? [...baseEvents, mappedNewEvent] : baseEvents.map((ev, idx) => (idx === editingEventIdx ? mappedNewEvent : ev));
+      const mappedAssistEvent =
+        assistEnabled && newEv.type === 'goal' && newEv.assistPlayerName
+          ? {
+              type: 'assist',
+              minute: Number(newEv.minute) || 0,
+              team: newEv.teamSide === 'A' ? teamAId : teamBId,
+              playerName: newEv.assistPlayerName,
+            }
+          : null;
+
+      let payload;
+      if (editingEventIdx == null) {
+        payload = mappedAssistEvent ? [...baseEvents, mappedNewEvent, mappedAssistEvent] : [...baseEvents, mappedNewEvent];
+      } else {
+        const replaced = baseEvents.map((ev, idx) => (idx === editingEventIdx ? mappedNewEvent : ev));
+        if (editingAssistIdx != null) {
+          if (mappedAssistEvent) {
+            payload = replaced.map((ev, idx) => (idx === editingAssistIdx ? mappedAssistEvent : ev));
+          } else {
+            payload = replaced.filter((_, idx) => idx !== editingAssistIdx);
+          }
+        } else {
+          payload = mappedAssistEvent ? [...replaced, mappedAssistEvent] : replaced;
+        }
+      }
 
       await recordMatchEvents(id, { events: payload });
       setShowAddModal(false);
       setEditingEventIdx(null);
+      setEditingAssistIdx(null);
       await load();
     } catch (err) {
       setError(err.response?.data?.message || 'Error al guardar evento');
@@ -336,8 +458,9 @@ const MatchDetail = () => {
   };
 
   const handleDeleteEvent = async (sourceIdx) => {
+    const removeSet = new Set(Array.isArray(sourceIdx) ? sourceIdx : [sourceIdx]);
     const payload = events
-      .filter((_, i) => i !== sourceIdx)
+      .filter((_, i) => !removeSet.has(i))
       .map((ev) => ({
         type: ev.type,
         minute: Number(ev.minute),
@@ -355,24 +478,28 @@ const MatchDetail = () => {
 
   const openCreateEventModal = () => {
     setEditingEventIdx(null);
+    setEditingAssistIdx(null);
     setShowAddModal(true);
   };
 
-  const openEditEventModal = (sourceIdx) => {
+  const openEditEventModal = (sourceIdx, assistIdx = null) => {
     setEditingEventIdx(sourceIdx);
+    setEditingAssistIdx(assistIdx);
     setShowAddModal(true);
   };
 
   const editingInitialEvent = useMemo(() => {
     if (editingEventIdx == null || !events[editingEventIdx]) return null;
     const ev = events[editingEventIdx];
+    const assistEv = editingAssistIdx != null ? events[editingAssistIdx] : null;
     return {
       type: ev.type || enabledEventTypes[0] || 'goal',
       teamSide: ev.team?.toString() === teamAId ? 'A' : 'B',
       minute: String(ev.minute ?? ''),
       playerName: ev.playerName || '',
+      assistPlayerName: assistEv?.playerName || '',
     };
-  }, [editingEventIdx, events, enabledEventTypes, teamAId]);
+  }, [editingEventIdx, editingAssistIdx, events, enabledEventTypes, teamAId]);
 
   const sortedEvents = useMemo(
     () =>
@@ -384,6 +511,32 @@ const MatchDetail = () => {
         }),
     [events],
   );
+
+  const rowsForActa = useMemo(() => {
+    if (!assistEnabled) return sortedEvents.map((ev) => ({ ...ev, assistEv: null, assistSourceIdx: null }));
+    const usedAssist = new Set();
+    const rows = [];
+    for (const ev of sortedEvents) {
+      if (ev.type === 'assist') {
+        if (!usedAssist.has(ev.sourceIdx)) rows.push({ ...ev, assistEv: null, assistSourceIdx: null });
+        continue;
+      }
+      if (ev.type === 'goal') {
+        const assistEv = sortedEvents.find(
+          (cand) =>
+            cand.type === 'assist' &&
+            !usedAssist.has(cand.sourceIdx) &&
+            Number(cand.minute) === Number(ev.minute) &&
+            cand.team?.toString() === ev.team?.toString(),
+        );
+        if (assistEv) usedAssist.add(assistEv.sourceIdx);
+        rows.push({ ...ev, assistEv: assistEv || null, assistSourceIdx: assistEv?.sourceIdx ?? null });
+        continue;
+      }
+      rows.push({ ...ev, assistEv: null, assistSourceIdx: null });
+    }
+    return rows;
+  }, [assistEnabled, sortedEvents]);
 
   if (loading) {
     return (
@@ -487,13 +640,13 @@ const MatchDetail = () => {
                   </div>
 
                   <div>
-                    {sortedEvents.map((ev, idx) => {
+                    {rowsForActa.map((ev, idx) => {
                       const isTeamA = ev.team?.toString() === teamAId;
                       const meta = EVENT_FEED_META[ev.type] || { label: ev.type, icon: '•', accent: 'text-gray-500' };
                       const handleMobileOpenEdit = () => {
                         if (!isOrganizer) return;
                         if (typeof window !== 'undefined' && window.innerWidth < 640) {
-                          openEditEventModal(ev.sourceIdx);
+                          openEditEventModal(ev.sourceIdx, ev.assistSourceIdx);
                         }
                       };
 
@@ -507,6 +660,11 @@ const MatchDetail = () => {
                             <p className={`${isTeamA ? 'text-sm' : 'text-xs'} font-semibold text-gray-900 truncate`}>
                               {ev.playerName || 'Jugador'}
                             </p>
+                            {ev.assistEv && (
+                              <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                                🦶 {ev.assistEv.playerName}
+                              </p>
+                            )}
                           </div>
                           {isOrganizer && (
                             <div className={`hidden sm:flex absolute top-1/2 -translate-y-1/2 sm:opacity-0 sm:group-hover:opacity-100 items-center gap-1 transition-all ${isTeamA ? 'right-1' : 'left-1'}`}>
@@ -514,7 +672,7 @@ const MatchDetail = () => {
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openEditEventModal(ev.sourceIdx);
+                                  openEditEventModal(ev.sourceIdx, ev.assistSourceIdx);
                                 }}
                                 className="w-5 h-5 flex items-center justify-center rounded bg-white border border-gray-300 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
                                 title="Editar evento"
@@ -525,7 +683,7 @@ const MatchDetail = () => {
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDeleteEvent(ev.sourceIdx);
+                                  handleDeleteEvent(ev.assistSourceIdx != null ? [ev.sourceIdx, ev.assistSourceIdx] : ev.sourceIdx);
                                 }}
                                 className="w-5 h-5 flex items-center justify-center rounded bg-white border border-gray-300 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
                                 title="Eliminar evento"
@@ -541,7 +699,7 @@ const MatchDetail = () => {
                         <div
                           key={ev._id || `${ev.minute}-${idx}`}
                           className={`grid grid-cols-[minmax(0,1fr)_58px_minmax(0,1fr)] items-stretch min-h-[56px] px-2 ${
-                            idx !== sortedEvents.length - 1 ? 'border-b border-gray-100' : ''
+                            idx !== rowsForActa.length - 1 ? 'border-b border-gray-100' : ''
                           }`}
                         >
                           <div className="pr-2">{isTeamA ? eventRow : <div className="h-8" />}</div>
@@ -561,7 +719,8 @@ const MatchDetail = () => {
           {showAddModal && (
             <AddEventModal
               match={match}
-              enabledEventTypes={enabledEventTypes}
+              enabledEventTypes={modalEventTypes}
+              assistEnabled={assistEnabled}
               playersByTeam={playersByTeam}
               initialEvent={editingInitialEvent}
               title={editingEventIdx == null ? 'Anadir evento' : 'Editar evento'}
@@ -569,15 +728,17 @@ const MatchDetail = () => {
               onDelete={
                 editingEventIdx != null
                   ? async () => {
-                      await handleDeleteEvent(editingEventIdx);
+                      await handleDeleteEvent(editingAssistIdx != null ? [editingEventIdx, editingAssistIdx] : editingEventIdx);
                       setShowAddModal(false);
                       setEditingEventIdx(null);
+                      setEditingAssistIdx(null);
                     }
                   : undefined
               }
               onClose={() => {
                 setShowAddModal(false);
                 setEditingEventIdx(null);
+                setEditingAssistIdx(null);
               }}
               saving={addSaving}
             />
