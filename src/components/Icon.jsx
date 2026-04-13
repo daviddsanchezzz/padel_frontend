@@ -110,6 +110,30 @@ const SimplePadelRacketIcon = ({ size = 24, className = '', color = 'currentColo
   </svg>
 );
 
+export const FootballBallIcon = ({ size = 24, className = '', color = 'currentColor' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" fill={color} />
+    <circle cx="12" cy="12" r="2.2" fill="#0f172a" />
+    <path
+      d="M12 3.4l2 1.2.2 2.3-2.2 1.3-2.2-1.3.2-2.3 2-1.2zm-6 3.5 2.2-.3 1.4 1.8-.9 2.4-2.3.6-1.5-1.9 1.1-2.6zm12 0 2.2-.3 1.1 2.6-1.5 1.9-2.3-.6-.9-2.4 1.4-1.8zm-9.8 7.2 2.2-.7 1.8 1.4-.4 2.5-2.1 1.2-2-1.4.5-3zm11.6 0 2 .9.5 3-2 1.4-2.1-1.2-.4-2.5 1.8-1.4zm-7.8 3.7h0l2.4.2.9 2.1-1.3 1.8h-3.2l-1.3-1.8.9-2.1 1.6-.2z"
+      fill="#ffffff"
+      fillOpacity="0.95"
+    />
+    <path
+      d="M12 2.8c5.1 0 9.2 4.1 9.2 9.2S17.1 21.2 12 21.2 2.8 17.1 2.8 12 6.9 2.8 12 2.8z"
+      stroke="rgba(15,23,42,0.25)"
+      strokeWidth="1.2"
+    />
+  </svg>
+);
+
 export const PadelRacketIcon = ({ size = 24, className = '', color = 'currentColor' }) => {
   if (size <= 30) {
     return <SimplePadelRacketIcon size={size} className={className} color={color} />;
@@ -177,6 +201,9 @@ export const SportIcon = ({ slug, size = 22, color = 'currentColor', className =
   if (slug?.toLowerCase() === 'padel') {
     if (size <= 26) return <PadelBallIcon size={size} color={color} className={className} />;
     return <PadelRacketIcon size={size} color={color} className={className} />;
+  }
+  if (slug?.toLowerCase() === 'football') {
+    return <FootballBallIcon size={size} color={color} className={className} />;
   }
 
   const emoji = SPORT_EMOJIS[slug?.toLowerCase()] ?? '\u{1F3C6}';
