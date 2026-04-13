@@ -289,12 +289,14 @@ const DivisionDetail = () => {
   const [teamName, setTeamName] = useState('');
   const [playerNames, setPlayerNames] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerDorsal, setNewPlayerDorsal] = useState('');
   const [teamPlayersDraft, setTeamPlayersDraft] = useState([]);
 
   const [editingTeamId, setEditingTeamId] = useState(null);
   const [editingTeamName, setEditingTeamName] = useState('');
   const [editingPlayerNames, setEditingPlayerNames] = useState([]);
   const [editingNewPlayerName, setEditingNewPlayerName] = useState('');
+  const [editingNewPlayerDorsal, setEditingNewPlayerDorsal] = useState('');
   const [expandedTeams, setExpandedTeams] = useState({});
   const [teamActionsTarget, setTeamActionsTarget] = useState(null);
 
@@ -390,7 +392,9 @@ const DivisionDetail = () => {
           return;
         }
         payload.name = teamName.trim();
-        payload.playerNames = teamPlayersDraft.map((name) => name.trim()).filter(Boolean);
+        payload.playerNames = teamPlayersDraft
+          .map(({ name, dorsal }) => ({ name: name.trim(), dorsal: dorsal !== '' ? Number(dorsal) : null }))
+          .filter((p) => p.name);
       }
 
       const res = await createDivisionTeam(id, payload);
@@ -399,6 +403,7 @@ const DivisionDetail = () => {
       setPlayerNames(teamSize <= 2 ? new Array(teamSize).fill('') : []);
       setTeamPlayersDraft([]);
       setNewPlayerName('');
+      setNewPlayerDorsal('');
       setShowTeamForm(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al anadir equipo');
@@ -421,9 +426,10 @@ const DivisionDetail = () => {
         )
       );
     } else {
-      setEditingPlayerNames(team.playerNames?.length ? [...team.playerNames] : []);
+      setEditingPlayerNames(team.players?.length ? team.players.map((p) => ({ name: p.name, dorsal: p.dorsal ?? '' })) : []);
     }
     setEditingNewPlayerName('');
+    setEditingNewPlayerDorsal('');
   };
 
   const cancelEditTeam = () => {
@@ -431,6 +437,7 @@ const DivisionDetail = () => {
     setEditingTeamName('');
     setEditingPlayerNames([]);
     setEditingNewPlayerName('');
+    setEditingNewPlayerDorsal('');
   };
 
   const addPlayerToDraft = () => {
@@ -440,8 +447,9 @@ const DivisionDetail = () => {
       setError(`No puede haber mas de ${teamSize} jugadores`);
       return;
     }
-    setTeamPlayersDraft((prev) => [...prev, name]);
+    setTeamPlayersDraft((prev) => [...prev, { name, dorsal: newPlayerDorsal.trim() }]);
     setNewPlayerName('');
+    setNewPlayerDorsal('');
   };
 
   const removePlayerFromDraft = (idx) => {
@@ -455,8 +463,9 @@ const DivisionDetail = () => {
       setError(`No puede haber mas de ${teamSize} jugadores`);
       return;
     }
-    setEditingPlayerNames((prev) => [...prev, name]);
+    setEditingPlayerNames((prev) => [...prev, { name, dorsal: editingNewPlayerDorsal.trim() }]);
     setEditingNewPlayerName('');
+    setEditingNewPlayerDorsal('');
   };
 
   const removePlayerFromEdit = (idx) => {
@@ -508,7 +517,9 @@ const DivisionDetail = () => {
           return;
         }
         payload.name = editingTeamName.trim();
-        payload.playerNames = editingPlayerNames.map((name) => name.trim()).filter(Boolean);
+        payload.playerNames = editingPlayerNames
+          .map(({ name, dorsal }) => ({ name: name.trim(), dorsal: dorsal !== '' ? Number(dorsal) : null }))
+          .filter((p) => p.name);
       }
 
       const res = await updateTeam(teamId, payload);
@@ -730,8 +741,18 @@ const DivisionDetail = () => {
                       </div>
                       <div className="flex gap-2 mb-2">
                         <input
+                          type="number"
+                          className="input h-9 text-sm w-16 text-center"
+                          placeholder="#"
+                          value={newPlayerDorsal}
+                          onChange={(e) => setNewPlayerDorsal(e.target.value)}
+                          disabled={teamPlayersDraft.length >= teamSize}
+                          min="0"
+                          max="99"
+                        />
+                        <input
                           type="text"
-                          className="input h-9 text-sm"
+                          className="input h-9 text-sm flex-1"
                           placeholder="Nombre del jugador"
                           value={newPlayerName}
                           onChange={(e) => setNewPlayerName(e.target.value)}
@@ -749,19 +770,18 @@ const DivisionDetail = () => {
                           disabled={teamPlayersDraft.length >= teamSize}
                           className="btn-secondary text-xs px-3 py-1.5 whitespace-nowrap disabled:opacity-50"
                         >
-                          Anadir
+                          Añadir
                         </button>
                       </div>
                       {teamPlayersDraft.length === 0 ? (
-                        <p className="text-xs text-gray-400">Opcional al crear. Puedes anadirlos despues al editar.</p>
+                        <p className="text-xs text-gray-400">Opcional al crear. Puedes añadirlos después al editar.</p>
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
-                          {teamPlayersDraft.map((name, idx) => (
-                            <span key={`${name}-${idx}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2 py-1 text-xs text-gray-700">
-                              {name}
-                              <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => removePlayerFromDraft(idx)}>
-                                x
-                              </button>
+                          {teamPlayersDraft.map((player, idx) => (
+                            <span key={`${player.name}-${idx}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2 py-1 text-xs text-gray-700">
+                              {player.dorsal !== '' && <span className="text-gray-400 font-mono font-semibold">#{player.dorsal}</span>}
+                              {player.name}
+                              <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => removePlayerFromDraft(idx)}>×</button>
                             </span>
                           ))}
                         </div>
@@ -868,15 +888,15 @@ const DivisionDetail = () => {
                           </span>
                         );
                         if (userInOtherTeam) return null;
-                        return team.playerNames?.length > 0 && (
+                        return team.players?.length > 0 && (
                           <div className="flex gap-1 mt-2 flex-wrap">
-                            {team.playerNames.map((name, idx) => {
-                              const isPositionFilled = !!team.players[idx];
+                            {team.players.map((player, idx) => {
+                              const isPositionFilled = !!player.userId;
                               return isPositionFilled ? (
-                                <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">{team.players[idx]?.name}</span>
+                                <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">{player.name}</span>
                               ) : (
                                 <button key={idx} onClick={() => handleJoinTeam(team._id, idx)} className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors">
-                                  Soy {name}
+                                  Soy {player.name}
                                 </button>
                               );
                             })}
@@ -925,7 +945,13 @@ const DivisionDetail = () => {
                                 <p className="text-xs text-gray-500">{editingPlayerNames.length}/{teamSize}</p>
                               </div>
                               <div className="flex gap-2 mb-2">
-                                <input type="text" className="input h-8 text-sm" placeholder="Nombre del jugador" value={editingNewPlayerName}
+                                <input type="number" className="input h-8 text-sm w-16 text-center" placeholder="#"
+                                  value={editingNewPlayerDorsal}
+                                  onChange={(e) => setEditingNewPlayerDorsal(e.target.value)}
+                                  disabled={editingPlayerNames.length >= teamSize}
+                                  min="0" max="99"
+                                />
+                                <input type="text" className="input h-8 text-sm flex-1" placeholder="Nombre del jugador" value={editingNewPlayerName}
                                   onChange={(e) => setEditingNewPlayerName(e.target.value)}
                                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPlayerToEdit(); } }}
                                   disabled={editingPlayerNames.length >= teamSize}
@@ -935,9 +961,10 @@ const DivisionDetail = () => {
                               {editingPlayerNames.length === 0
                                 ? <p className="text-xs text-gray-400">Sin jugadores.</p>
                                 : <div className="flex flex-wrap gap-1.5">
-                                    {editingPlayerNames.map((name, idx) => (
-                                      <span key={`${name}-${idx}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2 py-1 text-xs text-gray-700">
-                                        {name}
+                                    {editingPlayerNames.map((player, idx) => (
+                                      <span key={`${player.name}-${idx}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2 py-1 text-xs text-gray-700">
+                                        {player.dorsal !== '' && <span className="text-gray-400 font-mono font-semibold">#{player.dorsal}</span>}
+                                        {player.name}
                                         <button type="button" className="text-gray-400 hover:text-red-500" onClick={() => removePlayerFromEdit(idx)}>×</button>
                                       </span>
                                     ))}
@@ -951,17 +978,14 @@ const DivisionDetail = () => {
                           </div>
                         ) : (
                           <>
-                            {team.playerNames?.length > 0 ? (
-                              <div className="flex items-center gap-1 flex-wrap">
-                                {team.playerNames.map((name, idx) => {
-                                  const isMe = team.players[idx] && team.players[idx]._id === user?.id;
-                                  return (
-                                    <React.Fragment key={idx}>
-                                      {idx > 0 && <span className="text-gray-300 text-xs">/</span>}
-                                      <span className={`text-xs font-medium ${isMe ? 'text-brand-700' : 'text-gray-600'}`}>{name}</span>
-                                    </React.Fragment>
-                                  );
-                                })}
+                            {team.players?.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {team.players.map((player, idx) => (
+                                  <span key={idx} className="inline-flex items-center gap-1 bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1 text-xs text-gray-700">
+                                    {player.dorsal != null && <span className="text-gray-400 font-mono font-semibold">#{player.dorsal}</span>}
+                                    {player.name}
+                                  </span>
+                                ))}
                               </div>
                             ) : <p className="text-xs text-gray-500">Sin jugadores definidos</p>}
                           </>
