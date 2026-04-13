@@ -260,7 +260,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 {teamAName}
               </p>
               {/* Score */}
-              <div className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-gray-50 border border-gray-100 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+              <div className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-2 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
                 {displayResult?.goals != null ? (
                   <>
                     <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.a}</span>

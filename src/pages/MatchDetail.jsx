@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { X, Pencil } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
@@ -39,9 +39,9 @@ const formatDateTimeLabel = (match) => {
 // ── Add-event multi-step modal ────────────────────────────────────────────────
 const TOTAL_STEPS = 3;
 
-const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onClose, saving }) => {
+const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onClose, saving, initialEvent, title = 'Añadir evento' }) => {
   const [step, setStep] = useState(1);
-  const [ev, setEv] = useState({ type: enabledEventTypes[0] || 'goal', teamSide: 'A', minute: '', playerName: '' });
+  const [ev, setEv] = useState(initialEvent || { type: enabledEventTypes[0] || 'goal', teamSide: 'A', minute: '', playerName: '' });
 
   // Close on Escape
   useEffect(() => {
@@ -74,7 +74,7 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
               </button>
             )}
             <div>
-              <p className="text-sm font-bold text-gray-900">Añadir evento</p>
+              <p className="text-sm font-bold text-gray-900">{title}</p>
               <p className="text-xs text-gray-400">Paso {step} de {TOTAL_STEPS}</p>
             </div>
           </div>
@@ -247,6 +247,7 @@ const MatchDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingEventIdx, setEditingEventIdx] = useState(null); // null = add, number = edit
   const [addSaving, setAddSaving] = useState(false);
 
   const teamAId = match?.teamA?._id?.toString() || match?.teamA?.toString();
@@ -362,7 +363,7 @@ const MatchDetail = () => {
           <p className={`text-sm md:text-base font-bold text-right truncate ${winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'}`}>
             {match.teamA?.name || 'Equipo A'}
           </p>
-          <div className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-50 border border-gray-200">
+          <div className="flex items-center justify-center gap-2 px-2">
             {goals != null ? (
               <>
                 <span className={`text-2xl font-bold tabular-nums leading-none ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
