@@ -15,6 +15,13 @@ const EVENT_META = {
   red_card: { label: 'T. Roja', tone: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500' },
 };
 
+const EVENT_FEED_META = {
+  goal: { label: 'Gol', icon: '⚽', accent: 'text-emerald-400' },
+  assist: { label: 'Asistencia', icon: '🦶', accent: 'text-sky-300' },
+  yellow_card: { label: 'Tarjeta amarilla', icon: '🟨', accent: 'text-amber-300' },
+  red_card: { label: 'Tarjeta roja', icon: '🟥', accent: 'text-red-300' },
+};
+
 const formatDateLabel = (value) => {
   if (!value) return '';
   const [y, m, d] = value.split('-');
@@ -460,63 +467,63 @@ const MatchDetail = () => {
               {sortedEvents.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6">Sin eventos registrados.</p>
               ) : (
-                <div className="space-y-2">
-                  <div className="grid grid-cols-[1fr_64px_1fr] gap-2 items-center pb-3 mb-1 border-b border-gray-100">
-                    <p className="text-[11px] font-bold text-gray-800 uppercase tracking-wide truncate">{match.teamA?.name}</p>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Min</p>
-                    <p className="text-[11px] font-bold text-gray-800 uppercase tracking-wide text-right truncate">{match.teamB?.name}</p>
+                <div className="rounded-xl overflow-hidden border border-slate-700/60 bg-slate-800">
+                  <div className="grid grid-cols-[1fr_72px_1fr] items-center px-3 py-2 border-b border-slate-700/80 bg-slate-800">
+                    <p className="text-[11px] font-bold text-slate-100 uppercase tracking-wide truncate">{match.teamA?.name}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Min</p>
+                    <p className="text-[11px] font-bold text-slate-100 uppercase tracking-wide text-right truncate">{match.teamB?.name}</p>
                   </div>
 
-                  <div className="relative">
-                    <div className="absolute left-1/2 -translate-x-1/2 top-1 bottom-1 w-px bg-gray-200" />
-                    <div className="space-y-2">
-                      {sortedEvents.map((ev, idx) => {
-                        const isTeamA = ev.team?.toString() === teamAId;
-                        const meta = EVENT_META[ev.type] || { label: ev.type, tone: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400' };
+                  <div>
+                    {sortedEvents.map((ev, idx) => {
+                      const isTeamA = ev.team?.toString() === teamAId;
+                      const meta = EVENT_FEED_META[ev.type] || { label: ev.type, icon: '•', accent: 'text-slate-300' };
 
-                        const eventChip = (
-                          <div className="group relative rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-[0_1px_0_rgba(15,23,42,0.04)]">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${meta.dot}`} />
-                              <p className={`text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}>{meta.label}</p>
-                            </div>
-                            <p className="text-sm text-gray-800 mt-1 font-semibold leading-tight">{ev.playerName || 'Jugador'}</p>
-                            {isOrganizer && (
-                              <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all">
-                                <button
-                                  type="button"
-                                  onClick={() => openEditEventModal(ev.sourceIdx)}
-                                  className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
-                                  title="Editar evento"
-                                >
-                                  <Pencil size={10} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteEvent(ev.sourceIdx)}
-                                  className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
-                                  title="Eliminar evento"
-                                >
-                                  <X size={10} />
-                                </button>
-                              </div>
-                            )}
+                      const eventRow = (
+                        <div className="group relative flex items-center gap-2 px-2 py-2">
+                          <span className="text-base leading-none">{meta.icon}</span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-100 truncate">{ev.playerName || 'Jugador'}</p>
+                            <p className={`text-[10px] uppercase tracking-wider ${meta.accent}`}>{meta.label}</p>
                           </div>
-                        );
+                          {isOrganizer && (
+                            <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all">
+                              <button
+                                type="button"
+                                onClick={() => openEditEventModal(ev.sourceIdx)}
+                                className="w-5 h-5 flex items-center justify-center rounded bg-slate-700/80 border border-slate-500 text-slate-200 hover:text-white hover:border-brand-300 transition-all"
+                                title="Editar evento"
+                              >
+                                <Pencil size={10} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteEvent(ev.sourceIdx)}
+                                className="w-5 h-5 flex items-center justify-center rounded bg-slate-700/80 border border-slate-500 text-slate-200 hover:text-red-300 hover:border-red-300 transition-all"
+                                title="Eliminar evento"
+                              >
+                                <X size={10} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
 
-                        return (
-                          <div key={ev._id || `${ev.minute}-${idx}`} className="grid grid-cols-[1fr_64px_1fr] gap-2 items-center">
-                            <div>{isTeamA ? eventChip : <div />}</div>
-                            <div className="flex items-center justify-center">
-                              <span className="relative z-10 text-[11px] font-bold text-gray-700 bg-white border border-gray-300 rounded-full w-11 h-7 flex items-center justify-center tabular-nums shadow-sm">
-                                {ev.minute}'
-                              </span>
-                            </div>
-                            <div className="flex justify-end">{!isTeamA ? eventChip : <div />}</div>
+                      return (
+                        <div
+                          key={ev._id || `${ev.minute}-${idx}`}
+                          className={`grid grid-cols-[1fr_72px_1fr] items-center px-2 ${
+                            idx !== sortedEvents.length - 1 ? 'border-b border-slate-700/70' : ''
+                          }`}
+                        >
+                          <div className="pr-1">{isTeamA ? eventRow : <div className="h-12" />}</div>
+                          <div className="flex items-center justify-center">
+                            <span className="text-3xl font-black text-emerald-400 tabular-nums leading-none">{ev.minute}'</span>
                           </div>
-                        );
-                      })}
-                    </div>
+                          <div className="pl-1 flex justify-end">{!isTeamA ? eventRow : <div className="h-12" />}</div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
