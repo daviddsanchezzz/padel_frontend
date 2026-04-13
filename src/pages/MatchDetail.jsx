@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
-import { getMatch, getMatchEvents, recordMatchEvents, updateMatchSchedule } from '../api/matches';
+import { getMatch, getMatchEvents, recordMatchEvents } from '../api/matches';
 
 const EVENT_TYPE_LABEL = {
   goal: 'Gol',
@@ -62,18 +62,6 @@ const formatDateTimeLabel = (match) => {
   return '';
 };
 
-const toDateTimeLocalValue = (match) => {
-  if (match?.matchDate && match?.matchTime) return `${match.matchDate}T${match.matchTime}`;
-  if (match?.scheduledDate) {
-    const date = new Date(match.scheduledDate);
-    if (!Number.isNaN(date.getTime())) {
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    }
-  }
-  return '';
-};
-
 const MatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -85,9 +73,6 @@ const MatchDetail = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [scheduleSaving, setScheduleSaving] = useState(false);
-  const [scheduleError, setScheduleError] = useState('');
-  const [scheduleForm, setScheduleForm] = useState({ location: '', dateTime: '' });
 
   const teamAId = match?.teamA?._id?.toString() || match?.teamA?.toString();
   const teamBId = match?.teamB?._id?.toString() || match?.teamB?.toString();
@@ -101,9 +86,9 @@ const MatchDetail = () => {
   const isOrganizer = user?.role === 'organizer' && match?.competition?.organizer?.toString() === user?.id;
 
   const playersByTeam = useMemo(() => ({
-    A: Array.isArray(match?.teamA?.playerNames) ? match.teamA.playerNames : [],
-    B: Array.isArray(match?.teamB?.playerNames) ? match.teamB.playerNames : [],
-  }), [match?.teamA?.playerNames, match?.teamB?.playerNames]);
+    A: Array.isArray(match?.teamA?.players) ? match.teamA.players.map((p) => p.name) : [],
+    B: Array.isArray(match?.teamB?.players) ? match.teamB.players.map((p) => p.name) : [],
+  }), [match?.teamA?.players, match?.teamB?.players]);
 
   const load = async () => {
     setLoading(true);
@@ -128,14 +113,6 @@ const MatchDetail = () => {
   useEffect(() => {
     load();
   }, [id]);
-
-  useEffect(() => {
-    if (!match) return;
-    setScheduleForm({
-      location: match.location || '',
-      dateTime: toDateTimeLocalValue(match),
-    });
-  }, [match]);
 
   const addEvent = () => {
     const firstType = enabledEventTypes[0] || 'goal';
@@ -177,23 +154,6 @@ const MatchDetail = () => {
     }
   };
 
-  const saveSchedule = async (e) => {
-    e.preventDefault();
-    setScheduleError('');
-    setScheduleSaving(true);
-    try {
-      await updateMatchSchedule(id, {
-        location: scheduleForm.location,
-        dateTime: scheduleForm.dateTime,
-      });
-      await load();
-    } catch (err) {
-      setScheduleError(err.response?.data?.message || 'Error guardando programacion');
-    } finally {
-      setScheduleSaving(false);
-    }
-  };
-
   if (loading) {
     return (
       <AppLayout>
@@ -222,42 +182,14 @@ const MatchDetail = () => {
         <Icon name="chevronLeft" size={14} /> Volver
       </button>
 
+      {/* Match header */}
       <div className="card p-4 mb-4">
-        <p className="text-sm text-gray-500 mb-1">{match.competition?.name}</p>
         <div className="flex items-center justify-between gap-3">
           <p className="font-semibold text-gray-900">{match.teamA?.name} vs {match.teamB?.name}</p>
           <p className="text-lg font-bold text-gray-900">{goals.a} - {goals.b}</p>
         </div>
-        {schedulePieces.length > 0 && <p className="text-xs text-gray-500 mt-2">{schedulePieces.join(' - ')}</p>}
+        {schedulePieces.length > 0 && <p className="text-xs text-gray-500 mt-1.5">{schedulePieces.join(' · ')}</p>}
       </div>
-
-      {isOrganizer && (
-        <form onSubmit={saveSchedule} className="card p-4 mb-4">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Programacion del partido</p>
-          <div className="space-y-2.5">
-            <input
-              type="text"
-              className="input h-10 text-sm"
-              placeholder="Ubicacion"
-              value={scheduleForm.location}
-              onChange={(e) => setScheduleForm((prev) => ({ ...prev, location: e.target.value }))}
-              maxLength={140}
-            />
-            <input
-              type="datetime-local"
-              className="input h-10 text-sm"
-              value={scheduleForm.dateTime}
-              onChange={(e) => setScheduleForm((prev) => ({ ...prev, dateTime: e.target.value }))}
-            />
-            {scheduleError && <p className="text-red-500 text-xs">{scheduleError}</p>}
-            <div className="flex items-center justify-end">
-              <button type="submit" disabled={scheduleSaving} className="btn-primary">
-                {scheduleSaving ? 'Guardando...' : 'Guardar programacion'}
-              </button>
-            </div>
-          </div>
-        </form>
-      )}
 
       {!eventModeEnabled && (
         <div className="card p-4 text-sm text-gray-600">
@@ -274,12 +206,11 @@ const MatchDetail = () => {
           )}
 
           {isOrganizer ? (
-            <form onSubmit={saveEvents} className="card p-4 space-y-3 mb-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-gray-900">Editar eventos</p>
-              </div>
+            /* Edit mode — organizer only */
+            <form onSubmit={saveEvents} className="card p-4 space-y-3">
+              <p className="text-sm font-semibold text-gray-900">Editar eventos</p>
 
-              {draftEvents.length === 0 && <p className="text-xs text-gray-500">Sin eventos. Guarda para mantener 0-0 o anade eventos.</p>}
+              {draftEvents.length === 0 && <p className="text-xs text-gray-500">Sin eventos. Guarda para mantener 0-0 o añade eventos.</p>}
 
               {draftEvents.map((ev, idx) => {
                 const playerOptions = ev.teamSide === 'A' ? playersByTeam.A : playersByTeam.B;
@@ -287,15 +218,10 @@ const MatchDetail = () => {
                   <div key={idx} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-gray-500">Evento {idx + 1}</p>
-                      <button
-                        type="button"
-                        className="text-xs font-semibold text-red-600 hover:text-red-700"
-                        onClick={() => removeEvent(idx)}
-                      >
+                      <button type="button" className="text-xs font-semibold text-red-600 hover:text-red-700" onClick={() => removeEvent(idx)}>
                         Eliminar
                       </button>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
                       <div className="md:col-span-4">
                         <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">Tipo</label>
@@ -303,7 +229,6 @@ const MatchDetail = () => {
                           {enabledEventTypes.map((type) => <option key={type} value={type}>{EVENT_TYPE_LABEL[type] || type}</option>)}
                         </select>
                       </div>
-
                       <div className="grid grid-cols-2 gap-2 md:col-span-4">
                         <div>
                           <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">Minuto</label>
@@ -317,7 +242,6 @@ const MatchDetail = () => {
                           </select>
                         </div>
                       </div>
-
                       <div className="md:col-span-4">
                         <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">Jugador</label>
                         <select className="input mt-1 w-full" value={ev.playerName} onChange={(e) => updateEvent(idx, { playerName: e.target.value })} required disabled={playerOptions.length === 0}>
@@ -331,17 +255,12 @@ const MatchDetail = () => {
               })}
 
               <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2">
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-700 px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 w-full sm:w-auto"
-                  onClick={addEvent}
-                >
-                  <Icon name="plus" size={12} />
-                  Anadir evento
+                <button type="button" onClick={addEvent}
+                  className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-700 px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 w-full sm:w-auto">
+                  <Icon name="plus" size={12} /> Añadir evento
                 </button>
                 <button type="button" onClick={() => setDraftEvents(events.map((ev) => ({
-                  type: ev.type,
-                  minute: ev.minute,
+                  type: ev.type, minute: ev.minute,
                   teamSide: ev.team?.toString() === teamAId ? 'A' : 'B',
                   playerName: ev.playerName || '',
                 })))} className="btn-secondary w-full sm:w-auto">
@@ -353,50 +272,45 @@ const MatchDetail = () => {
               </div>
             </form>
           ) : (
-            <div className="card p-4 mb-4 text-sm text-gray-600">
-              Solo el organizador puede editar eventos. Tu vista es de solo lectura.
+            /* Read-only acta — non-organizer */
+            <div className="card p-4 md:p-5">
+              <div className="border-b border-gray-200 pb-3 mb-4">
+                <p className="text-[11px] tracking-[0.14em] uppercase font-semibold text-gray-500">Acta del partido</p>
+                <p className="text-base font-bold text-gray-900 mt-1">Eventos oficiales</p>
+              </div>
+              {events.length === 0 ? (
+                <p className="text-sm text-gray-500">Sin eventos registrados.</p>
+              ) : (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center mb-2 pb-2 border-b border-gray-100">
+                    <p className="text-sm md:text-base font-bold text-gray-900 text-left truncate">{match.teamA?.name || 'Equipo A'}</p>
+                    <p className="text-[11px] tracking-[0.08em] uppercase font-semibold text-gray-500 text-center">Min</p>
+                    <p className="text-sm md:text-base font-bold text-gray-900 text-right truncate">{match.teamB?.name || 'Equipo B'}</p>
+                  </div>
+                  {sortedEvents.map((ev, idx) => {
+                    const isTeamA = ev.team?.toString() === teamAId;
+                    const style = EVENT_TYPE_STYLE[ev.type] || { cls: 'bg-white border-gray-200 text-gray-800', tone: 'text-gray-600', emoji: '\u{1F4CC}', label: ev.type };
+                    const eventNode = (
+                      <div className={`rounded-xl border px-3 py-2 shadow-sm ${style.cls}`}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base leading-none">{style.emoji}</span>
+                          <p className={`text-sm font-semibold ${style.tone || 'text-gray-700'}`}>{EVENT_TYPE_LABEL[ev.type] || style.label}</p>
+                        </div>
+                        <p className="text-xs mt-1 text-gray-600">{ev.playerName}</p>
+                      </div>
+                    );
+                    return (
+                      <div key={ev._id || `${ev.minute}-${idx}`} className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
+                        <div>{isTeamA ? eventNode : <div />}</div>
+                        <div className="px-2 py-1 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-700 min-w-[52px] text-center">{ev.minute}'</div>
+                        <div>{!isTeamA ? eventNode : <div />}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
-
-          <div className="card p-4 md:p-5">
-            <div className="border-b border-gray-200 pb-3 mb-4">
-              <p className="text-[11px] tracking-[0.14em] uppercase font-semibold text-gray-500">Acta del partido</p>
-              <p className="text-base font-bold text-gray-900 mt-1">Eventos oficiales</p>
-            </div>
-            {events.length === 0 ? (
-              <p className="text-sm text-gray-500">Sin eventos registrados.</p>
-            ) : (
-              <div className="space-y-2">
-                <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center mb-2 pb-2 border-b border-gray-100">
-                  <p className="text-sm md:text-base font-bold text-gray-900 text-left truncate">{match.teamA?.name || 'Equipo A'}</p>
-                  <p className="text-[11px] tracking-[0.08em] uppercase font-semibold text-gray-500 text-center">Min</p>
-                  <p className="text-sm md:text-base font-bold text-gray-900 text-right truncate">{match.teamB?.name || 'Equipo B'}</p>
-                </div>
-                {sortedEvents.map((ev, idx) => {
-                  const isTeamA = ev.team?.toString() === teamAId;
-                  const style = EVENT_TYPE_STYLE[ev.type] || { cls: 'bg-white border-gray-200 text-gray-800', tone: 'text-gray-600', emoji: '\u{1F4CC}', label: ev.type };
-                  const eventNode = (
-                    <div className={`rounded-xl border px-3 py-2 shadow-sm ${style.cls}`}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-base leading-none">{style.emoji}</span>
-                        <p className={`text-sm font-semibold ${style.tone || 'text-gray-700'}`}>{EVENT_TYPE_LABEL[ev.type] || style.label}</p>
-                      </div>
-                      <p className="text-xs mt-1 text-gray-600">{ev.playerName}</p>
-                    </div>
-                  );
-                  return (
-                    <div key={ev._id || `${ev.minute}-${idx}`} className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
-                      <div>{isTeamA ? eventNode : <div />}</div>
-                      <div className="px-2 py-1 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-700 min-w-[52px] text-center">
-                        {ev.minute}'
-                      </div>
-                      <div>{!isTeamA ? eventNode : <div />}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </>
       )}
     </AppLayout>

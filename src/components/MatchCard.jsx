@@ -169,7 +169,6 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
 
   const resultConfig = match.competition?.settings?.resultConfig || {};
   const eventModeEnabled = scoringType === 'goals' && resultConfig.mode === 'events';
-  const isPadelStyleSchedule = scoringType === 'sets';
 
   const handleSubmit = async (result) => {
     setError('');
@@ -214,16 +213,12 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const handleCardClick = () => {};
 
   const openSchedule = () => {
-    if (isPadelStyleSchedule) {
-      setScheduleError('');
-      setScheduleForm({
-        location: match?.location || '',
-        dateTime: toDateTimeLocalValue(match),
-      });
-      setShowScheduleModal(true);
-      return;
-    }
-    navigate(`/matches/${match._id}`);
+    setScheduleError('');
+    setScheduleForm({
+      location: match?.location || '',
+      dateTime: toDateTimeLocalValue(match),
+    });
+    setShowScheduleModal(true);
   };
 
   const handleSaveSchedule = async (e) => {
@@ -280,25 +275,23 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   {canSchedule && (
                     <button
                       onClick={openSchedule}
-                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors mr-1"
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
                       <Icon name="calendar" size={14} />
                     </button>
                   )}
-                  <div className="hidden md:flex items-center gap-1.5">
-                    {canSchedule && (
-                      <button
-                        onClick={openSchedule}
-                        className="text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                      >
-                        {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
-                      </button>
-                    )}
-                    <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
-                      Ver detalle
+                  {canSchedule && (
+                    <button
+                      onClick={openSchedule}
+                      className="hidden md:inline-flex text-xs bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors mr-1.5"
+                    >
+                      {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
                     </button>
-                  </div>
+                  )}
+                  <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                    Ver detalle
+                  </button>
                 </>
               ) : (
                 <>
