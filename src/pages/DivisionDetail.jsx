@@ -110,13 +110,6 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
             >
               <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Nuevo sorteo'}
             </button>
-            <button
-              onClick={onGenerateBracket}
-              disabled={generating}
-              className="btn-primary text-xs py-1.5 flex-1 md:flex-none justify-center"
-            >
-              <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar eliminatoria'}
-            </button>
           </div>
         )}
       </div>
@@ -681,11 +674,6 @@ const DivisionDetail = () => {
                 {!isTournament && teams.length >= 2 && (
                   <button onClick={handleGenerateMatches} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
                     <Icon name="match" size={13} /> {generating ? 'Generando...' : 'Generar calendario'}
-                  </button>
-                )}
-                {isGroupFormat && teams.length >= 4 && (
-                  <button onClick={handleGenerateGroups} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
-                    <Icon name="standings" size={13} /> {generating ? 'Generando...' : 'Sorteo de grupos'}
                   </button>
                 )}
                 {isTournament && !isGroupFormat && teams.length >= 2 && (
