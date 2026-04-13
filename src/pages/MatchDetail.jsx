@@ -460,57 +460,64 @@ const MatchDetail = () => {
               {sortedEvents.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6">Sin eventos registrados.</p>
               ) : (
-                <div className="space-y-1">
-                  <div className="grid grid-cols-[1fr_56px_1fr] gap-2 items-center pb-3 mb-1 border-b border-gray-100">
-                    <p className="text-xs font-bold text-gray-700 truncate">{match.teamA?.name}</p>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[1fr_64px_1fr] gap-2 items-center pb-3 mb-1 border-b border-gray-100">
+                    <p className="text-[11px] font-bold text-gray-800 uppercase tracking-wide truncate">{match.teamA?.name}</p>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Min</p>
-                    <p className="text-xs font-bold text-gray-700 text-right truncate">{match.teamB?.name}</p>
+                    <p className="text-[11px] font-bold text-gray-800 uppercase tracking-wide text-right truncate">{match.teamB?.name}</p>
                   </div>
 
-                  {sortedEvents.map((ev, idx) => {
-                    const isTeamA = ev.team?.toString() === teamAId;
-                    const meta = EVENT_META[ev.type] || { label: ev.type, tone: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400' };
+                  <div className="relative">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-1 bottom-1 w-px bg-gray-200" />
+                    <div className="space-y-2">
+                      {sortedEvents.map((ev, idx) => {
+                        const isTeamA = ev.team?.toString() === teamAId;
+                        const meta = EVENT_META[ev.type] || { label: ev.type, tone: 'text-gray-700', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400' };
 
-                    const eventChip = (
-                      <div className={`group relative rounded-xl border px-3 py-2 ${meta.bg} ${meta.border}`}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${meta.dot}`} />
-                          <p className={`text-xs font-bold ${meta.tone}`}>{meta.label}</p>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-0.5 font-medium">{ev.playerName}</p>
-                        {isOrganizer && (
-                          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all">
-                            <button
-                              type="button"
-                              onClick={() => openEditEventModal(ev.sourceIdx)}
-                              className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
-                              title="Editar evento"
-                            >
-                              <Pencil size={10} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteEvent(ev.sourceIdx)}
-                              className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
-                              title="Eliminar evento"
-                            >
-                              <X size={10} />
-                            </button>
+                        const eventChip = (
+                          <div className="group relative rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-[0_1px_0_rgba(15,23,42,0.04)]">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${meta.dot}`} />
+                              <p className={`text-[10px] font-bold uppercase tracking-wider ${meta.tone}`}>{meta.label}</p>
+                            </div>
+                            <p className="text-sm text-gray-800 mt-1 font-semibold leading-tight">{ev.playerName || 'Jugador'}</p>
+                            {isOrganizer && (
+                              <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditEventModal(ev.sourceIdx)}
+                                  className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
+                                  title="Editar evento"
+                                >
+                                  <Pencil size={10} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteEvent(ev.sourceIdx)}
+                                  className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
+                                  title="Eliminar evento"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    );
+                        );
 
-                    return (
-                      <div key={ev._id || `${ev.minute}-${idx}`} className="grid grid-cols-[1fr_56px_1fr] gap-2 items-center py-1">
-                        <div>{isTeamA ? eventChip : <div />}</div>
-                        <div className="flex items-center justify-center">
-                          <span className="text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-full w-10 h-6 flex items-center justify-center tabular-nums">{ev.minute}'</span>
-                        </div>
-                        <div className="flex justify-end">{!isTeamA ? eventChip : <div />}</div>
-                      </div>
-                    );
-                  })}
+                        return (
+                          <div key={ev._id || `${ev.minute}-${idx}`} className="grid grid-cols-[1fr_64px_1fr] gap-2 items-center">
+                            <div>{isTeamA ? eventChip : <div />}</div>
+                            <div className="flex items-center justify-center">
+                              <span className="relative z-10 text-[11px] font-bold text-gray-700 bg-white border border-gray-300 rounded-full w-11 h-7 flex items-center justify-center tabular-nums shadow-sm">
+                                {ev.minute}'
+                              </span>
+                            </div>
+                            <div className="flex justify-end">{!isTeamA ? eventChip : <div />}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
