@@ -10,10 +10,29 @@ import QRCode from 'react-qr-code';
 import { useAuth } from '../context/AuthContext';
 import { useOrg } from '../context/OrgContext';
 
+// ── Scroll lock (prevents iOS background scroll when modal is open) ────────────
+const useLockBodyScroll = () => {
+  useEffect(() => {
+    const y = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${y}px`;
+    document.body.style.width = '100%';
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, y);
+    };
+  }, []);
+};
+
 // ── Invite modal ──────────────────────────────────────────────────────────────
 const QR_ID = 'invite-qr-svg';
 
 const InviteModal = ({ url, onClose }) => {
+  useLockBodyScroll();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -151,6 +170,7 @@ const Stepper = ({ value, onChange, min = 0, max = 99 }) => (
 
 // ── Settings modal ────────────────────────────────────────────────────────────
 const SettingsModal = ({ competition, onSave, onClose }) => {
+  useLockBodyScroll();
   const defaults = competition.settings || {};
   const isSets   = competition.sport?.scoringType === 'sets';
   const isGoals  = competition.sport?.scoringType === 'goals';
