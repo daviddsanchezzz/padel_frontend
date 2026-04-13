@@ -258,16 +258,6 @@ const AddEventModal = ({
                   Siguiente
                 </button>
               )}
-              {onDelete && !shouldShowAssistStep && (
-                <button
-                  type="button"
-                  onClick={onDelete}
-                  disabled={saving}
-                  className="btn-secondary w-full justify-center border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50"
-                >
-                  Eliminar evento
-                </button>
-              )}
             </>
           )}
 
@@ -325,17 +315,18 @@ const AddEventModal = ({
                   'Confirmar'
                 )}
               </button>
-              {onDelete && (
-                <button
-                  type="button"
-                  onClick={onDelete}
-                  disabled={saving}
-                  className="btn-secondary w-full justify-center border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50"
-                >
-                  Eliminar evento
-                </button>
-              )}
             </>
+          )}
+
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={saving}
+              className="btn-secondary w-full justify-center border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50"
+            >
+              Eliminar evento
+            </button>
           )}
         </div>
       </div>
@@ -653,7 +644,7 @@ const MatchDetail = () => {
                       const eventRow = (
                         <div
                           onClick={handleMobileOpenEdit}
-                          className={`group relative inline-flex items-center gap-2 px-2.5 py-2 rounded-md max-w-[320px] ${isTeamA ? '' : 'text-right'} ${isOrganizer ? 'sm:cursor-default cursor-pointer' : ''}`}
+                          className={`group relative inline-flex items-center gap-2 px-2.5 py-2 rounded-md max-w-[320px] ${isTeamA ? 'flex-row-reverse text-right' : 'text-right'} ${isOrganizer ? 'sm:cursor-default cursor-pointer' : ''}`}
                         >
                           <span className="text-[15px] leading-none">{meta.icon}</span>
                           <div className="min-w-0">
