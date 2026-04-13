@@ -601,6 +601,8 @@ const CompetitionDetail = () => {
   const [showInvite, setShowInvite]     = useState(false);
   const [loading, setLoading]         = useState(true);
   const [playerDivisionId, setPlayerDivisionId] = useState(null);
+  const [editingDivId, setEditingDivId]   = useState(null);
+  const [editingDivName, setEditingDivName] = useState('');
 
   const isOrganizer = user?.role === 'organizer' && competition?.organizer?.toString() === user?.id;
   const { activeOrg } = useOrg();
@@ -652,6 +654,14 @@ const CompetitionDetail = () => {
     if (!confirm('¿Eliminar esta división/categoría y todos sus datos?')) return;
     await deleteDivision(divId);
     setDivisions(divisions.filter((d) => d._id !== divId));
+  };
+
+  const handleRenameDivision = async (divId) => {
+    const trimmed = editingDivName.trim();
+    if (!trimmed) return;
+    const res = await updateDivision(divId, { name: trimmed });
+    setDivisions(divisions.map((d) => d._id === divId ? { ...d, name: res.data.name } : d));
+    setEditingDivId(null);
   };
 
 
@@ -815,31 +825,71 @@ const CompetitionDetail = () => {
         </div>
       ) : (
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
-          {divisions.map((div, i) => (
-            <div
-              key={div._id}
-              className="px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors group"
-              onClick={() => navigate(`/divisions/${div._id}`)}
-            >
-              <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                {i + 1}
-              </div>
-              <span className="flex-1 font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
-                {div.name}
-              </span>
-              <div className="flex items-center gap-3">
-                {isOrganizer && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDeleteDivision(div._id); }}
-                    className="text-gray-300 hover:text-red-400 transition-colors p-1"
-                  >
-                    <Icon name="trash" size={14} />
-                  </button>
+          {divisions.map((div, i) => {
+            const isEditing = editingDivId === div._id;
+            return (
+              <div key={div._id} className="px-4 py-3 flex items-center gap-3">
+                <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {i + 1}
+                </div>
+
+                {isEditing ? (
+                  <>
+                    <input
+                      autoFocus
+                      className="input flex-1 py-1.5 text-sm"
+                      value={editingDivName}
+                      onChange={(e) => setEditingDivName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRenameDivision(div._id);
+                        if (e.key === 'Escape') setEditingDivId(null);
+                      }}
+                    />
+                    <button
+                      onClick={() => handleRenameDivision(div._id)}
+                      className="text-brand-600 hover:text-brand-700 transition-colors p-1"
+                    >
+                      <Icon name="check" size={15} />
+                    </button>
+                    <button
+                      onClick={() => setEditingDivId(null)}
+                      className="text-gray-300 hover:text-gray-500 transition-colors p-1"
+                    >
+                      <X size={15} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span
+                      className="flex-1 font-semibold text-gray-800 cursor-pointer hover:text-gray-900 transition-colors"
+                      onClick={() => navigate(`/divisions/${div._id}`)}
+                    >
+                      {div.name}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {isOrganizer && (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setEditingDivName(div.name); setEditingDivId(div._id); }}
+                            className="text-gray-300 hover:text-gray-500 transition-colors p-1"
+                          >
+                            <Icon name="edit" size={14} />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteDivision(div._id); }}
+                            className="text-gray-300 hover:text-red-400 transition-colors p-1"
+                          >
+                            <Icon name="trash" size={14} />
+                          </button>
+                        </>
+                      )}
+                      <Icon name="chevronRight" size={14} className="text-gray-300 cursor-pointer" onClick={() => navigate(`/divisions/${div._id}`)} />
+                    </div>
+                  </>
                 )}
-                <Icon name="chevronRight" size={14} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </AppLayout>
