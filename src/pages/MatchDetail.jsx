@@ -50,6 +50,7 @@ const AddEventModal = ({
   enabledEventTypes,
   playersByTeam,
   onConfirm,
+  onDelete,
   onClose,
   saving,
   initialEvent,
@@ -233,6 +234,16 @@ const AddEventModal = ({
                   'Confirmar'
                 )}
               </button>
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  disabled={saving}
+                  className="btn-secondary w-full justify-center border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50"
+                >
+                  Eliminar evento
+                </button>
+              )}
             </>
           )}
         </div>
@@ -479,9 +490,18 @@ const MatchDetail = () => {
                     {sortedEvents.map((ev, idx) => {
                       const isTeamA = ev.team?.toString() === teamAId;
                       const meta = EVENT_FEED_META[ev.type] || { label: ev.type, icon: '•', accent: 'text-gray-500' };
+                      const handleMobileOpenEdit = () => {
+                        if (!isOrganizer) return;
+                        if (typeof window !== 'undefined' && window.innerWidth < 640) {
+                          openEditEventModal(ev.sourceIdx);
+                        }
+                      };
 
                       const eventRow = (
-                        <div className={`group relative inline-flex items-center gap-2 px-2.5 py-2 rounded-md max-w-[320px] ${isTeamA ? '' : 'text-right'}`}>
+                        <div
+                          onClick={handleMobileOpenEdit}
+                          className={`group relative inline-flex items-center gap-2 px-2.5 py-2 rounded-md max-w-[320px] ${isTeamA ? '' : 'text-right'} ${isOrganizer ? 'sm:cursor-default cursor-pointer' : ''}`}
+                        >
                           <span className="text-[15px] leading-none">{meta.icon}</span>
                           <div className="min-w-0">
                             <p className={`${isTeamA ? 'text-sm' : 'text-xs'} font-semibold text-gray-900 truncate`}>
@@ -489,10 +509,13 @@ const MatchDetail = () => {
                             </p>
                           </div>
                           {isOrganizer && (
-                            <div className={`absolute top-1/2 -translate-y-1/2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 flex items-center gap-1 transition-all ${isTeamA ? 'right-1' : 'left-1'}`}>
+                            <div className={`hidden sm:flex absolute top-1/2 -translate-y-1/2 sm:opacity-0 sm:group-hover:opacity-100 items-center gap-1 transition-all ${isTeamA ? 'right-1' : 'left-1'}`}>
                               <button
                                 type="button"
-                                onClick={() => openEditEventModal(ev.sourceIdx)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditEventModal(ev.sourceIdx);
+                                }}
                                 className="w-5 h-5 flex items-center justify-center rounded bg-white border border-gray-300 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
                                 title="Editar evento"
                               >
@@ -500,7 +523,10 @@ const MatchDetail = () => {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteEvent(ev.sourceIdx)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteEvent(ev.sourceIdx);
+                                }}
                                 className="w-5 h-5 flex items-center justify-center rounded bg-white border border-gray-300 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
                                 title="Eliminar evento"
                               >
@@ -514,12 +540,12 @@ const MatchDetail = () => {
                       return (
                         <div
                           key={ev._id || `${ev.minute}-${idx}`}
-                          className={`grid grid-cols-[1fr_58px_1fr] items-center min-h-[56px] px-2 ${
+                          className={`grid grid-cols-[minmax(0,1fr)_58px_minmax(0,1fr)] items-stretch min-h-[56px] px-2 ${
                             idx !== sortedEvents.length - 1 ? 'border-b border-gray-100' : ''
                           }`}
                         >
                           <div className="pr-2">{isTeamA ? eventRow : <div className="h-8" />}</div>
-                          <div className="flex items-center justify-center">
+                          <div className="h-full flex items-center justify-center">
                             <span className="relative z-10 text-sm font-bold text-gray-900 tabular-nums leading-none">{ev.minute}'</span>
                           </div>
                           <div className="pl-2 flex justify-end">{!isTeamA ? eventRow : <div className="h-8" />}</div>
@@ -540,6 +566,15 @@ const MatchDetail = () => {
               initialEvent={editingInitialEvent}
               title={editingEventIdx == null ? 'Anadir evento' : 'Editar evento'}
               onConfirm={handleSaveEvent}
+              onDelete={
+                editingEventIdx != null
+                  ? async () => {
+                      await handleDeleteEvent(editingEventIdx);
+                      setShowAddModal(false);
+                      setEditingEventIdx(null);
+                    }
+                  : undefined
+              }
               onClose={() => {
                 setShowAddModal(false);
                 setEditingEventIdx(null);
