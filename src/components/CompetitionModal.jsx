@@ -21,8 +21,6 @@ const CompetitionModal = ({ onClose, onCreated }) => {
     startDate: '',
     endDate: '',
   });
-  const [footballMaxPlayers, setFootballMaxPlayers] = useState(11);
-  const [tennisMode, setTennisMode] = useState('singles');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -41,33 +39,16 @@ const CompetitionModal = ({ onClose, onCreated }) => {
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const selectedSport = useMemo(() => sports.find((s) => s._id === form.sportId) || null, [sports, form.sportId]);
-  const normalizedSport = normalizeSportName(selectedSport?.name || '');
-  const sportSlug = (selectedSport?.slug || '').toLowerCase();
-
-  const isFootball = sportSlug === 'football' || normalizedSport.includes('futbol') || normalizedSport.includes('football');
-  const isTennis = sportSlug === 'tennis' || normalizedSport.includes('tenis') || normalizedSport.includes('tennis');
+  useMemo(() => sports.find((s) => s._id === form.sportId) || null, [sports, form.sportId]);
   const isLeague = form.type === 'league';
-
-  useEffect(() => {
-    if (!selectedSport) return;
-    const size = Number(selectedSport.teamSize || 1);
-    if (isFootball) setFootballMaxPlayers(size >= 3 ? size : 11);
-    if (isTennis) setTennisMode(size === 2 ? 'doubles' : 'singles');
-  }, [selectedSport?._id, isFootball, isTennis]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const settings = {};
-      if (isFootball) settings.teamSize = Number(footballMaxPlayers);
-      if (isTennis) settings.teamSize = tennisMode === 'doubles' ? 2 : 1;
-
       const res = await createCompetition({
         ...form,
-        settings,
         organizationId: activeOrg?.authOrgId ?? null,
       });
       onCreated(res.data);
@@ -173,6 +154,17 @@ const CompetitionModal = ({ onClose, onCreated }) => {
               </div>
             </div>
 
+            <div>
+              <label className="label">Descripcion</label>
+              <textarea
+                className="input resize-none"
+                rows={2}
+                value={form.description}
+                placeholder="Descripcion opcional"
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {isLeague && (
                 <div>
@@ -184,41 +176,6 @@ const CompetitionModal = ({ onClose, onCreated }) => {
                     placeholder="Ej: 2026-27"
                     onChange={(e) => setForm({ ...form, season: e.target.value })}
                   />
-                </div>
-              )}
-
-              {isFootball && (
-                <div>
-                  <label className="label">Max. jugadores/equipo *</label>
-                  <input
-                    type="number"
-                    className="input"
-                    min={3}
-                    max={30}
-                    value={footballMaxPlayers}
-                    onChange={(e) => setFootballMaxPlayers(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
-
-              {isTennis && (
-                <div className="sm:col-span-2">
-                  <label className="label">Modalidad</label>
-                  <div className="grid grid-cols-2 gap-2 max-w-sm">
-                    {['singles', 'doubles'].map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setTennisMode(m)}
-                        className={`py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
-                          tennisMode === m ? 'border-brand-600 bg-brand-50 text-brand-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                        }`}
-                      >
-                        {m === 'singles' ? 'Individual' : 'Dobles'}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               )}
             </div>
@@ -258,17 +215,6 @@ const CompetitionModal = ({ onClose, onCreated }) => {
                 />
               </div>
             </div>
-          </section>
-
-          <section className="rounded-xl border border-gray-200 p-4">
-            <label className="label">Descripcion</label>
-            <textarea
-              className="input resize-none"
-              rows={2}
-              value={form.description}
-              placeholder="Descripcion opcional"
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
           </section>
 
           <div className="sticky bottom-0 bg-white pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
