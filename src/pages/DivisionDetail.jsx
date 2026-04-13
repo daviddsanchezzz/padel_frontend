@@ -18,14 +18,14 @@ const LEAGUE_TABS = [
 ];
 
 const TOURNAMENT_TABS = [
-  { key: 'teams', label: 'Equipos', icon: 'team' },
-  { key: 'bracket', label: 'Bracket', icon: 'bracket' },
+  { key: 'teams',   label: 'Equipos',      icon: 'team' },
+  { key: 'bracket', label: 'Eliminatoria', icon: 'bracket' },
 ];
 
 const TOURNAMENT_GROUPS_TABS = [
-  { key: 'teams', label: 'Equipos', icon: 'team' },
-  { key: 'groups', label: 'Grupos', icon: 'standings' },
-  { key: 'bracket', label: 'Bracket', icon: 'bracket' },
+  { key: 'teams',   label: 'Equipos',      icon: 'team' },
+  { key: 'groups',  label: 'Grupos',       icon: 'standings' },
+  { key: 'bracket', label: 'Eliminatoria', icon: 'bracket' },
 ];
 
 // ── Groups tab view ───────────────────────────────────────────────────────────
@@ -47,6 +47,7 @@ const GroupStandingsTable = ({ group, teamsAdvancing, currentUserId }) => (
       isTopDivision={false}
       isBottomDivision={true}
       currentUserId={currentUserId}
+      promotionLabel="pasan"
     />
   </div>
 );
@@ -114,7 +115,7 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
               disabled={generating}
               className="btn-primary text-xs py-1.5 flex-1 md:flex-none justify-center"
             >
-              <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
+              <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar eliminatoria'}
             </button>
           </div>
         )}
@@ -175,8 +176,8 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
   const pending = Object.values(bracket).flat().filter((m) => m.status === 'pending' && m.teamA && m.teamB).length;
   const hasPlayedBracketMatches = Object.values(bracket).flat().some((m) => m.status === 'played');
 
-  const generateLabel = isGroupFormat ? 'Generar bracket desde grupos' : 'Generar bracket';
-  const regenerateLabel = isGroupFormat ? 'Regenerar bracket' : 'Regenerar bracket';
+  const generateLabel = isGroupFormat ? 'Generar eliminatoria desde grupos' : 'Generar eliminatoria';
+  const regenerateLabel = 'Regenerar eliminatoria';
 
   if (!hasMatches) {
     return (
@@ -184,9 +185,9 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
         <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3 text-gray-300">
           <Icon name="bracket" size={22} />
         </div>
-        <p className="font-semibold text-gray-800 mb-1">Bracket no generado</p>
+        <p className="font-semibold text-gray-800 mb-1">Eliminatoria no generada</p>
         <p className="text-gray-400 text-sm mb-4">
-          {isGroupFormat ? 'Completa la fase de grupos y genera el bracket.' : teams.length < 2 ? 'Anade al menos 2 equipos.' : 'Genera el bracket para empezar.'}
+          {isGroupFormat ? 'Completa la fase de grupos y genera la eliminatoria.' : teams.length < 2 ? 'Anade al menos 2 equipos.' : 'Genera la eliminatoria para empezar.'}
         </p>
         {(isGroupFormat || teams.length >= 2) && (
           <button onClick={onGenerate} disabled={generating} className="btn-primary mx-auto text-sm">
@@ -223,7 +224,7 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
           <button
             onClick={onGenerate}
             disabled={generating || hasPlayedBracketMatches}
-            title={hasPlayedBracketMatches ? 'No se puede regenerar el bracket con resultados registrados' : undefined}
+            title={hasPlayedBracketMatches ? 'No se puede regenerar la eliminatoria con resultados registrados' : undefined}
             className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Icon name="bracket" size={13} /> {generating ? 'Generando...' : regenerateLabel}
@@ -564,8 +565,8 @@ const DivisionDetail = () => {
 
   const handleGenerateBracket = async () => {
     const msg = isGroupFormat
-      ? 'Generar bracket desde los clasificados de grupos? Se eliminara el bracket actual.'
-      : `Generar bracket con ${teams.length} equipos? Se eliminara el bracket actual.`;
+      ? 'Generar eliminatoria desde los clasificados de grupos? Se eliminara la eliminatoria actual.'
+      : `Generar eliminatoria con ${teams.length} equipos? Se eliminara la eliminatoria actual.`;
     if (!confirm(msg)) return;
     setGenerating(true);
     setError('');
@@ -575,7 +576,7 @@ const DivisionDetail = () => {
       setBracket(b.data);
       setTab('bracket');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al generar bracket');
+      setError(err.response?.data?.message || 'Error al generar la eliminatoria');
     } finally {
       setGenerating(false);
     }
@@ -689,7 +690,7 @@ const DivisionDetail = () => {
                 )}
                 {isTournament && !isGroupFormat && teams.length >= 2 && (
                   <button onClick={handleGenerateBracket} disabled={generating} className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center">
-                    <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
+                    <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar eliminatoria'}
                   </button>
                 )}
                 <button
@@ -803,7 +804,7 @@ const DivisionDetail = () => {
                 <Icon name="team" size={22} />
               </div>
               <p className="font-semibold text-gray-800 mb-1">Sin equipos</p>
-              <p className="text-gray-400 text-sm mb-4">Anade equipos para {isTournament ? 'generar el bracket.' : 'generar el calendario.'}</p>
+              <p className="text-gray-400 text-sm mb-4">Anade equipos para {isTournament ? 'generar la eliminatoria.' : 'generar el calendario.'}</p>
               {isOrganizer && (
                 <button onClick={() => setShowTeamForm(true)} className="btn-primary mx-auto text-sm">
                   <Icon name="plus" size={13} /> Anadir primer equipo

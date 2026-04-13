@@ -51,7 +51,7 @@ const TournamentDetail = () => {
       await generateBracket(id);
       const b = await getBracket(id);
       setBracket(b.data); setTab('bracket');
-    } catch (err) { setError(err.response?.data?.message || 'Error al generar bracket'); }
+    } catch (err) { setError(err.response?.data?.message || 'Error al generar la eliminatoria'); }
     finally { setGenerating(false); }
   };
 
@@ -136,8 +136,8 @@ const TournamentDetail = () => {
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 mb-6">
         {[
-          { key: 'teams',   label: 'Equipos', icon: 'team' },
-          { key: 'bracket', label: 'Bracket',  icon: 'bracket' },
+          { key: 'teams',   label: 'Equipos',      icon: 'team' },
+          { key: 'bracket', label: 'Eliminatoria', icon: 'bracket' },
         ].map((t) => (
           <button
             key={t.key} onClick={() => setTab(t.key)}
@@ -158,7 +158,7 @@ const TournamentDetail = () => {
             <div className="flex gap-2">
               {teams.length >= 2 && (
                 <button onClick={handleGenerateBracket} disabled={generating} className="btn-secondary text-xs py-1.5">
-                  <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
+                  <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar eliminatoria'}
                 </button>
               )}
               <button onClick={() => setShowTeamForm(!showTeamForm)} className="btn-primary text-xs py-1.5">
@@ -182,7 +182,7 @@ const TournamentDetail = () => {
                   <Icon name="team" size={22} />
                 </div>
                 <p className="font-semibold text-gray-800 mb-1">Sin equipos</p>
-                <p className="text-gray-400 text-sm mb-4">Añade equipos para generar el bracket.</p>
+                <p className="text-gray-400 text-sm mb-4">Añade equipos para generar la eliminatoria.</p>
                 <button onClick={() => setShowTeamForm(true)} className="btn-primary mx-auto text-sm">
                   <Icon name="plus" size={13} /> Añadir primer equipo
                 </button>
@@ -213,13 +213,13 @@ const TournamentDetail = () => {
               <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3 text-gray-300">
                 <Icon name="bracket" size={22} />
               </div>
-              <p className="font-semibold text-gray-800 mb-1">Bracket no generado</p>
+              <p className="font-semibold text-gray-800 mb-1">Eliminatoria no generada</p>
               <p className="text-gray-400 text-sm mb-4">
-                {teams.length < 2 ? 'Añade al menos 2 equipos.' : 'Genera el bracket para empezar.'}
+                {teams.length < 2 ? 'Añade al menos 2 equipos.' : 'Genera la eliminatoria para empezar.'}
               </p>
               {teams.length >= 2 && (
                 <button onClick={handleGenerateBracket} disabled={generating} className="btn-primary mx-auto text-sm">
-                  <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar bracket'}
+                  <Icon name="bracket" size={13} /> {generating ? 'Generando...' : 'Generar eliminatoria'}
                 </button>
               )}
             </div>

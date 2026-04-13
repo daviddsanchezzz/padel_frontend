@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, ChevronDown } from 'lucide-react';
+import { CheckCircle, ChevronDown, MapPin, Calendar } from 'lucide-react';
 import { getPublicCompetition, registerForCompetition } from '../api/organizations';
 import PublicLayout from '../layouts/PublicLayout';
 
@@ -141,8 +141,28 @@ const PublicRegistration = () => {
               {competition?.type === 'tournament' ? 'Inscripción al torneo' : 'Inscripción a la competición'}
               {competition?.season ? ` · T. ${competition.season}` : ''}
             </p>
+            {(competition?.location || competition?.startDate || competition?.endDate) && (
+              <div className="flex flex-wrap gap-3 mt-2 mb-1">
+                {competition?.location && (
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <MapPin size={12} className="text-gray-400" /> {competition.location}
+                  </span>
+                )}
+                {(competition?.startDate || competition?.endDate) && (() => {
+                  const fmt = (v) => { if (!v) return ''; const [y,m,d] = v.split('-'); return `${d}/${m}/${y}`; };
+                  const from = fmt(competition.startDate);
+                  const to = fmt(competition.endDate);
+                  const label = from && to ? `${from} – ${to}` : from || to;
+                  return label ? (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <Calendar size={12} className="text-gray-400" /> {label}
+                    </span>
+                  ) : null;
+                })()}
+              </div>
+            )}
             {competition?.description && (
-              <p className="text-sm text-gray-600 mb-6 leading-relaxed">{competition.description}</p>
+              <p className="text-sm text-gray-600 mb-6 mt-2 leading-relaxed">{competition.description}</p>
             )}
             {!competition?.description && <div className="mb-6" />}
 

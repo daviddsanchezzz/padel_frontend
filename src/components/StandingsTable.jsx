@@ -23,6 +23,7 @@ const StandingsTable = ({
   isBottomDivision = false,
   currentUserId = null,
   formMap = {},
+  promotionLabel = 'ascienden',
 }) => {
   const [expanded, setExpanded] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
   const hasForm = Object.keys(formMap).length > 0;
@@ -152,7 +153,7 @@ const StandingsTable = ({
           {!isTopDivision && promotionSpots > 0 && (
             <span className="flex items-center gap-1 text-green-600">
               <span className="w-2.5 h-2.5 rounded-full bg-green-200 inline-block" />
-              {promotionSpots} ascienden
+              {promotionSpots} {promotionLabel}
             </span>
           )}
           {!isBottomDivision && relegationSpots > 0 && (

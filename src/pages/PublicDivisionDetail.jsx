@@ -97,7 +97,7 @@ const PublicBracket = ({ bracket, scoringType }) => {
   if (rounds.length === 0) {
     return (
       <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
-        <p className="font-semibold text-gray-800">Bracket no generado</p>
+        <p className="font-semibold text-gray-800">Eliminatoria no generada</p>
       </div>
     );
   }
@@ -209,6 +209,7 @@ const PublicGroups = ({ groups, scoringType, teamsAdvancing }) => {
                 relegationSpots={0}
                 isTopDivision={false}
                 isBottomDivision={true}
+                promotionLabel="pasan"
               />
             </div>
           ))}
@@ -313,13 +314,13 @@ const PublicDivisionDetail = () => {
   const TABS = isTournament
     ? isGroupFormat
       ? [
-          { key: 'groups',  label: 'Grupos',   icon: 'standings' },
-          { key: 'bracket', label: 'Bracket',   icon: 'bracket' },
-          { key: 'teams',   label: 'Equipos',   icon: 'team' },
+          { key: 'groups',  label: 'Grupos',       icon: 'standings' },
+          { key: 'bracket', label: 'Eliminatoria',  icon: 'bracket' },
+          { key: 'teams',   label: 'Equipos',       icon: 'team' },
         ]
       : [
-          { key: 'bracket', label: 'Bracket',   icon: 'bracket' },
-          { key: 'teams',   label: 'Equipos',   icon: 'team' },
+          { key: 'bracket', label: 'Eliminatoria',  icon: 'bracket' },
+          { key: 'teams',   label: 'Equipos',       icon: 'team' },
         ]
     : [
         { key: 'standings', label: 'Clasificacion', icon: 'standings' },

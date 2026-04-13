@@ -160,6 +160,8 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
   const isTournament = competition.type === 'tournament';
 
   const [status, setStatus] = useState(competition.status);
+  const [name, setName] = useState(competition.name || '');
+  const [description, setDescription] = useState(competition.description || '');
   const [location, setLocation] = useState(competition.location || '');
   const [startDate, setStartDate] = useState(competition.startDate || '');
   const [endDate, setEndDate] = useState(competition.endDate || '');
@@ -193,6 +195,8 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
   const handleSave = async () => {
     setSaving(true);
     await onSave({
+      name,
+      description,
       status,
       location,
       startDate,
@@ -265,6 +269,28 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
           <section>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Datos de competicion</p>
             <div className="space-y-3">
+              <div>
+                <label className="label">Nombre</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nombre de la competición"
+                  maxLength={120}
+                />
+              </div>
+              <div>
+                <label className="label">Descripción</label>
+                <textarea
+                  className="input resize-none"
+                  rows={3}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Descripción opcional (visible en la página pública)"
+                  maxLength={400}
+                />
+              </div>
               <div>
                 <label className="label">Ubicacion</label>
                 <input
