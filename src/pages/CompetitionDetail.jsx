@@ -243,7 +243,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="px-6 py-5 space-y-6 max-h-[70dvh] overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
 
           {/* Estado */}
           <section>
@@ -304,16 +304,16 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
               </div>
               <div>
                 <label className="label">Rango de fechas</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="date"
-                    className="input"
+                    className="input flex-1"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                   <input
                     type="date"
-                    className="input"
+                    className="input flex-1"
                     value={endDate}
                     min={startDate || undefined}
                     onChange={(e) => setEndDate(e.target.value)}

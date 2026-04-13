@@ -7,9 +7,9 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  /* Prevent iOS auto-zoom on focus */
+  /* Prevent iOS auto-zoom on focus — !important needed to beat @layer utilities (text-sm etc.) */
   input, select, textarea {
-    font-size: 16px;
+    font-size: 16px !important;
   }
   body {
     @apply bg-gray-50 text-gray-900;
