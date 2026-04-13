@@ -119,18 +119,34 @@ export const FootballBallIcon = ({ size = 24, className = '', color = 'currentCo
     aria-hidden="true"
     className={className}
   >
-    <circle cx="12" cy="12" r="10" fill={color} />
-    <circle cx="12" cy="12" r="2.2" fill="#0f172a" />
+    <defs>
+      <radialGradient id="fb-grad" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stopColor="#ffffff" />
+        <stop offset="100%" stopColor="#eef2f7" />
+      </radialGradient>
+    </defs>
+    <circle cx="12" cy="12" r="9.5" fill="url(#fb-grad)" />
+    <circle cx="12" cy="12" r="9.5" stroke="rgba(15,23,42,0.28)" strokeWidth="1.1" />
+
+    {/* Center pentagon */}
+    <path d="M12 8.75 14.2 10.2 13.45 12.75 10.55 12.75 9.8 10.2 12 8.75z" fill="#111827" />
+
+    {/* Side panels */}
+    <path d="M7.45 8.7 9.2 9.65 8.95 11.6 6.95 12.35 5.65 10.95 6.05 9.2 7.45 8.7z" fill="#111827" />
+    <path d="M16.55 8.7 17.95 9.2 18.35 10.95 17.05 12.35 15.05 11.6 14.8 9.65 16.55 8.7z" fill="#111827" />
+    <path d="M8.2 14.2 10.05 13.9 11.15 15.5 10.55 17.4 8.7 17.95 7.25 16.7 7.35 15.1 8.2 14.2z" fill="#111827" />
+    <path d="M15.8 14.2 16.65 15.1 16.75 16.7 15.3 17.95 13.45 17.4 12.85 15.5 13.95 13.9 15.8 14.2z" fill="#111827" />
+
+    {/* Light seams */}
     <path
-      d="M12 3.4l2 1.2.2 2.3-2.2 1.3-2.2-1.3.2-2.3 2-1.2zm-6 3.5 2.2-.3 1.4 1.8-.9 2.4-2.3.6-1.5-1.9 1.1-2.6zm12 0 2.2-.3 1.1 2.6-1.5 1.9-2.3-.6-.9-2.4 1.4-1.8zm-9.8 7.2 2.2-.7 1.8 1.4-.4 2.5-2.1 1.2-2-1.4.5-3zm11.6 0 2 .9.5 3-2 1.4-2.1-1.2-.4-2.5 1.8-1.4zm-7.8 3.7h0l2.4.2.9 2.1-1.3 1.8h-3.2l-1.3-1.8.9-2.1 1.6-.2z"
-      fill="#ffffff"
-      fillOpacity="0.95"
+      d="M9.8 10.2 8.1 9.2M14.2 10.2 15.9 9.2M10.6 12.8 9.3 14.2M13.4 12.8 14.7 14.2M11.2 15.5h1.6"
+      stroke="rgba(15,23,42,0.26)"
+      strokeWidth="0.85"
+      strokeLinecap="round"
     />
-    <path
-      d="M12 2.8c5.1 0 9.2 4.1 9.2 9.2S17.1 21.2 12 21.2 2.8 17.1 2.8 12 6.9 2.8 12 2.8z"
-      stroke="rgba(15,23,42,0.25)"
-      strokeWidth="1.2"
-    />
+
+    {/* Small tint ring to adapt to club color without overpowering */}
+    <circle cx="12" cy="12" r="9.5" stroke={color} strokeOpacity="0.18" strokeWidth="0.9" />
   </svg>
 );
 
