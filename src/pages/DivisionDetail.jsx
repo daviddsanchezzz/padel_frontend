@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getDivision, getDivisions } from '../api/divisions';
 import { getDivisionTeams, createDivisionTeam, deleteTeam, joinTeam, updateTeam } from '../api/teams';
 import { getDivisionMatches, generateLeagueMatches, generateDivisionBracket, getDivisionBracket, generateDivisionGroups, getDivisionGroups } from '../api/matches';
@@ -270,6 +270,7 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
 const DivisionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
 
   const [division, setDivision] = useState(null);
@@ -280,7 +281,7 @@ const DivisionDetail = () => {
   const [groups, setGroups] = useState([]);
   const [allDivisions, setAllDivisions] = useState([]);
 
-  const [tab, setTab] = useState('teams');
+  const [tab, setTab] = useState(() => location.state?.tab || 'teams');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -321,6 +322,12 @@ const DivisionDetail = () => {
   const currentDivisionIndex = allDivisions.findIndex((d) => d._id === id);
   const isTopDivision = currentDivisionIndex === 0;
   const isBottomDivision = currentDivisionIndex === allDivisions.length - 1;
+
+  useEffect(() => {
+    if (!tabs.some((t) => t.key === tab)) {
+      setTab(tabs[0]?.key || 'teams');
+    }
+  }, [tabs, tab]);
 
   useEffect(() => {
     if (teamSize <= 2) {

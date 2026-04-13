@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { X, Pencil } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
@@ -155,13 +155,18 @@ const AddEventModal = ({
               <div>
                 <label className="label">Minuto</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className="input text-center text-lg font-bold"
                   placeholder="0"
-                  min="0"
-                  max="130"
                   value={ev.minute}
-                  onChange={(e) => setEv((cur) => ({ ...cur, minute: e.target.value }))}
+                  onChange={(e) =>
+                    setEv((cur) => ({
+                      ...cur,
+                      minute: e.target.value.replace(/\D/g, '').slice(0, 3),
+                    }))
+                  }
                   autoFocus
                 />
               </div>
@@ -232,6 +237,7 @@ const AddEventModal = ({
 const MatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
 
   const [match, setMatch] = useState(null);
@@ -381,10 +387,26 @@ const MatchDetail = () => {
   const goals = match.result?.goals;
   const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
   const winnerSide = match.winner ? (match.winner.toString() === teamAId ? 'A' : 'B') : null;
+  const divisionId = match?.division?._id || match?.division;
+
+  const handleBack = () => {
+    const backTo = location.state?.backTo;
+    if (backTo?.pathname) {
+      navigate(backTo.pathname, {
+        state: backTo.tab ? { tab: backTo.tab } : undefined,
+      });
+      return;
+    }
+    if (divisionId) {
+      navigate(`/divisions/${divisionId}`, { state: { tab: 'matches' } });
+      return;
+    }
+    navigate(-1);
+  };
 
   return (
     <AppLayout title="Detalle del partido">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-4">
+      <button onClick={handleBack} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-4">
         <Icon name="chevronLeft" size={14} /> Volver
       </button>
 

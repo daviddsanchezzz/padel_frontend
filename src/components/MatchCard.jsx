@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { recordResult, confirmResult, disputeResult, updateMatchSchedule } from '../api/matches';
 import { useAuth } from '../context/AuthContext';
 import Icon from './Icon';
@@ -146,6 +146,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   });
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const winnerId = match.winner?._id || match.winner;
   const teamAId = match.teamA?._id || match.teamA;
@@ -278,12 +279,36 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
               {/* Action buttons — always on the right */}
               <div className="flex-shrink-0 flex items-center gap-1.5">
                 {isOrganizer && (
-                  <button onClick={openSchedule} className="text-xs bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors whitespace-nowrap">
-                    {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
-                  </button>
+                  <>
+                    <button
+                      onClick={openSchedule}
+                      className="inline-flex md:hidden items-center justify-center flex-shrink-0 w-8 h-8 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                      title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
+                    >
+                      <Icon name="calendar" size={14} />
+                    </button>
+                    <button
+                      onClick={openSchedule}
+                      className="hidden md:inline-flex text-xs bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors whitespace-nowrap"
+                    >
+                      {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
+                    </button>
+                  </>
                 )}
                 {eventModeEnabled && (
-                  <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap">
+                  <button
+                    onClick={() =>
+                      navigate(`/matches/${match._id}`, {
+                        state: {
+                          backTo: {
+                            pathname: location.pathname,
+                            tab: location.pathname.startsWith('/divisions/') ? 'matches' : undefined,
+                          },
+                        },
+                      })
+                    }
+                    className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap"
+                  >
                     Ver detalle
                   </button>
                 )}
