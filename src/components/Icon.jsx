@@ -215,11 +215,13 @@ const SPORT_EMOJIS = {
 
 export const SportIcon = ({ slug, size = 22, color = 'currentColor', className = '' }) => {
   if (slug?.toLowerCase() === 'padel') {
-    if (size <= 26) return <PadelBallIcon size={size} color={color} className={className} />;
-    return <PadelRacketIcon size={size} color={color} className={className} />;
+    return <span className={className} aria-label="padel" style={{ fontSize: size * 0.9, lineHeight: 1, display: 'inline-block' }}>🎾</span>;
   }
   if (slug?.toLowerCase() === 'football') {
-    return <FootballBallIcon size={size} color={color} className={className} />;
+    return <span className={className} aria-label="football" style={{ fontSize: size * 0.9, lineHeight: 1, display: 'inline-block' }}>⚽</span>;
+  }
+  if (slug?.toLowerCase() === 'tennis') {
+    return <span className={className} aria-label="tennis" style={{ fontSize: size * 0.9, lineHeight: 1, display: 'inline-block' }}>🎾</span>;
   }
 
   const emoji = SPORT_EMOJIS[slug?.toLowerCase()] ?? '\u{1F3C6}';
