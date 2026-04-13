@@ -78,7 +78,7 @@ const CompetitionModal = ({ onClose, onCreated }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="max-h-[78dvh] overflow-y-auto p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="max-h-[78dvh] overflow-y-auto p-6 pb-24 space-y-5">
           {error && (
             <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
               <Icon name="alert" size={14} /> {error}
@@ -212,7 +212,7 @@ const CompetitionModal = ({ onClose, onCreated }) => {
             </div>
           </section>
 
-          <div className="sticky bottom-0 bg-white pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
+          <div className="sticky bottom-0 -mx-6 px-6 py-3 bg-white border-t border-gray-100 shadow-[0_-8px_16px_rgba(15,23,42,0.06)] flex items-center justify-end gap-2">
             <button type="button" onClick={onClose} className="btn-secondary">Cancelar</button>
             <button type="submit" disabled={loading} className="btn-primary">
               {loading ? <Icon name="spinner" size={14} className="animate-spin" /> : <Icon name="plus" size={14} />}
