@@ -145,6 +145,7 @@ export const FootballBallIcon = ({ size = 24, className = '', color = 'currentCo
       strokeLinecap="round"
     />
 
+
     {/* Small tint ring to adapt to club color without overpowering */}
     <circle cx="12" cy="12" r="9.5" stroke={color} strokeOpacity="0.18" strokeWidth="0.9" />
   </svg>
