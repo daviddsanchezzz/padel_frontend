@@ -524,7 +524,7 @@ const MatchDetail = () => {
                         >
                           <div className="pr-2">{isTeamA ? eventRow : <div className="h-8" />}</div>
                           <div className="flex items-center justify-center">
-                            <span className="relative z-10 text-xl font-extrabold text-emerald-500 tabular-nums leading-none">{ev.minute}'</span>
+                            <span className="relative z-10 text-sm font-bold text-gray-900 tabular-nums leading-none">{ev.minute}'</span>
                           </div>
                           <div className="pl-2 flex justify-end">{!isTeamA ? eventRow : <div className="h-8" />}</div>
                         </div>
