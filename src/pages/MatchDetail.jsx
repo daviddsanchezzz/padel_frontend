@@ -478,23 +478,17 @@ const MatchDetail = () => {
                     {sortedEvents.map((ev, idx) => {
                       const isTeamA = ev.team?.toString() === teamAId;
                       const meta = EVENT_FEED_META[ev.type] || { label: ev.type, icon: '•', accent: 'text-gray-500' };
-                      const eventPlayers = isTeamA ? playersByTeam.A : playersByTeam.B;
-                      const player = (eventPlayers || []).find((p) => p?.name === ev.playerName);
-                      const dorsal = player?.dorsal;
-                      const eventTeamName = isTeamA ? (match.teamA?.name || 'Equipo A') : (match.teamB?.name || 'Equipo B');
 
                       const eventRow = (
                         <div className={`group relative inline-flex items-center gap-2 px-2.5 py-2 rounded-md max-w-[320px] ${isTeamA ? '' : 'text-right'}`}>
                           <span className="text-[15px] leading-none">{meta.icon}</span>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">
-                              {dorsal != null && <span className="text-gray-500 font-mono mr-1">#{dorsal}</span>}
+                            <p className={`${isTeamA ? 'text-sm' : 'text-xs'} font-semibold text-gray-900 truncate`}>
                               {ev.playerName || 'Jugador'}
                             </p>
-                            <p className={`text-[10px] uppercase tracking-wider ${meta.accent}`}>{meta.label}</p>
                           </div>
                           {isOrganizer && (
-                            <div className={`absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all ${isTeamA ? 'right-1' : 'left-1'}`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 flex items-center gap-1 transition-all ${isTeamA ? 'right-1' : 'left-1'}`}>
                               <button
                                 type="button"
                                 onClick={() => openEditEventModal(ev.sourceIdx)}
@@ -517,57 +511,17 @@ const MatchDetail = () => {
                       );
 
                       return (
-                        <div key={ev._id || `${ev.minute}-${idx}`}>
-                          {/* Mobile compact row */}
-                          <div className={`sm:hidden px-3 py-2.5 ${idx !== sortedEvents.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                            <div className="flex items-start gap-3">
-                              <span className="w-10 pt-0.5 text-sm font-bold text-gray-900 tabular-nums">{ev.minute}'</span>
-                              <span className="text-[15px] leading-none mt-0.5">{meta.icon}</span>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-gray-900 truncate">
-                                  {dorsal != null && <span className="text-gray-500 font-mono mr-1">#{dorsal}</span>}
-                                  {ev.playerName || 'Jugador'}
-                                </p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className={`text-[10px] uppercase tracking-wider ${meta.accent}`}>{meta.label}</span>
-                                  <span className="text-[10px] text-gray-400 uppercase tracking-wide truncate">{eventTeamName}</span>
-                                </div>
-                              </div>
-                              {isOrganizer && (
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={() => openEditEventModal(ev.sourceIdx)}
-                                    className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-gray-300 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
-                                    title="Editar evento"
-                                  >
-                                    <Pencil size={11} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteEvent(ev.sourceIdx)}
-                                    className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-gray-300 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
-                                    title="Eliminar evento"
-                                  >
-                                    <X size={11} />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
+                        <div
+                          key={ev._id || `${ev.minute}-${idx}`}
+                          className={`grid grid-cols-[1fr_58px_1fr] items-center min-h-[56px] px-2 ${
+                            idx !== sortedEvents.length - 1 ? 'border-b border-gray-100' : ''
+                          }`}
+                        >
+                          <div className="pr-2">{isTeamA ? eventRow : <div className="h-8" />}</div>
+                          <div className="flex items-center justify-center">
+                            <span className="relative z-10 text-sm font-bold text-gray-900 tabular-nums leading-none">{ev.minute}'</span>
                           </div>
-
-                          {/* Desktop row */}
-                          <div
-                            className={`hidden sm:grid grid-cols-[1fr_58px_1fr] items-center min-h-[56px] px-2 ${
-                              idx !== sortedEvents.length - 1 ? 'border-b border-gray-100' : ''
-                            }`}
-                          >
-                            <div className="pr-2">{isTeamA ? eventRow : <div className="h-8" />}</div>
-                            <div className="flex items-center justify-center">
-                              <span className="relative z-10 text-sm font-bold text-gray-900 tabular-nums leading-none">{ev.minute}'</span>
-                            </div>
-                            <div className="pl-2 flex justify-end">{!isTeamA ? eventRow : <div className="h-8" />}</div>
-                          </div>
+                          <div className="pl-2 flex justify-end">{!isTeamA ? eventRow : <div className="h-8" />}</div>
                         </div>
                       );
                     })}
