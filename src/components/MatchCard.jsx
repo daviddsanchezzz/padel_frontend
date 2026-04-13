@@ -252,15 +252,15 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
       <div className="px-3 md:px-5 py-3 md:py-4">
 
         {scoringType === 'goals' ? (
-          /* ── Football layout: Team A — Score — Team B ── */
-          <div className="space-y-2.5">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          /* ── Football layout: Team A — Score — Team B — Actions ── */
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
               {/* Team A */}
-              <p className={`text-xs md:text-sm font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
+              <p className={`flex-1 min-w-0 text-xs md:text-sm font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
                 {teamAName}
               </p>
               {/* Score */}
-              <div className={`flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-gray-50 border border-gray-100 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+              <div className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-gray-50 border border-gray-100 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
                 {displayResult?.goals != null ? (
                   <>
                     <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.a}</span>
@@ -272,32 +272,23 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 )}
               </div>
               {/* Team B */}
-              <p className={`text-xs md:text-sm font-semibold text-left truncate ${isMyTeamB ? 'text-brand-700' : winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
+              <p className={`flex-1 min-w-0 text-xs md:text-sm font-semibold text-left truncate ${isMyTeamB ? 'text-brand-700' : winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
                 {teamBName}
               </p>
-            </div>
-
-            {schedulePieces.length > 0 && (
-              <p className="text-xs text-gray-400 text-center">{schedulePieces.join(' · ')}</p>
-            )}
-
-            {error && <p className="text-red-500 text-xs text-center">{error}</p>}
-
-            {/* Actions */}
-            {(match.status === 'pending' || match.status === 'awaiting_confirmation' || canSchedule) && (
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                {canSchedule && (
-                  <button onClick={openSchedule} className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+              {/* Action buttons — always on the right */}
+              <div className="flex-shrink-0 flex items-center gap-1.5">
+                {isOrganizer && (
+                  <button onClick={openSchedule} className="text-xs bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors whitespace-nowrap">
                     {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
                   </button>
                 )}
                 {eventModeEnabled && (
-                  <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                  <button onClick={() => navigate(`/matches/${match._id}`)} className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap">
                     Ver detalle
                   </button>
                 )}
                 {!eventModeEnabled && match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
-                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors">
+                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap">
                     + Resultado
                   </button>
                 )}
@@ -311,7 +302,12 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                   </div>
                 )}
               </div>
+            </div>
+
+            {schedulePieces.length > 0 && (
+              <p className="text-xs text-gray-400 text-center">{schedulePieces.join(' · ')}</p>
             )}
+            {error && <p className="text-red-500 text-xs text-center">{error}</p>}
           </div>
         ) : (
           /* ── Padel / Tennis layout: stacked teams ── */
