@@ -676,6 +676,7 @@ const DivisionDetail = () => {
 
       {tab === 'teams' && (
         <div>
+          {teamActionsTarget && <div className="fixed inset-0 z-40" onClick={closeTeamActions} />}
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-4">
             {/* Contador */}
             <p className="text-sm text-gray-500">{teams.length} equipo{teams.length !== 1 ? 's' : ''}</p>
