@@ -467,24 +467,29 @@ const MatchDetail = () => {
               {sortedEvents.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6">Sin eventos registrados.</p>
               ) : (
-                <div className="rounded-xl overflow-hidden border border-slate-700 bg-slate-900">
-                  <div className="grid grid-cols-[1fr_58px_1fr] items-center px-3 py-2 border-b border-slate-700">
-                    <p className="text-[11px] font-semibold text-slate-100 uppercase tracking-wide truncate">{match.teamA?.name}</p>
-                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest text-center">Min</p>
-                    <p className="text-[11px] font-semibold text-slate-100 uppercase tracking-wide text-right truncate">{match.teamB?.name}</p>
+                <div className="rounded-xl overflow-hidden border border-gray-200 bg-white">
+                  <div className="grid grid-cols-[1fr_58px_1fr] items-center px-3 py-2 border-b border-gray-200 bg-gray-50">
+                    <p className="text-[11px] font-semibold text-gray-800 uppercase tracking-wide truncate">{match.teamA?.name}</p>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-center">Min</p>
+                    <p className="text-[11px] font-semibold text-gray-800 uppercase tracking-wide text-right truncate">{match.teamB?.name}</p>
                   </div>
 
-                  <div className="relative">
-                    <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-px bg-slate-700" />
+                  <div>
                     {sortedEvents.map((ev, idx) => {
                       const isTeamA = ev.team?.toString() === teamAId;
-                      const meta = EVENT_FEED_META[ev.type] || { label: ev.type, icon: '•', accent: 'text-slate-300' };
+                      const meta = EVENT_FEED_META[ev.type] || { label: ev.type, icon: '•', accent: 'text-gray-500' };
+                      const eventPlayers = isTeamA ? playersByTeam.A : playersByTeam.B;
+                      const player = (eventPlayers || []).find((p) => p?.name === ev.playerName);
+                      const dorsal = player?.dorsal;
 
                       const eventRow = (
                         <div className={`group relative inline-flex items-center gap-2 px-2.5 py-2 rounded-md max-w-[320px] ${isTeamA ? '' : 'text-right'}`}>
                           <span className="text-[15px] leading-none">{meta.icon}</span>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-slate-100 truncate">{ev.playerName || 'Jugador'}</p>
+                            <p className="text-sm font-semibold text-gray-900 truncate">
+                              {dorsal != null && <span className="text-gray-500 font-mono mr-1">#{dorsal}</span>}
+                              {ev.playerName || 'Jugador'}
+                            </p>
                             <p className={`text-[10px] uppercase tracking-wider ${meta.accent}`}>{meta.label}</p>
                           </div>
                           {isOrganizer && (
@@ -492,7 +497,7 @@ const MatchDetail = () => {
                               <button
                                 type="button"
                                 onClick={() => openEditEventModal(ev.sourceIdx)}
-                                className="w-5 h-5 flex items-center justify-center rounded bg-slate-800/90 border border-slate-600 text-slate-300 hover:text-white hover:border-brand-300 transition-all"
+                                className="w-5 h-5 flex items-center justify-center rounded bg-white border border-gray-300 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
                                 title="Editar evento"
                               >
                                 <Pencil size={10} />
@@ -500,7 +505,7 @@ const MatchDetail = () => {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteEvent(ev.sourceIdx)}
-                                className="w-5 h-5 flex items-center justify-center rounded bg-slate-800/90 border border-slate-600 text-slate-300 hover:text-red-300 hover:border-red-300 transition-all"
+                                className="w-5 h-5 flex items-center justify-center rounded bg-white border border-gray-300 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
                                 title="Eliminar evento"
                               >
                                 <X size={10} />
@@ -514,12 +519,12 @@ const MatchDetail = () => {
                         <div
                           key={ev._id || `${ev.minute}-${idx}`}
                           className={`grid grid-cols-[1fr_58px_1fr] items-center min-h-[56px] px-2 ${
-                            idx !== sortedEvents.length - 1 ? 'border-b border-slate-800' : ''
+                            idx !== sortedEvents.length - 1 ? 'border-b border-gray-100' : ''
                           }`}
                         >
                           <div className="pr-2">{isTeamA ? eventRow : <div className="h-8" />}</div>
                           <div className="flex items-center justify-center">
-                            <span className="relative z-10 text-xl font-extrabold text-emerald-400 tabular-nums leading-none">{ev.minute}'</span>
+                            <span className="relative z-10 text-xl font-extrabold text-emerald-500 tabular-nums leading-none">{ev.minute}'</span>
                           </div>
                           <div className="pl-2 flex justify-end">{!isTeamA ? eventRow : <div className="h-8" />}</div>
                         </div>
