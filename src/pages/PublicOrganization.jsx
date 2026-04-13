@@ -155,13 +155,6 @@ const PublicOrganization = () => {
           <div className="space-y-4">
             {sportGroups.map(([sport, group]) => (
               <div key={sport}>
-                {sportGroups.length > 1 && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <SportIcon slug={group[0]?.sport?.slug} size={14} color={color} />
-                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{sport}</span>
-                    <div className="flex-1 h-px bg-gray-100" />
-                  </div>
-                )}
                 <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
                   {group.map((comp) => (
                     <button

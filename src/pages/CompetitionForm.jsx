@@ -87,12 +87,19 @@ const CompetitionForm = () => {
 
   return (
     <AppLayout title="Nueva competicion">
-      <div className="w-full">
-        <div className="mb-6 flex flex-col gap-1">
-          <p className="text-xl font-bold text-gray-900">Configura tu competicion</p>
-          <p className="text-sm text-gray-500">
-            Define formato, deporte y reglas base. Luego podras ajustar detalles dentro de la competicion.
-          </p>
+      <div className="w-full max-w-none pb-24">
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white px-5 py-5 md:px-7">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center flex-shrink-0">
+              <Icon name="tournament" size={18} />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-gray-900">Crear competicion</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Configura los datos base y reglas iniciales. Luego podras ajustar todo desde configuracion.
+              </p>
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -102,40 +109,45 @@ const CompetitionForm = () => {
           </div>
         )}
 
-        <div className="card p-5 md:p-7">
-          <form onSubmit={handleSubmit} className="space-y-7">
-            <section className="space-y-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Tipo de competicion</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  { value: 'league', label: 'Liga', icon: 'league', desc: 'Jornadas round-robin y clasificacion' },
-                  { value: 'tournament', label: 'Torneo', icon: 'tournament', desc: 'Eliminacion directa con bracket' },
-                ].map((t) => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => setForm({ ...form, type: t.value })}
-                    className={`p-4 rounded-xl border text-left transition-all ${
-                      form.type === t.value
-                        ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-100'
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${form.type === t.value ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                        <Icon name={t.icon} size={16} />
-                      </div>
-                      <p className={`text-sm font-semibold ${form.type === t.value ? 'text-brand-700' : 'text-gray-800'}`}>{t.label}</p>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6">
+            <div className="mb-4">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Formato</p>
+              <p className="text-sm font-semibold text-gray-900 mt-1">Tipo de competicion</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { value: 'league', label: 'Liga', icon: 'league', desc: 'Jornadas round-robin y clasificacion' },
+                { value: 'tournament', label: 'Torneo', icon: 'tournament', desc: 'Eliminacion directa con bracket' },
+              ].map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, type: t.value })}
+                  className={`p-4 rounded-xl border text-left transition-all ${
+                    form.type === t.value
+                      ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-100'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${form.type === t.value ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      <Icon name={t.icon} size={16} />
                     </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">{t.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </section>
+                    <p className={`text-sm font-semibold ${form.type === t.value ? 'text-brand-700' : 'text-gray-800'}`}>{t.label}</p>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">{t.desc}</p>
+                </button>
+              ))}
+            </div>
+          </section>
 
-            <div className="h-px bg-gray-100" />
-
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6">
+            <div className="mb-4">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Datos principales</p>
+              <p className="text-sm font-semibold text-gray-900 mt-1">Identidad de la competicion</p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div>
                 <label className="label">Deporte *</label>
                 <div className="relative">
@@ -167,9 +179,9 @@ const CompetitionForm = () => {
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
               </div>
-            </section>
+            </div>
 
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
               {isLeague && (
                 <div>
                   <label className="label">Temporada</label>
@@ -232,9 +244,16 @@ const CompetitionForm = () => {
                   </div>
                 </div>
               )}
-            </section>
+            </div>
+          </section>
 
-            <section className="grid grid-cols-1 gap-4">
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6">
+            <div className="mb-4">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Calendario y sede</p>
+              <p className="text-sm font-semibold text-gray-900 mt-1">Ubicacion y rango de fechas</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="label">Ubicacion</label>
                 <input
@@ -246,6 +265,7 @@ const CompetitionForm = () => {
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
                 />
               </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Fecha inicio</label>
@@ -267,20 +287,24 @@ const CompetitionForm = () => {
                   />
                 </div>
               </div>
-            </section>
+            </div>
+          </section>
 
-            <section>
-              <label className="label">Descripcion</label>
-              <textarea
-                className="input resize-none"
-                rows={3}
-                value={form.description}
-                placeholder="Descripcion opcional"
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </section>
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6">
+            <div className="mb-3">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Descripcion</p>
+            </div>
+            <textarea
+              className="input resize-none"
+              rows={3}
+              value={form.description}
+              placeholder="Descripcion opcional"
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </section>
 
-            <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="fixed left-0 right-0 bottom-0 z-20 bg-white/95 backdrop-blur border-t border-gray-200">
+            <div className="max-w-[1200px] mx-auto px-4 py-3 flex items-center justify-end gap-2">
               <button type="button" onClick={() => navigate('/dashboard')} className="btn-secondary">
                 Cancelar
               </button>
@@ -288,8 +312,8 @@ const CompetitionForm = () => {
                 {loading ? 'Creando...' : 'Crear competicion'}
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </AppLayout>
   );
