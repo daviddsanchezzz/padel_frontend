@@ -344,6 +344,104 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
             </div>
           </section>
 
+          {/* Formato del torneo — primero porque define la estructura */}
+          {isTournament && (
+            <section>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Formato del torneo</p>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  {[
+                    { value: 'elimination', label: 'Eliminación directa' },
+                    { value: 'groups_and_elimination', label: 'Grupos + Eliminatoria' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => set('tournamentFormat', opt.value)}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${
+                        s.tournamentFormat === opt.value
+                          ? 'bg-brand-600 text-white border-brand-600'
+                          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {s.tournamentFormat === 'groups_and_elimination' && (
+                  <div className="space-y-2">
+                    <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">Equipos por grupo</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Máximo de equipos en cada grupo</p>
+                      </div>
+                      <Stepper value={s.teamsPerGroup} onChange={(v) => set('teamsPerGroup', v)} min={3} max={8} />
+                    </div>
+                    <div className="bg-brand-50 rounded-xl p-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-brand-800">Clasifican por grupo</p>
+                        <p className="text-xs text-brand-500 mt-0.5">Equipos que pasan a eliminatoria</p>
+                      </div>
+                      <Stepper value={s.teamsAdvancing} onChange={(v) => set('teamsAdvancing', v)} min={1} max={4} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Equipos — jugadores + capacidad juntos */}
+          <section>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Equipos</p>
+            <div className="space-y-2">
+              {isGoals && (
+                <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Jugadores por equipo</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {s.teamSize === 1 ? '1 jugador' : `${s.teamSize} jugadores`}
+                    </p>
+                  </div>
+                  <Stepper value={s.teamSize} onChange={(v) => set('teamSize', v)} min={1} max={30} />
+                </div>
+              )}
+              <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Máx. equipos por {isLeague ? 'división' : 'categoría'}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{s.maxTeamsPerDivision === 0 ? 'Sin límite' : `${s.maxTeamsPerDivision} equipos`}</p>
+                </div>
+                <Stepper value={s.maxTeamsPerDivision} onChange={(v) => set('maxTeamsPerDivision', v)} max={128} />
+              </div>
+            </div>
+          </section>
+
+          {/* Divisiones (liga) */}
+          {isLeague && (
+            <section>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Divisiones</p>
+              <div className="space-y-2">
+                <div className="bg-brand-50 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-brand-800">↑ Equipos que ascienden</p>
+                    <p className="text-xs text-brand-500 mt-0.5">
+                      {s.promotionSpots === 0 ? 'Sin ascensos' : `${s.promotionSpots} equipo${s.promotionSpots > 1 ? 's' : ''} por división`}
+                    </p>
+                  </div>
+                  <Stepper value={s.promotionSpots} onChange={(v) => set('promotionSpots', v)} max={10} />
+                </div>
+                <div className="bg-red-50 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-red-800">↓ Equipos que descienden</p>
+                    <p className="text-xs text-red-400 mt-0.5">
+                      {s.relegationSpots === 0 ? 'Sin descensos' : `${s.relegationSpots} equipo${s.relegationSpots > 1 ? 's' : ''} por división`}
+                    </p>
+                  </div>
+                  <Stepper value={s.relegationSpots} onChange={(v) => set('relegationSpots', v)} max={10} />
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Puntuación */}
           <section>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Puntuación</p>
@@ -364,10 +462,10 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
             </div>
           </section>
 
-          {/* Formato de partido */}
+          {/* Formato de partido (sets) */}
           {isSets && (
             <section>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Formato de partido</p>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Formato de partido</p>
               <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-gray-800">Sets por partido</p>
@@ -383,19 +481,10 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
             </section>
           )}
 
+          {/* Registro de partido (goles/eventos) */}
           {isGoals && (
             <section>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Equipos</p>
-              <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">Jugadores por equipo</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {s.teamSize === 1 ? '1 jugador' : `${s.teamSize} jugadores`}
-                  </p>
-                </div>
-                <Stepper value={s.teamSize} onChange={(v) => set('teamSize', v)} min={1} max={30} />
-              </div>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Registro de partido</p>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Registro de partido</p>
               <div className="space-y-3">
                 <div className="bg-gray-50 rounded-xl p-4">
                   <p className="text-sm font-semibold text-gray-800 mb-2">Modo de carga de resultado</p>
@@ -424,7 +513,6 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                     </button>
                   </div>
                 </div>
-
                 {s.resultMode === 'events' && (
                   <div className="bg-blue-50 rounded-xl p-4">
                     <p className="text-sm font-semibold text-blue-900 mb-2">Eventos permitidos</p>
@@ -451,96 +539,6 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                     </div>
                   </div>
                 )}
-              </div>
-            </section>
-          )}
-
-          {/* Formato del torneo */}
-          {isTournament && (
-            <section>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Formato del torneo</p>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  {[
-                    { value: 'elimination', label: 'Eliminación directa' },
-                    { value: 'groups_and_elimination', label: 'Grupos + Eliminatoria' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => set('tournamentFormat', opt.value)}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${
-                        s.tournamentFormat === opt.value
-                          ? 'bg-brand-600 text-white border-brand-600'
-                          : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-
-                {s.tournamentFormat === 'groups_and_elimination' && (
-                  <div className="space-y-2">
-                    <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800">Equipos por grupo</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Máximo de equipos en cada grupo</p>
-                      </div>
-                      <Stepper value={s.teamsPerGroup} onChange={(v) => set('teamsPerGroup', v)} min={3} max={8} />
-                    </div>
-                    <div className="bg-brand-50 rounded-xl p-4 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-brand-800">Clasifican por grupo</p>
-                        <p className="text-xs text-brand-500 mt-0.5">Equipos que pasan a eliminatoria</p>
-                      </div>
-                      <Stepper value={s.teamsAdvancing} onChange={(v) => set('teamsAdvancing', v)} min={1} max={4} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Capacidad */}
-          <section>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Capacidad</p>
-            <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-gray-800">Equipos max. por division/categoria</p>
-                <p className="text-xs text-gray-400 mt-0.5">{s.maxTeamsPerDivision === 0 ? 'Sin limite' : `${s.maxTeamsPerDivision} equipos`}</p>
-              </div>
-              <Stepper value={s.maxTeamsPerDivision} onChange={(v) => set('maxTeamsPerDivision', v)} max={128} />
-            </div>
-          </section>
-
-          {/* Divisiones (liga) */}
-          {isLeague && (
-            <section>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Divisiones</p>
-              <div className="space-y-3">
-
-
-                <div className="bg-brand-50 rounded-xl p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-brand-800">↑ Equipos que ascienden</p>
-                    <p className="text-xs text-brand-500 mt-0.5">
-                      {s.promotionSpots === 0 ? 'Sin ascensos' : `${s.promotionSpots} equipo${s.promotionSpots > 1 ? 's' : ''} por división`}
-                    </p>
-                  </div>
-                  <Stepper value={s.promotionSpots} onChange={(v) => set('promotionSpots', v)} max={10} />
-                </div>
-
-                <div className="bg-red-50 rounded-xl p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-red-800">↓ Equipos que descienden</p>
-                    <p className="text-xs text-red-400 mt-0.5">
-                      {s.relegationSpots === 0 ? 'Sin descensos' : `${s.relegationSpots} equipo${s.relegationSpots > 1 ? 's' : ''} por división`}
-                    </p>
-                  </div>
-                  <Stepper value={s.relegationSpots} onChange={(v) => set('relegationSpots', v)} max={10} />
-                </div>
-
               </div>
             </section>
           )}
