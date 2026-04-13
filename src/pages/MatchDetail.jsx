@@ -310,6 +310,7 @@ const MatchDetail = () => {
         playerName: newEv.playerName,
       };
 
+      
       const payload = editingEventIdx == null ? [...baseEvents, mappedNewEvent] : baseEvents.map((ev, idx) => (idx === editingEventIdx ? mappedNewEvent : ev));
 
       await recordMatchEvents(id, { events: payload });
