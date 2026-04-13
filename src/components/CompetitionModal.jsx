@@ -1,12 +1,9 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { createCompetition } from '../api/competitions';
 import { getSports } from '../api/sports';
 import { useOrg } from '../context/OrgContext';
 import Icon from './Icon';
-
-const normalizeSportName = (value = '') =>
-  value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 const CompetitionModal = ({ onClose, onCreated }) => {
   const { activeOrg } = useOrg();
@@ -38,8 +35,6 @@ const CompetitionModal = ({ onClose, onCreated }) => {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
-
-  useMemo(() => sports.find((s) => s._id === form.sportId) || null, [sports, form.sportId]);
   const isLeague = form.type === 'league';
 
   const handleSubmit = async (e) => {
@@ -231,3 +226,4 @@ const CompetitionModal = ({ onClose, onCreated }) => {
 };
 
 export default CompetitionModal;
+
