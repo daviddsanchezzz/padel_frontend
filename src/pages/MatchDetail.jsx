@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { X, Pencil } from 'lucide-react';
 import AppLayout from '../layouts/AppLayout';
@@ -9,10 +9,10 @@ import { getMatch, getMatchEvents, recordMatchEvents } from '../api/matches';
 const DEFAULT_EVENT_TYPES = ['goal', 'assist', 'yellow_card', 'red_card'];
 
 const EVENT_META = {
-  goal:        { label: 'Gol',             tone: 'text-emerald-600', bg: 'bg-emerald-50',  border: 'border-emerald-200', dot: 'bg-emerald-500' },
-  assist:      { label: 'Asistencia',       tone: 'text-sky-600',     bg: 'bg-sky-50',      border: 'border-sky-200',     dot: 'bg-sky-500'     },
-  yellow_card: { label: 'T. Amarilla',      tone: 'text-amber-600',   bg: 'bg-amber-50',    border: 'border-amber-200',   dot: 'bg-amber-400'   },
-  red_card:    { label: 'T. Roja',          tone: 'text-red-600',     bg: 'bg-red-50',      border: 'border-red-200',     dot: 'bg-red-500'     },
+  goal: { label: 'Gol', tone: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  assist: { label: 'Asistencia', tone: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-200', dot: 'bg-sky-500' },
+  yellow_card: { label: 'T. Amarilla', tone: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', dot: 'bg-amber-400' },
+  red_card: { label: 'T. Roja', tone: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500' },
 };
 
 const formatDateLabel = (value) => {
@@ -36,16 +36,30 @@ const formatDateTimeLabel = (match) => {
   return '';
 };
 
-// ── Add-event multi-step modal ────────────────────────────────────────────────
 const TOTAL_STEPS = 3;
 
-const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onClose, saving, initialEvent, title = 'Añadir evento' }) => {
+const AddEventModal = ({
+  match,
+  enabledEventTypes,
+  playersByTeam,
+  onConfirm,
+  onClose,
+  saving,
+  initialEvent,
+  title = 'Anadir evento',
+}) => {
   const [step, setStep] = useState(1);
   const [ev, setEv] = useState(initialEvent || { type: enabledEventTypes[0] || 'goal', teamSide: 'A', minute: '', playerName: '' });
 
-  // Close on Escape
   useEffect(() => {
-    const h = (e) => { if (e.key === 'Escape') onClose(); };
+    setStep(1);
+    setEv(initialEvent || { type: enabledEventTypes[0] || 'goal', teamSide: 'A', minute: '', playerName: '' });
+  }, [initialEvent, enabledEventTypes]);
+
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', h);
     return () => document.removeEventListener('keydown', h);
   }, [onClose]);
@@ -58,14 +72,12 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   const back = () => setStep((s) => Math.max(s - 1, 1));
 
-  const teamName = (side) => side === 'A' ? (match.teamA?.name || 'Equipo A') : (match.teamB?.name || 'Equipo B');
+  const teamName = (side) => (side === 'A' ? match.teamA?.name || 'Equipo A' : match.teamB?.name || 'Equipo B');
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full sm:max-w-sm bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-
-        {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
             {step > 1 && (
@@ -83,17 +95,13 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
           </button>
         </div>
 
-        {/* Step indicator */}
         <div className="flex gap-1 px-5 pt-3">
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
             <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i + 1 <= step ? 'bg-brand-500' : 'bg-gray-200'}`} />
           ))}
         </div>
 
-        {/* Body */}
         <div className="px-5 py-5 space-y-3">
-
-          {/* Step 1: Event type */}
           {step === 1 && (
             <>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tipo de evento</p>
@@ -105,11 +113,9 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
                     <button
                       key={type}
                       type="button"
-                      onClick={() => { setEv((e) => ({ ...e, type })); }}
+                      onClick={() => setEv((e) => ({ ...e, type }))}
                       className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 text-left transition-all ${
-                        selected
-                          ? `${meta.bg} ${meta.border} ring-2 ring-offset-1 ring-brand-300`
-                          : 'bg-white border-gray-200 hover:border-gray-300'
+                        selected ? `${meta.bg} ${meta.border} ring-2 ring-offset-1 ring-brand-300` : 'bg-white border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className={`w-3 h-3 rounded-full flex-shrink-0 ${meta.dot}`} />
@@ -118,23 +124,17 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
                   );
                 })}
               </div>
-              <button
-                type="button"
-                onClick={next}
-                disabled={!canNext1}
-                className="btn-primary w-full justify-center mt-1 disabled:opacity-50"
-              >
+              <button type="button" onClick={next} disabled={!canNext1} className="btn-primary w-full justify-center mt-1 disabled:opacity-50">
                 Siguiente
               </button>
             </>
           )}
 
-          {/* Step 2: Team + Minute */}
           {step === 2 && (
             <>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Equipo</p>
               <div className="grid grid-cols-2 gap-2.5">
-                {(['A', 'B']).map((side) => {
+                {['A', 'B'].map((side) => {
                   const selected = ev.teamSide === side;
                   return (
                     <button
@@ -161,26 +161,20 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
                   min="0"
                   max="130"
                   value={ev.minute}
-                  onChange={(e) => setEv((ev) => ({ ...ev, minute: e.target.value }))}
+                  onChange={(e) => setEv((cur) => ({ ...cur, minute: e.target.value }))}
                   autoFocus
                 />
               </div>
-              <button
-                type="button"
-                onClick={next}
-                disabled={!canNext2}
-                className="btn-primary w-full justify-center mt-1 disabled:opacity-50"
-              >
+              <button type="button" onClick={next} disabled={!canNext2} className="btn-primary w-full justify-center mt-1 disabled:opacity-50">
                 Siguiente
               </button>
             </>
           )}
 
-          {/* Step 3: Player */}
           {step === 3 && (
             <>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                Jugador — <span className="text-gray-400 font-normal normal-case">{teamName(ev.teamSide)}</span>
+                Jugador - <span className="text-gray-400 font-normal normal-case">{teamName(ev.teamSide)}</span>
               </p>
               {players.length === 0 ? (
                 <div>
@@ -190,7 +184,7 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
                     className="input"
                     placeholder="Nombre"
                     value={ev.playerName}
-                    onChange={(e) => setEv((ev) => ({ ...ev, playerName: e.target.value }))}
+                    onChange={(e) => setEv((cur) => ({ ...cur, playerName: e.target.value }))}
                     autoFocus
                   />
                 </div>
@@ -202,11 +196,9 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
                       <button
                         key={p.name}
                         type="button"
-                        onClick={() => setEv((ev) => ({ ...ev, playerName: p.name }))}
+                        onClick={() => setEv((cur) => ({ ...cur, playerName: p.name }))}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all ${
-                          selected
-                            ? 'bg-brand-50 border-brand-500 ring-2 ring-offset-1 ring-brand-200'
-                            : 'bg-white border-gray-200 hover:border-gray-300'
+                          selected ? 'bg-brand-50 border-brand-500 ring-2 ring-offset-1 ring-brand-200' : 'bg-white border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         {p.dorsal != null && (
@@ -220,13 +212,14 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
                   })}
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => onConfirm(ev)}
-                disabled={!canConfirm || saving}
-                className="btn-primary w-full justify-center mt-1 disabled:opacity-50"
-              >
-                {saving ? <><Icon name="spinner" size={14} className="animate-spin" /> Guardando...</> : 'Confirmar'}
+              <button type="button" onClick={() => onConfirm(ev)} disabled={!canConfirm || saving} className="btn-primary w-full justify-center mt-1 disabled:opacity-50">
+                {saving ? (
+                  <>
+                    <Icon name="spinner" size={14} className="animate-spin" /> Guardando...
+                  </>
+                ) : (
+                  'Confirmar'
+                )}
               </button>
             </>
           )}
@@ -236,7 +229,6 @@ const AddEventModal = ({ match, enabledEventTypes, playersByTeam, onConfirm, onC
   );
 };
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 const MatchDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -247,7 +239,7 @@ const MatchDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingEventIdx, setEditingEventIdx] = useState(null); // null = add, number = edit
+  const [editingEventIdx, setEditingEventIdx] = useState(null);
   const [addSaving, setAddSaving] = useState(false);
 
   const teamAId = match?.teamA?._id?.toString() || match?.teamA?.toString();
@@ -255,17 +247,20 @@ const MatchDetail = () => {
 
   const resultConfig = match?.competition?.settings?.resultConfig || {};
   const eventModeEnabled = match?.competition?.sport?.scoringType === 'goals' && resultConfig.mode === 'events';
-  const enabledEventTypes = Array.isArray(resultConfig.enabledEventTypes) && resultConfig.enabledEventTypes.length > 0
-    ? resultConfig.enabledEventTypes.filter((t) => DEFAULT_EVENT_TYPES.includes(t))
-    : DEFAULT_EVENT_TYPES;
+  const enabledEventTypes =
+    Array.isArray(resultConfig.enabledEventTypes) && resultConfig.enabledEventTypes.length > 0
+      ? resultConfig.enabledEventTypes.filter((t) => DEFAULT_EVENT_TYPES.includes(t))
+      : DEFAULT_EVENT_TYPES;
 
   const isOrganizer = user?.role === 'organizer' && match?.competition?.organizer?.toString() === user?.id;
 
-  // Full player objects (with dorsal) per team side
-  const playersByTeam = useMemo(() => ({
-    A: Array.isArray(match?.teamA?.players) ? match.teamA.players : [],
-    B: Array.isArray(match?.teamB?.players) ? match.teamB.players : [],
-  }), [match?.teamA?.players, match?.teamB?.players]);
+  const playersByTeam = useMemo(
+    () => ({
+      A: Array.isArray(match?.teamA?.players) ? match.teamA.players : [],
+      B: Array.isArray(match?.teamB?.players) ? match.teamB.players : [],
+    }),
+    [match?.teamA?.players, match?.teamB?.players],
+  );
 
   const load = async () => {
     setLoading(true);
@@ -281,44 +276,50 @@ const MatchDetail = () => {
     }
   };
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    load();
+  }, [id]);
 
-  const handleAddEvent = async (newEv) => {
+  const handleSaveEvent = async (newEv) => {
     setAddSaving(true);
     try {
-      const payload = [
-        ...events.map((ev) => ({
-          type: ev.type,
-          minute: Number(ev.minute),
-          team: ev.team?.toString() === teamAId ? teamAId : teamBId,
-          playerName: ev.playerName,
-        })),
-        {
-          type: newEv.type,
-          minute: Number(newEv.minute) || 0,
-          team: newEv.teamSide === 'A' ? teamAId : teamBId,
-          playerName: newEv.playerName,
-        },
-      ];
+      const baseEvents = events.map((ev) => ({
+        type: ev.type,
+        minute: Number(ev.minute),
+        team: ev.team?.toString() === teamAId ? teamAId : teamBId,
+        playerName: ev.playerName,
+      }));
+
+      const mappedNewEvent = {
+        type: newEv.type,
+        minute: Number(newEv.minute) || 0,
+        team: newEv.teamSide === 'A' ? teamAId : teamBId,
+        playerName: newEv.playerName,
+      };
+
+      const payload = editingEventIdx == null ? [...baseEvents, mappedNewEvent] : baseEvents.map((ev, idx) => (idx === editingEventIdx ? mappedNewEvent : ev));
+
       await recordMatchEvents(id, { events: payload });
       setShowAddModal(false);
+      setEditingEventIdx(null);
       await load();
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al añadir evento');
+      setError(err.response?.data?.message || 'Error al guardar evento');
     } finally {
       setAddSaving(false);
     }
   };
 
-  const handleDeleteEvent = async (idx) => {
+  const handleDeleteEvent = async (sourceIdx) => {
     const payload = events
-      .filter((_, i) => i !== idx)
+      .filter((_, i) => i !== sourceIdx)
       .map((ev) => ({
         type: ev.type,
         minute: Number(ev.minute),
         team: ev.team?.toString() === teamAId ? teamAId : teamBId,
         playerName: ev.playerName,
       }));
+
     try {
       await recordMatchEvents(id, { events: payload });
       await load();
@@ -326,6 +327,38 @@ const MatchDetail = () => {
       setError(err.response?.data?.message || 'Error al eliminar evento');
     }
   };
+
+  const openCreateEventModal = () => {
+    setEditingEventIdx(null);
+    setShowAddModal(true);
+  };
+
+  const openEditEventModal = (sourceIdx) => {
+    setEditingEventIdx(sourceIdx);
+    setShowAddModal(true);
+  };
+
+  const editingInitialEvent = useMemo(() => {
+    if (editingEventIdx == null || !events[editingEventIdx]) return null;
+    const ev = events[editingEventIdx];
+    return {
+      type: ev.type || enabledEventTypes[0] || 'goal',
+      teamSide: ev.team?.toString() === teamAId ? 'A' : 'B',
+      minute: String(ev.minute ?? ''),
+      playerName: ev.playerName || '',
+    };
+  }, [editingEventIdx, events, enabledEventTypes, teamAId]);
+
+  const sortedEvents = useMemo(
+    () =>
+      events
+        .map((ev, sourceIdx) => ({ ...ev, sourceIdx }))
+        .sort((a, b) => {
+          const d = Number(a.minute || 0) - Number(b.minute || 0);
+          return d !== 0 ? d : new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+        }),
+    [events],
+  );
 
   if (loading) {
     return (
@@ -338,18 +371,16 @@ const MatchDetail = () => {
   }
 
   if (!match) {
-    return <AppLayout><p className="text-red-500">Partido no encontrado</p></AppLayout>;
+    return (
+      <AppLayout>
+        <p className="text-red-500">Partido no encontrado</p>
+      </AppLayout>
+    );
   }
 
   const goals = match.result?.goals;
   const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
-  const sortedEvents = [...events].sort((a, b) => {
-    const d = Number(a.minute || 0) - Number(b.minute || 0);
-    return d !== 0 ? d : new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
-  });
-  const winnerSide = match.winner
-    ? match.winner.toString() === teamAId ? 'A' : 'B'
-    : null;
+  const winnerSide = match.winner ? (match.winner.toString() === teamAId ? 'A' : 'B') : null;
 
   return (
     <AppLayout title="Detalle del partido">
@@ -357,7 +388,6 @@ const MatchDetail = () => {
         <Icon name="chevronLeft" size={14} /> Volver
       </button>
 
-      {/* ── Score header ── */}
       <div className="card p-5 mb-4">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
           <p className={`text-sm md:text-base font-bold text-right truncate ${winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'}`}>
@@ -367,27 +397,21 @@ const MatchDetail = () => {
             {goals != null ? (
               <>
                 <span className={`text-2xl font-bold tabular-nums leading-none ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
-                <span className="text-sm text-gray-300 font-medium">–</span>
+                <span className="text-sm text-gray-300 font-medium">-</span>
                 <span className={`text-2xl font-bold tabular-nums leading-none ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{goals.b}</span>
               </>
             ) : (
-              <span className="text-lg font-semibold text-gray-300 tracking-widest">– –</span>
+              <span className="text-lg font-semibold text-gray-300 tracking-widest">- -</span>
             )}
           </div>
           <p className={`text-sm md:text-base font-bold text-left truncate ${winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'}`}>
             {match.teamB?.name || 'Equipo B'}
           </p>
         </div>
-        {schedulePieces.length > 0 && (
-          <p className="text-xs text-gray-400 text-center mt-2.5">{schedulePieces.join(' · ')}</p>
-        )}
+        {schedulePieces.length > 0 && <p className="text-xs text-gray-400 text-center mt-2.5">{schedulePieces.join(' · ')}</p>}
       </div>
 
-      {!eventModeEnabled && (
-        <div className="card p-4 text-sm text-gray-500 text-center">
-          Esta competición no usa modo de eventos detallados.
-        </div>
-      )}
+      {!eventModeEnabled && <div className="card p-4 text-sm text-gray-500 text-center">Esta competicion no usa modo de eventos detallados.</div>}
 
       {eventModeEnabled && (
         <>
@@ -397,32 +421,24 @@ const MatchDetail = () => {
             </div>
           )}
 
-          {/* ── Acta ── */}
           <div className="card overflow-hidden">
-            {/* Acta header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Acta del partido</p>
                 <p className="text-sm font-bold text-gray-900 mt-0.5">Eventos oficiales</p>
               </div>
               {isOrganizer && (
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(true)}
-                  className="btn-primary text-xs py-1.5"
-                >
-                  <Icon name="plus" size={13} /> Añadir evento
+                <button type="button" onClick={openCreateEventModal} className="btn-primary text-xs py-1.5">
+                  <Icon name="plus" size={13} /> Anadir evento
                 </button>
               )}
             </div>
 
-            {/* Timeline */}
             <div className="px-4 md:px-5 py-4">
               {sortedEvents.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6">Sin eventos registrados.</p>
               ) : (
                 <div className="space-y-1">
-                  {/* Column headers */}
                   <div className="grid grid-cols-[1fr_56px_1fr] gap-2 items-center pb-3 mb-1 border-b border-gray-100">
                     <p className="text-xs font-bold text-gray-700 truncate">{match.teamA?.name}</p>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Min</p>
@@ -441,13 +457,24 @@ const MatchDetail = () => {
                         </div>
                         <p className="text-xs text-gray-600 mt-0.5 font-medium">{ev.playerName}</p>
                         {isOrganizer && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteEvent(idx)}
-                            className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
-                          >
-                            <X size={10} />
-                          </button>
+                          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-all">
+                            <button
+                              type="button"
+                              onClick={() => openEditEventModal(ev.sourceIdx)}
+                              className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-all"
+                              title="Editar evento"
+                            >
+                              <Pencil size={10} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteEvent(ev.sourceIdx)}
+                              className="w-5 h-5 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-all"
+                              title="Eliminar evento"
+                            >
+                              <X size={10} />
+                            </button>
+                          </div>
                         )}
                       </div>
                     );
@@ -456,9 +483,7 @@ const MatchDetail = () => {
                       <div key={ev._id || `${ev.minute}-${idx}`} className="grid grid-cols-[1fr_56px_1fr] gap-2 items-center py-1">
                         <div>{isTeamA ? eventChip : <div />}</div>
                         <div className="flex items-center justify-center">
-                          <span className="text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-full w-10 h-6 flex items-center justify-center tabular-nums">
-                            {ev.minute}'
-                          </span>
+                          <span className="text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-full w-10 h-6 flex items-center justify-center tabular-nums">{ev.minute}'</span>
                         </div>
                         <div className="flex justify-end">{!isTeamA ? eventChip : <div />}</div>
                       </div>
@@ -469,14 +494,18 @@ const MatchDetail = () => {
             </div>
           </div>
 
-          {/* Add-event modal */}
           {showAddModal && (
             <AddEventModal
               match={match}
               enabledEventTypes={enabledEventTypes}
               playersByTeam={playersByTeam}
-              onConfirm={handleAddEvent}
-              onClose={() => setShowAddModal(false)}
+              initialEvent={editingInitialEvent}
+              title={editingEventIdx == null ? 'Anadir evento' : 'Editar evento'}
+              onConfirm={handleSaveEvent}
+              onClose={() => {
+                setShowAddModal(false);
+                setEditingEventIdx(null);
+              }}
               saving={addSaving}
             />
           )}
