@@ -21,7 +21,6 @@ const CompetitionModal = ({ onClose, onCreated }) => {
     startDate: '',
     endDate: '',
   });
-  const [footballMaxPlayers, setFootballMaxPlayers] = useState(11);
   const [tennisMode, setTennisMode] = useState('singles');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,15 +42,13 @@ const CompetitionModal = ({ onClose, onCreated }) => {
   const selectedSport = useMemo(() => sports.find((s) => s._id === form.sportId) || null, [sports, form.sportId]);
   const normalizedSport = normalizeSportName(selectedSport?.name || '');
   const sportSlug = (selectedSport?.slug || '').toLowerCase();
-  const isFootball = sportSlug === 'football' || normalizedSport.includes('futbol');
-  const isTennis   = sportSlug === 'tennis'   || normalizedSport.includes('tenis');
+  const isTennis = sportSlug === 'tennis' || normalizedSport.includes('tenis');
   const isLeague   = form.type === 'league';
 
   useEffect(() => {
     if (!selectedSport) return;
     const size = Number(selectedSport.teamSize || 1);
-    if (isFootball) setFootballMaxPlayers(size >= 3 ? size : 11);
-    if (isTennis)   setTennisMode(size === 2 ? 'doubles' : 'singles');
+    if (isTennis) setTennisMode(size === 2 ? 'doubles' : 'singles');
   }, [selectedSport?._id]);
 
   const handleSubmit = async (e) => {
@@ -60,8 +57,7 @@ const CompetitionModal = ({ onClose, onCreated }) => {
     setLoading(true);
     try {
       const settings = {};
-      if (isFootball) settings.teamSize = Number(footballMaxPlayers);
-      else if (isTennis) settings.teamSize = tennisMode === 'doubles' ? 2 : 1;
+      if (isTennis) settings.teamSize = tennisMode === 'doubles' ? 2 : 1;
 
       const res = await createCompetition({
         ...form,
@@ -147,21 +143,14 @@ const CompetitionModal = ({ onClose, onCreated }) => {
             </div>
           </div>
 
-          {/* Season / Football / Tennis */}
-          {(isLeague || isFootball || isTennis) && (
+          {/* Season / Tennis */}
+          {(isLeague || isTennis) && (
             <div className="grid grid-cols-2 gap-3">
               {isLeague && (
                 <div>
                   <label className="label">Temporada</label>
                   <input type="text" className="input" value={form.season}
                     placeholder="Ej: 2026-27" onChange={(e) => setForm({ ...form, season: e.target.value })} />
-                </div>
-              )}
-              {isFootball && (
-                <div>
-                  <label className="label">Max jugadores/equipo</label>
-                  <input type="number" className="input" min={3} max={30}
-                    value={footballMaxPlayers} onChange={(e) => setFootballMaxPlayers(e.target.value)} required />
                 </div>
               )}
               {isTennis && (

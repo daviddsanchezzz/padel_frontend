@@ -199,6 +199,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
     teamsPerGroup:       defaults.teamsPerGroup        ?? 4,
     teamsAdvancing:      defaults.teamsAdvancing       ?? 2,
     registrationFee:     defaults.registrationFee      ?? 0,
+    teamSize:            defaults.teamSize              ?? competition.sport?.teamSize ?? 11,
   });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setS((prev) => ({ ...prev, [k]: v }));
@@ -384,6 +385,16 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
 
           {isGoals && (
             <section>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Equipos</p>
+              <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Jugadores por equipo</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {s.teamSize === 1 ? '1 jugador' : `${s.teamSize} jugadores`}
+                  </p>
+                </div>
+                <Stepper value={s.teamSize} onChange={(v) => set('teamSize', v)} min={1} max={30} />
+              </div>
               <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Registro de partido</p>
               <div className="space-y-3">
                 <div className="bg-gray-50 rounded-xl p-4">
