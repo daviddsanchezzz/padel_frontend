@@ -648,13 +648,14 @@ const MatchDetail = () => {
                         >
                           <span className="text-[15px] leading-none">{meta.icon}</span>
                           <div className="min-w-0">
-                            <p className={`${isTeamA ? 'text-sm' : 'text-xs'} font-semibold text-gray-900 truncate`}>
+                            <p className={`${isTeamA ? 'text-xs sm:text-sm' : 'text-[11px] sm:text-xs'} font-semibold text-gray-900 truncate`}>
                               {ev.playerName || 'Jugador'}
                             </p>
                             {ev.assistEv && (
-                              <p className="text-[11px] text-gray-500 truncate mt-0.5">
-                                🦶 {ev.assistEv.playerName}
-                              </p>
+                              <div className={`mt-0.5 flex items-center gap-1 ${isTeamA ? 'justify-end flex-row-reverse' : 'justify-end'}`}>
+                                <span className="text-[11px] leading-none">🦶</span>
+                                <p className="text-[11px] text-gray-500 truncate">{ev.assistEv.playerName}</p>
+                              </div>
                             )}
                           </div>
                           {isOrganizer && (
@@ -693,11 +694,11 @@ const MatchDetail = () => {
                             idx !== rowsForActa.length - 1 ? 'border-b border-gray-100' : ''
                           }`}
                         >
-                          <div className="pr-2">{isTeamA ? eventRow : <div className="h-8" />}</div>
+                          <div className="pr-2 flex justify-end">{isTeamA ? eventRow : <div className="h-8" />}</div>
                           <div className="h-full flex items-center justify-center">
                             <span className="relative z-10 text-sm font-bold text-gray-900 tabular-nums leading-none">{ev.minute}'</span>
                           </div>
-                          <div className="pl-2 flex justify-end">{!isTeamA ? eventRow : <div className="h-8" />}</div>
+                          <div className="pl-2 flex justify-start">{!isTeamA ? eventRow : <div className="h-8" />}</div>
                         </div>
                       );
                     })}
