@@ -636,7 +636,7 @@ const MatchDetail = () => {
                       const meta = EVENT_FEED_META[ev.type] || { label: ev.type, icon: '•', accent: 'text-gray-500' };
                       const handleMobileOpenEdit = () => {
                         if (!isOrganizer) return;
-                        if (typeof window !== 'undefined' && window.innerWidth < 640) {
+                        if (typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches) {
                           openEditEventModal(ev.sourceIdx, ev.assistSourceIdx);
                         }
                       };
@@ -644,11 +644,13 @@ const MatchDetail = () => {
                       const eventRow = (
                         <div
                           onClick={handleMobileOpenEdit}
-                          className={`group relative inline-flex items-center gap-2 px-2.5 py-2 rounded-md max-w-[320px] ${isTeamA ? 'flex-row-reverse text-right' : 'text-right'} ${isOrganizer ? 'sm:cursor-default cursor-pointer' : ''}`}
+                          className={`group relative inline-flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2.5 py-2 rounded-md sm:max-w-[320px] ${
+                            isTeamA ? 'flex-row-reverse text-right' : 'text-right'
+                          } ${isOrganizer ? 'sm:cursor-default cursor-pointer' : ''}`}
                         >
-                          <span className="text-[15px] leading-none">{meta.icon}</span>
-                          <div className="min-w-0">
-                            <p className={`${isTeamA ? 'text-xs sm:text-sm' : 'text-[11px] sm:text-xs'} font-semibold text-gray-900 truncate`}>
+                          <span className="text-[15px] sm:text-base leading-none">{meta.icon}</span>
+                          <div className="min-w-0 hidden sm:block">
+                            <p className={`${isTeamA ? 'text-sm' : 'text-xs'} font-semibold text-gray-900 truncate`}>
                               {ev.playerName || 'Jugador'}
                             </p>
                             {ev.assistEv && (
@@ -684,21 +686,22 @@ const MatchDetail = () => {
                               </button>
                             </div>
                           )}
+                          {ev.assistEv && <span className="sm:hidden text-[12px] leading-none">🦶</span>}
                         </div>
                       );
 
                       return (
                         <div
                           key={ev._id || `${ev.minute}-${idx}`}
-                          className={`grid grid-cols-[minmax(0,1fr)_58px_minmax(0,1fr)] items-stretch min-h-[56px] px-2 ${
+                          className={`grid grid-cols-[minmax(0,1fr)_64px_minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_58px_minmax(0,1fr)] items-stretch min-h-[56px] px-2 ${
                             idx !== rowsForActa.length - 1 ? 'border-b border-gray-100' : ''
                           }`}
                         >
-                          <div className="pr-2 flex justify-end">{isTeamA ? eventRow : <div className="h-8" />}</div>
+                          <div className="pr-1.5 sm:pr-2 flex justify-end items-center">{isTeamA ? eventRow : <div className="h-8" />}</div>
                           <div className="h-full flex items-center justify-center">
                             <span className="relative z-10 text-sm font-bold text-gray-900 tabular-nums leading-none">{ev.minute}'</span>
                           </div>
-                          <div className="pl-2 flex justify-start">{!isTeamA ? eventRow : <div className="h-8" />}</div>
+                          <div className="pl-1.5 sm:pl-2 flex justify-start items-center">{!isTeamA ? eventRow : <div className="h-8" />}</div>
                         </div>
                       );
                     })}
