@@ -211,7 +211,9 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
     }
   };
 
-  const handleCardClick = () => {};
+  const handleCardClick = () => {
+    if (eventModeEnabled) openMatchDetail();
+  };
 
   const openSchedule = () => {
     setScheduleError('');
@@ -264,13 +266,13 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
     });
 
   return (
-    <div onClick={handleCardClick} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden cursor-pointer md:cursor-default">
+    <div onClick={handleCardClick} className={`bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden ${eventModeEnabled ? 'cursor-pointer' : 'cursor-default'}`}>
       <div className="px-3 md:px-5 py-3 md:py-4">
 
         {scoringType === 'goals' ? (
           /* â”€â”€ Football layout: Team A â€” Score â€” Team B â€” Actions â”€â”€ */
           <div className="space-y-1.5">
-            <div className="md:hidden space-y-2 rounded-xl bg-gray-50/70 border border-gray-100 px-2.5 py-2">
+            <div className="md:hidden space-y-2">
               <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
@@ -292,32 +294,27 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                       {teamBName}
                     </p>
                   </div>
-                  {schedulePieces.length > 0 && (
-                    <p className="text-[10px] text-gray-500 truncate">{schedulePieces.join(' · ')}</p>
-                  )}
                 </div>
 
-                <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
+                <div className="flex-shrink-0 flex items-center gap-1.5">
                   {isOrganizer && (
                     <button
-                      onClick={openSchedule}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openSchedule();
+                      }}
                       className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
                       title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                     >
                       <Icon name="calendar" size={14} />
                     </button>
                   )}
-                  {eventModeEnabled && (
-                    <button
-                      onClick={openMatchDetail}
-                      className="inline-flex items-center justify-center text-[11px] bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap"
-                    >
-                      Detalle
-                    </button>
-                  )}
                   {!eventModeEnabled && match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
                     <button
-                      onClick={() => setShowForm(!showForm)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowForm(!showForm);
+                      }}
                       className="inline-flex items-center justify-center w-8 h-8 text-base leading-none bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 transition-colors"
                       title="Anadir resultado"
                     >
@@ -332,8 +329,8 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
               )}
               {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
                 <div className="flex justify-end gap-1.5">
-                  {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">Confirmar</button>}
-                  {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50">Rechazar</button>}
+                  {canConfirm && <button onClick={(e) => { e.stopPropagation(); handleConfirm(); }} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">Confirmar</button>}
+                  {canDispute && <button onClick={(e) => { e.stopPropagation(); handleDispute(); }} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50">Rechazar</button>}
                 </div>
               )}
             </div>
@@ -363,22 +360,17 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
               <div className="flex-shrink-0 flex items-center gap-1.5">
                 {isOrganizer && (
                   <button
-                    onClick={openSchedule}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openSchedule();
+                    }}
                     className="inline-flex text-xs bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-50 transition-colors whitespace-nowrap"
                   >
                     {schedulePieces.length > 0 ? 'Editar' : 'Programar'}
                   </button>
                 )}
-                {eventModeEnabled && (
-                  <button
-                    onClick={openMatchDetail}
-                    className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap"
-                  >
-                    Ver detalle
-                  </button>
-                )}
                 {!eventModeEnabled && match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
-                  <button onClick={() => setShowForm(!showForm)} className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap">
+                  <button onClick={(e) => { e.stopPropagation(); setShowForm(!showForm); }} className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap">
                     + Resultado
                   </button>
                 )}
@@ -387,15 +379,15 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 )}
                 {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
                   <div className="flex gap-1.5">
-                    {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">Confirmar</button>}
-                    {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50">Rechazar</button>}
+                    {canConfirm && <button onClick={(e) => { e.stopPropagation(); handleConfirm(); }} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">Confirmar</button>}
+                    {canDispute && <button onClick={(e) => { e.stopPropagation(); handleDispute(); }} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50">Rechazar</button>}
                   </div>
                 )}
               </div>
             </div>
 
             {schedulePieces.length > 0 && (
-              <p className={`text-xs text-gray-400 text-center ${scoringType === 'goals' ? 'hidden md:block' : ''}`}>{schedulePieces.join(' Â· ')}</p>
+              <p className={`text-xs text-gray-400 text-center ${scoringType === 'goals' ? '' : ''}`}>{schedulePieces.join(' Â· ')}</p>
             )}
             {error && <p className="text-red-500 text-xs text-center">{error}</p>}
           </div>
