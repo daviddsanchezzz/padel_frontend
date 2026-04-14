@@ -270,64 +270,72 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
         {scoringType === 'goals' ? (
           /* â”€â”€ Football layout: Team A â€” Score â€” Team B â€” Actions â”€â”€ */
           <div className="space-y-1.5">
-            <div className="md:hidden space-y-2.5 rounded-xl bg-gray-50/70 border border-gray-100 px-2.5 py-2">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5">
-                <p className={`min-w-0 text-sm font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
-                  {teamAName}
-                </p>
-                <div className={`flex items-center justify-center gap-1.5 px-1 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
-                  {displayResult?.goals != null ? (
-                    <>
-                      <span className={`text-2xl font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.a}</span>
-                      <span className="text-sm text-gray-300 font-medium">-</span>
-                      <span className={`text-2xl font-bold leading-none tabular-nums ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.b}</span>
-                    </>
-                  ) : (
-                    <span className="text-base font-semibold text-gray-300 tracking-widest">- -</span>
+            <div className="md:hidden space-y-2 rounded-xl bg-gray-50/70 border border-gray-100 px-2.5 py-2">
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+                    <p className={`min-w-0 text-[13px] font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
+                      {teamAName}
+                    </p>
+                    <div className={`flex items-center justify-center gap-1 px-1 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+                      {displayResult?.goals != null ? (
+                        <>
+                          <span className={`text-xl font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.a}</span>
+                          <span className="text-xs text-gray-300 font-medium">-</span>
+                          <span className={`text-xl font-bold leading-none tabular-nums ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.b}</span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-semibold text-gray-300 tracking-widest">- -</span>
+                      )}
+                    </div>
+                    <p className={`min-w-0 text-[13px] font-semibold text-left truncate ${isMyTeamB ? 'text-brand-700' : winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
+                      {teamBName}
+                    </p>
+                  </div>
+                  {schedulePieces.length > 0 && (
+                    <p className="text-[10px] text-gray-500 truncate">{schedulePieces.join(' · ')}</p>
                   )}
                 </div>
-                <p className={`min-w-0 text-sm font-semibold text-left truncate ${isMyTeamB ? 'text-brand-700' : winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
-                  {teamBName}
-                </p>
+
+                <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
+                  {isOrganizer && (
+                    <button
+                      onClick={openSchedule}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+                      title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
+                    >
+                      <Icon name="calendar" size={14} />
+                    </button>
+                  )}
+                  {eventModeEnabled && (
+                    <button
+                      onClick={openMatchDetail}
+                      className="inline-flex items-center justify-center text-[11px] bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap"
+                    >
+                      Detalle
+                    </button>
+                  )}
+                  {!eventModeEnabled && match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
+                    <button
+                      onClick={() => setShowForm(!showForm)}
+                      className="inline-flex items-center justify-center w-8 h-8 text-base leading-none bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 transition-colors"
+                      title="Anadir resultado"
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {schedulePieces.length > 0 && (
-                <p className="text-[11px] text-gray-500 text-center truncate">{schedulePieces.join(' · ')}</p>
+              {match.status === 'awaiting_confirmation' && isProposingTeam && (
+                <span className="block text-xs text-orange-500 font-medium text-right">Esperando...</span>
               )}
-
-              <div className="flex items-center justify-end gap-2">
-                {isOrganizer && (
-                  <button
-                    onClick={openSchedule}
-                    className="inline-flex items-center justify-center flex-shrink-0 w-9 h-9 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
-                    title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
-                  >
-                    <Icon name="calendar" size={15} />
-                  </button>
-                )}
-                {eventModeEnabled && (
-                  <button
-                    onClick={openMatchDetail}
-                    className="inline-flex items-center justify-center gap-1.5 flex-1 min-w-[120px] text-sm bg-brand-600 text-white px-3 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap"
-                  >
-                    <Icon name="match" size={14} /> Detalle
-                  </button>
-                )}
-                {!eventModeEnabled && match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
-                  <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center justify-center flex-1 min-w-[120px] text-sm bg-brand-600 text-white px-3 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap">
-                    + Resultado
-                  </button>
-                )}
-                {match.status === 'awaiting_confirmation' && isProposingTeam && (
-                  <span className="text-xs text-orange-500 font-medium">Esperando...</span>
-                )}
-                {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
-                  <div className="flex gap-1.5">
-                    {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">Confirmar</button>}
-                    {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50">Rechazar</button>}
-                  </div>
-                )}
-              </div>
+              {match.status === 'awaiting_confirmation' && (canConfirm || canDispute) && (
+                <div className="flex justify-end gap-1.5">
+                  {canConfirm && <button onClick={handleConfirm} disabled={saving} className="text-xs bg-green-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">Confirmar</button>}
+                  {canDispute && <button onClick={handleDispute} disabled={saving} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50">Rechazar</button>}
+                </div>
+              )}
             </div>
 
             <div className="hidden md:flex items-center gap-2">
