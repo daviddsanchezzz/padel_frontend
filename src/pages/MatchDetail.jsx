@@ -555,8 +555,19 @@ const MatchDetail = () => {
   const handleBack = () => {
     const backTo = location.state?.backTo;
     if (backTo?.pathname) {
+      const stateToRestore = backTo.state
+        ? { ...backTo.state }
+        : backTo.tab
+          ? { tab: backTo.tab }
+          : undefined;
+      if (stateToRestore && backTo.tab && !stateToRestore.tab) {
+        stateToRestore.tab = backTo.tab;
+      }
+      if (stateToRestore?.tab === 'groups' && !stateToRestore.groupsSubTab) {
+        stateToRestore.groupsSubTab = 'matches';
+      }
       navigate(backTo.pathname, {
-        state: backTo.state || (backTo.tab ? { tab: backTo.tab } : undefined),
+        state: stateToRestore,
       });
       return;
     }

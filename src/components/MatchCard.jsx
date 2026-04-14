@@ -270,8 +270,8 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
         {scoringType === 'goals' ? (
           /* â”€â”€ Football layout: Team A â€” Score â€” Team B â€” Actions â”€â”€ */
           <div className="space-y-1.5">
-            <div className="md:hidden space-y-2">
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+            <div className="md:hidden space-y-2.5 rounded-xl bg-gray-50/70 border border-gray-100 px-2.5 py-2">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2.5">
                 <p className={`min-w-0 text-sm font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
                   {teamAName}
                 </p>
@@ -291,11 +291,15 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 </p>
               </div>
 
+              {schedulePieces.length > 0 && (
+                <p className="text-[11px] text-gray-500 text-center truncate">{schedulePieces.join(' · ')}</p>
+              )}
+
               <div className="flex items-center justify-end gap-2">
                 {isOrganizer && (
                   <button
                     onClick={openSchedule}
-                    className="inline-flex items-center justify-center flex-shrink-0 w-9 h-9 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                    className="inline-flex items-center justify-center flex-shrink-0 w-9 h-9 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
                     title={schedulePieces.length > 0 ? 'Editar programacion' : 'Programar partido'}
                   >
                     <Icon name="calendar" size={15} />
@@ -304,13 +308,13 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 {eventModeEnabled && (
                   <button
                     onClick={openMatchDetail}
-                    className="text-sm bg-brand-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-1.5 flex-1 min-w-[120px] text-sm bg-brand-600 text-white px-3 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap"
                   >
-                    Ver detalle
+                    <Icon name="match" size={14} /> Detalle
                   </button>
                 )}
                 {!eventModeEnabled && match.status === 'pending' && match.teamA && match.teamB && canRecordResult && (
-                  <button onClick={() => setShowForm(!showForm)} className="text-sm bg-brand-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap">
+                  <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center justify-center flex-1 min-w-[120px] text-sm bg-brand-600 text-white px-3 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap">
                     + Resultado
                   </button>
                 )}
@@ -383,7 +387,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
             </div>
 
             {schedulePieces.length > 0 && (
-              <p className="text-xs text-gray-400 text-center">{schedulePieces.join(' Â· ')}</p>
+              <p className={`text-xs text-gray-400 text-center ${scoringType === 'goals' ? 'hidden md:block' : ''}`}>{schedulePieces.join(' Â· ')}</p>
             )}
             {error && <p className="text-red-500 text-xs text-center">{error}</p>}
           </div>

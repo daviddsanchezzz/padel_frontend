@@ -140,8 +140,8 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
                 </div>
                 <div className="space-y-2">
                   {roundMatches.map((match) => (
-                    <div key={match._id} className="flex items-start gap-2">
-                      <div className="w-5 h-5 mt-3 bg-brand-100 text-brand-700 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                    <div key={match._id} className="flex items-center sm:items-start gap-2">
+                      <div className="w-6 h-6 sm:w-5 sm:h-5 mt-0 sm:mt-3 bg-brand-100 text-brand-700 rounded-md sm:rounded flex items-center justify-center text-[11px] sm:text-[10px] font-bold flex-shrink-0">
                         {match._groupName}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -165,8 +165,7 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
   );
 };
 
-const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded, scoringType, isGroupFormat }) => {
-  const [viewMode, setViewMode] = useState('list'); // 'list' | 'visual'
+const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded, scoringType, isGroupFormat, viewMode, onViewModeChange }) => {
   const rounds = Object.keys(bracket).map(Number).sort((a, b) => a - b);
   const maxRound = rounds[rounds.length - 1] || 1;
   const hasMatches = rounds.length > 0;
@@ -213,8 +212,8 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-4">
         {/* Toggle Vista */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 self-start">
-          <button onClick={() => setViewMode('list')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Lista</button>
-          <button onClick={() => setViewMode('visual')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'visual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Cuadro</button>
+          <button onClick={() => onViewModeChange('list')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Lista</button>
+          <button onClick={() => onViewModeChange('visual')} className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${viewMode === 'visual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Cuadro</button>
         </div>
         {/* Acciones */}
         <div className="flex items-center gap-2">
@@ -259,7 +258,14 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
                       <span>{match.teamA?.name || match.teamB?.name || '-'} - pasa automaticamente</span>
                     </div>
                   ) : (
-                    <MatchCard key={match._id} match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} backTab="bracket" />
+                    <MatchCard
+                      key={match._id}
+                      match={match}
+                      scoringType={scoringType}
+                      onResultRecorded={onResultRecorded}
+                      backTab="bracket"
+                      backState={{ bracketViewMode: viewMode }}
+                    />
                   )
                 ))}
               </div>
@@ -288,6 +294,7 @@ const DivisionDetail = () => {
 
   const [tab, setTab] = useState(() => location.state?.tab || 'teams');
   const [groupsSubTab, setGroupsSubTab] = useState(() => location.state?.groupsSubTab || 'standings');
+  const [bracketViewMode, setBracketViewMode] = useState(() => location.state?.bracketViewMode || 'list');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -339,6 +346,9 @@ const DivisionDetail = () => {
   useEffect(() => {
     if (location.state?.groupsSubTab) {
       setGroupsSubTab(location.state.groupsSubTab);
+    }
+    if (location.state?.bracketViewMode) {
+      setBracketViewMode(location.state.bracketViewMode);
     }
   }, [location.state]);
 
@@ -1085,6 +1095,8 @@ const DivisionDetail = () => {
           onResultRecorded={onResultRecorded}
           scoringType={scoringType}
           isGroupFormat={isGroupFormat}
+          viewMode={bracketViewMode}
+          onViewModeChange={setBracketViewMode}
         />
       )}
 
