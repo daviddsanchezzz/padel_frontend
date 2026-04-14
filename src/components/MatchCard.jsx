@@ -133,7 +133,7 @@ const ResultForm = ({ scoringType, teamAName, teamBName, onSubmit, onCancel, sav
   );
 };
 
-const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = null, forceCanRecord = false, backTab }) => {
+const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = null, forceCanRecord = false, backTab, backState }) => {
   const [showForm, setShowForm] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -248,12 +248,17 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
 
   const isPending = !displayResult && match.status === 'pending';
   const resolvedBackTab = backTab || (location.pathname.startsWith('/divisions/') ? 'matches' : undefined);
+  const resolvedBackState = {
+    ...(resolvedBackTab ? { tab: resolvedBackTab } : {}),
+    ...(backState || {}),
+  };
   const openMatchDetail = () =>
     navigate(`/matches/${match._id}`, {
       state: {
         backTo: {
           pathname: location.pathname,
           tab: resolvedBackTab,
+          state: Object.keys(resolvedBackState).length ? resolvedBackState : undefined,
         },
       },
     });

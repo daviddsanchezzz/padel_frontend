@@ -556,7 +556,7 @@ const MatchDetail = () => {
     const backTo = location.state?.backTo;
     if (backTo?.pathname) {
       navigate(backTo.pathname, {
-        state: backTo.tab ? { tab: backTo.tab } : undefined,
+        state: backTo.state || (backTo.tab ? { tab: backTo.tab } : undefined),
       });
       return;
     }
