@@ -211,8 +211,10 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
     }
   };
 
-  const handleCardClick = () => {
-    if (eventModeEnabled) openMatchDetail();
+  const handleCardClick = (e) => {
+    if (!eventModeEnabled) return;
+    if (e.target?.closest?.('button, a, input, select, textarea, [role="button"]')) return;
+    openMatchDetail();
   };
 
   const openSchedule = () => {
@@ -387,7 +389,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
             </div>
 
             {schedulePieces.length > 0 && (
-              <p className={`text-xs text-gray-400 text-center ${scoringType === 'goals' ? '' : ''}`}>{schedulePieces.join(' Â· ')}</p>
+              <p className={`text-xs text-gray-400 text-center ${scoringType === 'goals' ? '' : ''}`}>{schedulePieces.join(' · ')}</p>
             )}
             {error && <p className="text-red-500 text-xs text-center">{error}</p>}
           </div>
@@ -441,7 +443,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
         )}
 
         {scoringType !== 'goals' && error && <p className="text-red-500 text-xs mt-2">{error}</p>}
-        {scoringType !== 'goals' && schedulePieces.length > 0 && <div className="mt-2 text-xs text-gray-400">{schedulePieces.join(' Â· ')}</div>}
+        {scoringType !== 'goals' && schedulePieces.length > 0 && <div className="mt-2 text-xs text-gray-400">{schedulePieces.join(' · ')}</div>}
       </div>
 
       {!eventModeEnabled && showForm && (
