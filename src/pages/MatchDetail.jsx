@@ -655,7 +655,7 @@ const MatchDetail = () => {
                             </p>
                             {ev.assistEv && (
                               <div className={`mt-0.5 flex items-center gap-1 ${isTeamA ? 'justify-end flex-row-reverse' : 'justify-end'}`}>
-                                <p className="text-[10px] text-gray-500 truncate">Ast. {ev.assistEv.playerName}</p>
+                                <p className="text-[10px] text-gray-500 truncate">Asist. {ev.assistEv.playerName}</p>
                               </div>
                             )}
                           </div>

@@ -133,7 +133,7 @@ const ResultForm = ({ scoringType, teamAName, teamBName, onSubmit, onCancel, sav
   );
 };
 
-const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = null, forceCanRecord = false }) => {
+const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = null, forceCanRecord = false, backTab }) => {
   const [showForm, setShowForm] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -247,6 +247,16 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
   const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
 
   const isPending = !displayResult && match.status === 'pending';
+  const resolvedBackTab = backTab || (location.pathname.startsWith('/divisions/') ? 'matches' : undefined);
+  const openMatchDetail = () =>
+    navigate(`/matches/${match._id}`, {
+      state: {
+        backTo: {
+          pathname: location.pathname,
+          tab: resolvedBackTab,
+        },
+      },
+    });
 
   return (
     <div onClick={handleCardClick} className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden cursor-pointer md:cursor-default">
@@ -288,16 +298,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 )}
                 {eventModeEnabled && (
                   <button
-                    onClick={() =>
-                      navigate(`/matches/${match._id}`, {
-                        state: {
-                          backTo: {
-                            pathname: location.pathname,
-                            tab: location.pathname.startsWith('/divisions/') ? 'matches' : undefined,
-                          },
-                        },
-                      })
-                    }
+                    onClick={openMatchDetail}
                     className="text-sm bg-brand-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-colors whitespace-nowrap"
                   >
                     Ver detalle
@@ -353,16 +354,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
                 )}
                 {eventModeEnabled && (
                   <button
-                    onClick={() =>
-                      navigate(`/matches/${match._id}`, {
-                        state: {
-                          backTo: {
-                            pathname: location.pathname,
-                            tab: location.pathname.startsWith('/divisions/') ? 'matches' : undefined,
-                          },
-                        },
-                      })
-                    }
+                    onClick={openMatchDetail}
                     className="text-xs bg-brand-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-brand-700 transition-colors whitespace-nowrap"
                   >
                     Ver detalle

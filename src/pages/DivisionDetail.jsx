@@ -146,7 +146,7 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
                         {match._groupName}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <MatchCard match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} />
+                        <MatchCard match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} backTab="groups" />
                       </div>
                     </div>
                   ))}
@@ -254,7 +254,7 @@ const BracketView = ({ bracket, teams, generating, onGenerate, onResultRecorded,
                       <span>{match.teamA?.name || match.teamB?.name || '-'} - pasa automaticamente</span>
                     </div>
                   ) : (
-                    <MatchCard key={match._id} match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} />
+                    <MatchCard key={match._id} match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} backTab="bracket" />
                   )
                 ))}
               </div>
@@ -1036,7 +1036,7 @@ const DivisionDetail = () => {
                     </div>
                     <div className="space-y-2">
                       {roundMatches.map((match) => (
-                        <MatchCard key={match._id} match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} myTeamId={myTeamId} />
+                        <MatchCard key={match._id} match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} myTeamId={myTeamId} backTab="matches" />
                       ))}
                     </div>
                   </div>
