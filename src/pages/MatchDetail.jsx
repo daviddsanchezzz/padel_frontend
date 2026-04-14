@@ -644,13 +644,13 @@ const MatchDetail = () => {
                       const eventRow = (
                         <div
                           onClick={handleMobileOpenEdit}
-                          className={`group relative inline-flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2.5 py-2 rounded-md max-w-full sm:max-w-[320px] ${
+                          className={`group relative inline-flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2.5 py-2 rounded-md max-w-full sm:max-w-[320px] ${
                             isTeamA ? 'flex-row-reverse text-right' : 'text-right'
                           } ${isOrganizer ? 'sm:cursor-default cursor-pointer' : ''}`}
                         >
-                          <span className="text-[15px] sm:text-base leading-none">{meta.icon}</span>
+                          <span className="text-[12px] sm:text-base leading-none">{meta.icon}</span>
                           <div className="min-w-0 block">
-                            <p className={`${isTeamA ? 'text-sm' : 'text-xs'} font-semibold text-gray-900 truncate`}>
+                            <p className="text-[11px] sm:text-xs font-semibold text-gray-900 truncate">
                               {ev.playerName || 'Jugador'}
                             </p>
                             {ev.assistEv && (
@@ -686,7 +686,7 @@ const MatchDetail = () => {
                               </button>
                             </div>
                           )}
-                          {ev.assistEv && <span className="sm:hidden text-[12px] leading-none">🦶</span>}
+                          {ev.assistEv && <span className="sm:hidden text-[10px] leading-none">🦶</span>}
                         </div>
                       );
 
