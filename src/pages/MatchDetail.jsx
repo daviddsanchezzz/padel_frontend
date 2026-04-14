@@ -607,27 +607,27 @@ const MatchDetail = () => {
           )}
 
           <div className="card overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-5 py-4 border-b border-gray-100">
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Acta del partido</p>
                 <p className="text-sm font-bold text-gray-900 mt-0.5">Eventos oficiales</p>
               </div>
               {isOrganizer && (
-                <button type="button" onClick={openCreateEventModal} className="btn-primary text-xs py-1.5">
+                <button type="button" onClick={openCreateEventModal} className="btn-primary text-xs py-1.5 w-full sm:w-auto justify-center">
                   <Icon name="plus" size={13} /> Anadir evento
                 </button>
               )}
             </div>
 
-            <div className="px-4 md:px-5 py-4">
+            <div className="px-3 sm:px-5 py-4">
               {sortedEvents.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-6">Sin eventos registrados.</p>
               ) : (
                 <div className="rounded-xl overflow-hidden border border-gray-200 bg-white">
-                  <div className="grid grid-cols-[1fr_58px_1fr] items-center px-3 py-2 border-b border-gray-200 bg-gray-50">
-                    <p className="text-[11px] font-semibold text-gray-800 uppercase tracking-wide truncate">{match.teamA?.name}</p>
+                  <div className="grid grid-cols-[minmax(0,1fr)_54px_minmax(0,1fr)] sm:grid-cols-[1fr_58px_1fr] items-center px-3 py-2 border-b border-gray-200 bg-gray-50">
+                    <p className="text-[10px] sm:text-[11px] font-semibold text-gray-600 uppercase tracking-wide truncate">{match.teamA?.name}</p>
                     <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest text-center">Min</p>
-                    <p className="text-[11px] font-semibold text-gray-800 uppercase tracking-wide text-right truncate">{match.teamB?.name}</p>
+                    <p className="text-[10px] sm:text-[11px] font-semibold text-gray-600 uppercase tracking-wide text-right truncate">{match.teamB?.name}</p>
                   </div>
 
                   <div>
@@ -644,7 +644,7 @@ const MatchDetail = () => {
                       const eventRow = (
                         <div
                           onClick={handleMobileOpenEdit}
-                          className={`group relative inline-flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2.5 py-2 rounded-md max-w-full sm:max-w-[320px] ${
+                          className={`group relative inline-flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2.5 py-2 rounded-md max-w-full sm:max-w-[320px] active:bg-gray-50 sm:active:bg-transparent ${
                             isTeamA ? 'flex-row-reverse text-right' : 'text-right'
                           } ${isOrganizer ? 'sm:cursor-default cursor-pointer' : ''}`}
                         >
@@ -655,7 +655,7 @@ const MatchDetail = () => {
                             </p>
                             {ev.assistEv && (
                               <div className={`mt-0.5 flex items-center gap-1 ${isTeamA ? 'justify-end flex-row-reverse' : 'justify-end'}`}>
-                                <p className="text-[11px] text-gray-500 truncate">{ev.assistEv.playerName}</p>
+                                <p className="text-[10px] text-gray-500 truncate">Ast. {ev.assistEv.playerName}</p>
                               </div>
                             )}
                           </div>
@@ -691,7 +691,7 @@ const MatchDetail = () => {
                       return (
                         <div
                           key={ev._id || `${ev.minute}-${idx}`}
-                          className={`grid grid-cols-[minmax(0,1fr)_64px_minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_58px_minmax(0,1fr)] items-stretch min-h-[56px] px-2 ${
+                          className={`grid grid-cols-[minmax(0,1fr)_54px_minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_58px_minmax(0,1fr)] items-stretch min-h-[60px] sm:min-h-[56px] px-1.5 sm:px-2 ${
                             idx !== rowsForActa.length - 1 ? 'border-b border-gray-100' : ''
                           }`}
                         >
