@@ -18,6 +18,7 @@ import MatchDetail       from './pages/MatchDetail';
 import PublicOrganization        from './pages/PublicOrganization';
 import PublicCompetitionDetail  from './pages/PublicCompetitionDetail';
 import PublicDivisionDetail     from './pages/PublicDivisionDetail';
+import PublicMatchDetail        from './pages/PublicMatchDetail';
 import PublicRegistration       from './pages/PublicRegistration';
 import PaymentSuccess           from './pages/PaymentSuccess';
 import PaymentCancel            from './pages/PaymentCancel';
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/organizations/:id/public" element={<PublicOrganization />} />
           <Route path="/organizations/:orgId/competitions/:compId/public" element={<PublicCompetitionDetail />} />
           <Route path="/organizations/:orgId/divisions/:divId/public" element={<PublicDivisionDetail />} />
+          <Route path="/organizations/:orgId/matches/:matchId/public" element={<PublicMatchDetail />} />
           <Route path="/organizations/:orgId/competitions/:compId/register" element={<PublicRegistration />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/cancel"  element={<PaymentCancel />} />

@@ -33,7 +33,7 @@ const formatDateTimeLabel = (match) => {
 };
 
 /* ── Single match row ───────────────────────────────────────── */
-const MatchRow = ({ match, scoringType }) => {
+const MatchRow = ({ match, scoringType, eventModeEnabled = false, onOpenDetail }) => {
   const teamAName  = match.teamA?.name || 'TBD';
   const teamBName  = match.teamB?.name || 'TBD';
   const displayResult = match.status === 'awaiting_confirmation' ? match.pendingResult : match.result;
@@ -47,48 +47,91 @@ const MatchRow = ({ match, scoringType }) => {
 
   const isPending = match.status === 'pending' && !displayResult;
   const schedulePieces = [match.location, formatDateTimeLabel(match)].filter(Boolean);
-  const sets  = scoringType === 'sets'  && displayResult?.sets  ? displayResult.sets  : null;
+  const sets  = scoringType === 'sets' && displayResult?.sets ? displayResult.sets : null;
   const goals = scoringType === 'goals' && displayResult?.goals ? displayResult.goals : null;
-
-  const nameClass = (side) => {
-    if (!winnerSide) return 'text-gray-800';
-    return winnerSide === side ? 'font-bold text-gray-900' : 'text-gray-400';
+  const openDetail = () => {
+    if (eventModeEnabled && onOpenDetail) onOpenDetail(match._id);
   };
 
   return (
-    <div className="px-4 py-3">
-      <div className="flex items-start gap-2">
-        <div className="flex-1 min-w-0 space-y-1">
-          <p className={`text-xs font-semibold truncate ${nameClass('A')}`}>{teamAName}</p>
-          <p className={`text-xs font-semibold truncate ${nameClass('B')}`}>{teamBName}</p>
-        </div>
-        <div className="flex-shrink-0 flex gap-2 items-start">
-          {isPending ? (
-            null
-          ) : sets ? (
-            sets.map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-1">
-                <span className={`text-xs w-4 text-center leading-none ${s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.a}</span>
-                <span className={`text-xs w-4 text-center leading-none ${s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.b}</span>
+    <div onClick={openDetail} className={`px-4 py-3 ${eventModeEnabled ? 'cursor-pointer' : ''}`}>
+      {scoringType === 'goals' ? (
+        <div className="space-y-1.5">
+          <div className="md:hidden space-y-2">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+              <p className={`min-w-0 text-[13px] font-semibold text-right truncate ${winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'}`}>
+                {teamAName}
+              </p>
+              <div className="flex items-center justify-center gap-1 px-1">
+                {goals != null ? (
+                  <>
+                    <span className={`text-xl font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
+                    <span className="text-xs text-gray-300 font-medium">-</span>
+                    <span className={`text-xl font-bold leading-none tabular-nums ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{goals.b}</span>
+                  </>
+                ) : (
+                  <span className="text-sm font-semibold text-gray-300 tracking-widest">- -</span>
+                )}
               </div>
-            ))
-          ) : goals ? (
-            <div className="flex flex-col items-center gap-1">
-              <span className={`text-xs w-4 text-center leading-none ${goals.a > goals.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
-              <span className={`text-xs w-4 text-center leading-none ${goals.b > goals.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals.b}</span>
+              <p className={`min-w-0 text-[13px] font-semibold text-left truncate ${winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'}`}>
+                {teamBName}
+              </p>
             </div>
-          ) : null}
+          </div>
+
+          <div className="hidden md:block">
+            <div className="mx-auto max-w-[560px] grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <p className={`min-w-0 text-sm font-semibold text-right truncate ${winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'}`}>{teamAName}</p>
+              <div className="flex items-center justify-center gap-1.5 px-2">
+                {goals != null ? (
+                  <>
+                    <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{goals.a}</span>
+                    <span className="text-xs text-gray-300 font-medium">-</span>
+                    <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{goals.b}</span>
+                  </>
+                ) : (
+                  <span className="text-sm font-semibold text-gray-300 tracking-widest">- -</span>
+                )}
+              </div>
+              <p className={`min-w-0 text-sm font-semibold text-left truncate ${winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'}`}>{teamBName}</p>
+            </div>
+          </div>
+
+          {schedulePieces.length > 0 && (
+            <p className="text-xs text-gray-400 text-center">{schedulePieces.join(' · ')}</p>
+          )}
         </div>
-      </div>
-      {schedulePieces.length > 0 && (
-        <p className="mt-2 text-[11px] text-gray-400">{schedulePieces.join(' - ')}</p>
+      ) : (
+        <div className="flex items-start gap-2">
+          <div className="flex-1 min-w-0 space-y-1">
+            <p className={`text-xs font-semibold truncate ${winnerSide === 'A' ? 'font-bold text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'}`}>{teamAName}</p>
+            <p className={`text-xs font-semibold truncate ${winnerSide === 'B' ? 'font-bold text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'}`}>{teamBName}</p>
+          </div>
+          <div className="flex-shrink-0 flex gap-2 items-start">
+            {isPending
+              ? null
+              : sets
+                ? sets.map((s, i) => (
+                    <div key={i} className="flex flex-col items-center gap-1">
+                      <span className={`text-xs w-4 text-center leading-none ${s.a > s.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.a}</span>
+                      <span className={`text-xs w-4 text-center leading-none ${s.b > s.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{s.b}</span>
+                    </div>
+                  ))
+                : (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className={`text-xs w-4 text-center leading-none ${goals?.a > goals?.b ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals?.a ?? '-'}</span>
+                      <span className={`text-xs w-4 text-center leading-none ${goals?.b > goals?.a ? 'font-bold text-gray-900' : 'text-gray-400'}`}>{goals?.b ?? '-'}</span>
+                    </div>
+                  )}
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
 /* ── Public bracket (list + visual toggle) ──────────────────── */
-const PublicBracket = ({ bracket, scoringType }) => {
+const PublicBracket = ({ bracket, scoringType, eventModeEnabled, onOpenDetail }) => {
   const [viewMode, setViewMode] = useState('list');
   const rounds = Object.keys(bracket).map(Number).sort((a, b) => a - b);
   const maxRound = rounds[rounds.length - 1] || 1;
@@ -147,7 +190,13 @@ const PublicBracket = ({ bracket, scoringType }) => {
                         <span>{match.teamA?.name || match.teamB?.name || '-'} — pasa automaticamente</span>
                       </div>
                     ) : (
-                      <MatchRow key={match._id} match={match} scoringType={scoringType} />
+                      <MatchRow
+                        key={match._id}
+                        match={match}
+                        scoringType={scoringType}
+                        eventModeEnabled={eventModeEnabled}
+                        onOpenDetail={(matchId) => onOpenDetail(matchId, { tab: 'bracket' })}
+                      />
                     )
                   )}
                 </div>
@@ -161,8 +210,14 @@ const PublicBracket = ({ bracket, scoringType }) => {
 };
 
 /* ── Public groups view ─────────────────────────────────────── */
-const PublicGroups = ({ groups, scoringType, teamsAdvancing }) => {
-  const [subTab, setSubTab] = useState('standings');
+const PublicGroups = ({ groups, scoringType, teamsAdvancing, eventModeEnabled, onOpenDetail, initialSubTab = 'standings' }) => {
+  const [subTab, setSubTab] = useState(initialSubTab);
+
+  useEffect(() => {
+    if (initialSubTab === 'standings' || initialSubTab === 'matches') {
+      setSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
 
   if (!groups.length) {
     return (
@@ -233,11 +288,16 @@ const PublicGroups = ({ groups, scoringType, teamsAdvancing }) => {
                 <div className="space-y-2">
                   {roundMatches.map((match) => (
                     <div key={match._id} className="flex items-start gap-2">
-                      <div className="w-5 h-5 mt-3 bg-brand-100 text-brand-700 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                      <div className="w-6 h-6 sm:w-5 sm:h-5 mt-0 sm:mt-3 bg-brand-100 text-brand-700 rounded-md sm:rounded flex items-center justify-center text-[11px] sm:text-[10px] font-bold flex-shrink-0">
                         {match._groupName}
                       </div>
                       <div className="flex-1 min-w-0 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-                        <MatchRow match={match} scoringType={scoringType} />
+                        <MatchRow
+                          match={match}
+                          scoringType={scoringType}
+                          eventModeEnabled={eventModeEnabled}
+                          onOpenDetail={(matchId) => onOpenDetail(matchId, { tab: 'groups', groupsSubTab: 'matches' })}
+                        />
                       </div>
                     </div>
                   ))}
@@ -262,7 +322,11 @@ const PublicDivisionDetail = () => {
   const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState('');
-  const [tab, setTab]       = useState(null);
+  const [tab, setTab]       = useState(() => location.state?.tab || null);
+
+  useEffect(() => {
+    if (location.state?.tab) setTab(location.state.tab);
+  }, [location.state]);
 
   useEffect(() => {
     setLoading(true);
@@ -288,6 +352,7 @@ const PublicDivisionDetail = () => {
   const isGroupFormat = isTournament && tournamentFormat === 'groups_and_elimination';
   const scoringType   = competition?.sport?.scoringType || 'sets';
   const settings      = competition?.settings || {};
+  const eventModeEnabled = scoringType === 'goals' && settings?.resultConfig?.mode === 'events';
   const teamsAdvancing = Number(settings.teamsAdvancing) || 2;
 
   const formMap = (() => {
@@ -338,6 +403,18 @@ const PublicDivisionDetail = () => {
   }, {});
   const rounds = Object.keys(matchesByRound).map(Number).sort((a, b) => a - b);
   const compId = competition?._id;
+
+  const openPublicMatchDetail = (id, state = {}) => {
+    navigate(`/organizations/${orgId}/matches/${id}/public`, {
+      state: {
+        org,
+        backTo: {
+          pathname: `/organizations/${orgId}/divisions/${divId}/public`,
+          state,
+        },
+      },
+    });
+  };
 
   if (error && !loading && !data) {
     return (
@@ -408,14 +485,21 @@ const PublicDivisionDetail = () => {
       {activeTab === 'groups' && isGroupFormat && (
         loading
           ? <div className="space-y-3">{[1,2].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}</div>
-          : <PublicGroups groups={groups} scoringType={scoringType} teamsAdvancing={teamsAdvancing} />
+          : <PublicGroups
+              groups={groups}
+              scoringType={scoringType}
+              teamsAdvancing={teamsAdvancing}
+              eventModeEnabled={eventModeEnabled}
+              onOpenDetail={openPublicMatchDetail}
+              initialSubTab={location.state?.groupsSubTab || 'standings'}
+            />
       )}
 
       {/* ── Bracket ── */}
       {activeTab === 'bracket' && isTournament && (
         loading
           ? <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
-          : <PublicBracket bracket={bracket} scoringType={scoringType} />
+          : <PublicBracket bracket={bracket} scoringType={scoringType} eventModeEnabled={eventModeEnabled} onOpenDetail={openPublicMatchDetail} />
       )}
 
       {/* ── Standings ── */}
@@ -457,7 +541,15 @@ const PublicDivisionDetail = () => {
                     <span className="text-xs text-gray-300">{rMatches.filter((m) => m.status === 'played').length}/{rMatches.length}</span>
                   </div>
                   <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
-                    {rMatches.map((match) => <MatchRow key={match._id} match={match} scoringType={scoringType} />)}
+                    {rMatches.map((match) => (
+                      <MatchRow
+                        key={match._id}
+                        match={match}
+                        scoringType={scoringType}
+                        eventModeEnabled={eventModeEnabled}
+                        onOpenDetail={(matchId) => openPublicMatchDetail(matchId, { tab: 'matches' })}
+                      />
+                    ))}
                   </div>
                 </div>
               );
