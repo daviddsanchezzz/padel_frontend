@@ -52,8 +52,7 @@ const GroupStandingsTable = ({ group, teamsAdvancing, currentUserId }) => (
   </div>
 );
 
-const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing, currentUserId }) => {
-  const [subTab, setSubTab] = useState('standings'); // 'standings' | 'matches'
+const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResultRecorded, scoringType, isOrganizer, teamsAdvancing, currentUserId, subTab, onSubTabChange }) => {
 
   const hasPlayedMatches = groups.some((g) => g.matches.some((m) => m.status === 'played'));
 
@@ -86,13 +85,13 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
         {/* Sub-tab toggle */}
         <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 self-start">
           <button
-            onClick={() => setSubTab('standings')}
+            onClick={() => onSubTabChange('standings')}
             className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${subTab === 'standings' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Clasificación
           </button>
           <button
-            onClick={() => setSubTab('matches')}
+            onClick={() => onSubTabChange('matches')}
             className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${subTab === 'matches' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Partidos <span className="ml-1 text-gray-400">{totalPlayed}/{totalMatches}</span>
@@ -146,7 +145,13 @@ const GroupsView = ({ groups, generating, onGenerate, onGenerateBracket, onResul
                         {match._groupName}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <MatchCard match={match} scoringType={scoringType} onResultRecorded={onResultRecorded} backTab="groups" />
+                        <MatchCard
+                          match={match}
+                          scoringType={scoringType}
+                          onResultRecorded={onResultRecorded}
+                          backTab="groups"
+                          backState={{ groupsSubTab: 'matches' }}
+                        />
                       </div>
                     </div>
                   ))}
@@ -282,6 +287,7 @@ const DivisionDetail = () => {
   const [allDivisions, setAllDivisions] = useState([]);
 
   const [tab, setTab] = useState(() => location.state?.tab || 'teams');
+  const [groupsSubTab, setGroupsSubTab] = useState(() => location.state?.groupsSubTab || 'standings');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -329,6 +335,12 @@ const DivisionDetail = () => {
       setTab(tabs[0]?.key || 'teams');
     }
   }, [division, tabs, tab]);
+
+  useEffect(() => {
+    if (location.state?.groupsSubTab) {
+      setGroupsSubTab(location.state.groupsSubTab);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (teamSize <= 2) {
@@ -1059,6 +1071,8 @@ const DivisionDetail = () => {
           isOrganizer={isOrganizer}
           teamsAdvancing={Number(compSettings.teamsAdvancing) || 2}
           currentUserId={user?.id}
+          subTab={groupsSubTab}
+          onSubTabChange={setGroupsSubTab}
         />
       )}
 
