@@ -324,10 +324,11 @@ const DivisionDetail = () => {
   const isBottomDivision = currentDivisionIndex === allDivisions.length - 1;
 
   useEffect(() => {
+    if (!division) return;
     if (!tabs.some((t) => t.key === tab)) {
       setTab(tabs[0]?.key || 'teams');
     }
-  }, [tabs, tab]);
+  }, [division, tabs, tab]);
 
   useEffect(() => {
     if (teamSize <= 2) {
