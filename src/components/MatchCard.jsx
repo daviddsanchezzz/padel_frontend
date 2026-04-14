@@ -337,29 +337,28 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
               )}
             </div>
 
-            <div className="hidden md:flex items-center gap-2">
-              {/* Team A */}
-              <p className={`flex-1 min-w-0 text-sm font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
-                {teamAName}
-              </p>
-              {/* Score */}
-              <div className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-2 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
-                {displayResult?.goals != null ? (
-                  <>
-                    <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.a}</span>
-                    <span className="text-xs text-gray-300 font-medium">-</span>
-                    <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.b}</span>
-                  </>
-                ) : (
-                  <span className="text-sm font-semibold text-gray-300 tracking-widest">- -</span>
-                )}
+            <div className="hidden md:block relative">
+              <div className="mx-auto max-w-[560px] grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                <p className={`min-w-0 text-sm font-semibold text-right truncate ${isMyTeamA ? 'text-brand-700' : winnerSide === 'A' ? 'text-gray-900' : winnerSide === 'B' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamA ? 'italic text-gray-300' : ''}`}>
+                  {teamAName}
+                </p>
+                <div className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-2 ${match.status === 'awaiting_confirmation' ? 'opacity-60' : ''}`}>
+                  {displayResult?.goals != null ? (
+                    <>
+                      <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'A' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.a}</span>
+                      <span className="text-xs text-gray-300 font-medium">-</span>
+                      <span className={`text-base font-bold leading-none tabular-nums ${winnerSide === 'B' ? 'text-gray-900' : 'text-gray-400'}`}>{displayResult.goals.b}</span>
+                    </>
+                  ) : (
+                    <span className="text-sm font-semibold text-gray-300 tracking-widest">- -</span>
+                  )}
+                </div>
+                <p className={`min-w-0 text-sm font-semibold text-left truncate ${isMyTeamB ? 'text-brand-700' : winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
+                  {teamBName}
+                </p>
               </div>
-              {/* Team B */}
-              <p className={`flex-1 min-w-0 text-sm font-semibold text-left truncate ${isMyTeamB ? 'text-brand-700' : winnerSide === 'B' ? 'text-gray-900' : winnerSide === 'A' ? 'text-gray-400' : 'text-gray-800'} ${!match.teamB ? 'italic text-gray-300' : ''}`}>
-                {teamBName}
-              </p>
-              {/* Action buttons */}
-              <div className="flex-shrink-0 flex items-center gap-1.5">
+
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                 {isOrganizer && (
                   <button
                     onClick={(e) => {
