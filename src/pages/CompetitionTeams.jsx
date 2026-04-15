@@ -154,13 +154,13 @@ const CompetitionTeams = () => {
       )}
 
       <div className="mb-6">
-        <div className="relative max-w-xl">
+        <div className="relative w-full">
           <Icon name="search" size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar equipo, división/categoría o email..."
-            className="w-full bg-white border border-gray-200 rounded-2xl px-11 py-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            placeholder="Buscar equipo o email..."
+            className="w-full bg-white border border-gray-200 rounded-xl px-11 py-2.5 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -218,9 +218,6 @@ const CompetitionTeams = () => {
                 </div>
 
                 <div className="md:border-l md:border-gray-100 md:pl-4 flex flex-col items-start md:items-end gap-2 min-w-[200px]">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                    {isLeague ? 'División' : 'Categoría'}
-                  </label>
                   {editingTeamId === team._id ? (
                     <>
                       <select
@@ -264,9 +261,6 @@ const CompetitionTeams = () => {
                       </button>
                     </div>
                   )}
-                  <span className="text-[11px] text-gray-300 whitespace-nowrap">
-                    {new Date(team.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                  </span>
                 </div>
               </div>
             </div>
