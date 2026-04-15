@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { getCompetition, updateCompetition } from '../api/competitions';
 import { getDivisions, createDivision, deleteDivision, updateDivision } from '../api/divisions';
-import { getDivisionTeams } from '../api/teams';
+import { getDivisionTeams, getCompetitionTeamsDetailed } from '../api/teams';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { X, Copy, Check, QrCode, Download } from 'lucide-react';
@@ -147,6 +147,20 @@ const formatDateRange = (startDate, endDate) => {
   const to = formatDateLabel(endDate);
   if (from && to) return `${from} - ${to}`;
   return from || to || '';
+};
+
+const paymentStatusLabel = (status) => {
+  if (status === 'paid') return 'Pagado';
+  if (status === 'pending') return 'Pendiente';
+  if (status === 'failed') return 'Fallido';
+  return 'Gratis';
+};
+
+const paymentStatusClass = (status) => {
+  if (status === 'paid') return 'bg-green-100 text-green-700';
+  if (status === 'pending') return 'bg-amber-100 text-amber-700';
+  if (status === 'failed') return 'bg-red-100 text-red-700';
+  return 'bg-gray-100 text-gray-600';
 };
 
 // ── Stepper input ─────────────────────────────────────────────────────────────
@@ -601,6 +615,10 @@ const CompetitionDetail = () => {
   const [playerDivisionId, setPlayerDivisionId] = useState(null);
   const [editingDivId, setEditingDivId]   = useState(null);
   const [editingDivName, setEditingDivName] = useState('');
+  const [teamsDetail, setTeamsDetail] = useState([]);
+  const [teamsDetailLoading, setTeamsDetailLoading] = useState(false);
+  const [teamsDetailError, setTeamsDetailError] = useState('');
+  const [activeSeasonLabel, setActiveSeasonLabel] = useState('');
 
   const isOrganizer = user?.role === 'organizer' && competition?.organizer?.toString() === user?.id;
   const { activeOrg } = useOrg();
@@ -610,7 +628,26 @@ const CompetitionDetail = () => {
       const [c, d] = await Promise.all([getCompetition(id), getDivisions(id)]);
       setCompetition(c.data);
       setDivisions(d.data);
-      
+
+      const isOwnerOrganizer = user?.role === 'organizer' && c.data?.organizer?.toString() === user?.id;
+      if (isOwnerOrganizer) {
+        setTeamsDetailLoading(true);
+        setTeamsDetailError('');
+        try {
+          const detailRes = await getCompetitionTeamsDetailed(id);
+          setTeamsDetail(detailRes.data?.teams || []);
+          setActiveSeasonLabel(detailRes.data?.activeSeason || '');
+        } catch (err) {
+          setTeamsDetail([]);
+          setTeamsDetailError(err.response?.data?.message || 'No se pudo cargar el listado de equipos');
+        } finally {
+          setTeamsDetailLoading(false);
+        }
+      } else {
+        setTeamsDetail([]);
+        setActiveSeasonLabel('');
+      }
+
       if (user?.role === 'player' && d.data.length > 0) {
         await loadPlayerDivision(d.data, !location.state?.noRedirect);
       }
@@ -635,6 +672,21 @@ const CompetitionDetail = () => {
     }
   };
 
+  const reloadTeamsDetail = async () => {
+    if (!(user?.role === 'organizer' && competition?.organizer?.toString() === user?.id)) return;
+    setTeamsDetailLoading(true);
+    setTeamsDetailError('');
+    try {
+      const detailRes = await getCompetitionTeamsDetailed(id);
+      setTeamsDetail(detailRes.data?.teams || []);
+      setActiveSeasonLabel(detailRes.data?.activeSeason || '');
+    } catch (err) {
+      setTeamsDetailError(err.response?.data?.message || 'No se pudo cargar el listado de equipos');
+    } finally {
+      setTeamsDetailLoading(false);
+    }
+  };
+
   const handleSaveSettings = async (patch) => {
     const res = await updateCompetition(id, patch);
     setCompetition(res.data);
@@ -646,12 +698,14 @@ const CompetitionDetail = () => {
     const res = await createDivision(id, { name: divisionName });
     setDivisions([...divisions, res.data]);
     setDivisionName(''); setShowForm(false);
+    await reloadTeamsDetail();
   };
 
   const handleDeleteDivision = async (divId) => {
     if (!confirm('¿Eliminar esta división/categoría y todos sus datos?')) return;
     await deleteDivision(divId);
     setDivisions(divisions.filter((d) => d._id !== divId));
+    await reloadTeamsDetail();
   };
 
   const handleRenameDivision = async (divId) => {
@@ -660,6 +714,7 @@ const CompetitionDetail = () => {
     const res = await updateDivision(divId, { name: trimmed });
     setDivisions(divisions.map((d) => d._id === divId ? { ...d, name: res.data.name } : d));
     setEditingDivId(null);
+    await reloadTeamsDetail();
   };
 
 
@@ -888,6 +943,89 @@ const CompetitionDetail = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {isOrganizer && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Equipos de la competicion</h3>
+              <p className="text-xs text-gray-400 mt-1">
+                {activeSeasonLabel ? `Temporada activa: ${activeSeasonLabel}` : 'Temporada activa'}
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+              {teamsDetail.length} equipos
+            </span>
+          </div>
+
+          {teamsDetailError && (
+            <div className="mb-3 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
+              {teamsDetailError}
+            </div>
+          )}
+
+          {teamsDetailLoading ? (
+            <div className="card p-8 text-center">
+              <Icon name="spinner" size={18} className="animate-spin text-brand-500 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">Cargando equipos...</p>
+            </div>
+          ) : teamsDetail.length === 0 ? (
+            <div className="card p-8 text-center">
+              <p className="font-semibold text-gray-800 mb-1">Sin equipos registrados</p>
+              <p className="text-sm text-gray-400">
+                Cuando haya inscripciones o equipos creados apareceran aqui con su detalle.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
+              {teamsDetail.map((team) => (
+                <div key={team._id} className="px-4 py-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-gray-900 truncate">{team.name}</p>
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
+                          {paymentStatusLabel(team.paymentStatus)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-gray-500">
+                        <span>{isLeague ? 'Division' : 'Categoria'}: {team.division?.name || 'General'}</span>
+                        <span>•</span>
+                        <span>{team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}</span>
+                        {team.group && (
+                          <>
+                            <span>•</span>
+                            <span>Grupo {team.group}</span>
+                          </>
+                        )}
+                        {team.contactEmail && (
+                          <>
+                            <span>•</span>
+                            <span>{team.contactEmail}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                      {new Date(team.createdAt).toLocaleDateString('es-ES')}
+                    </span>
+                  </div>
+
+                  {Array.isArray(team.players) && team.players.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {team.players.map((player, idx) => (
+                        <span key={`${team._id}-${idx}`} className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg">
+                          {player.name}{player.dorsal ? ` #${player.dorsal}` : ''}{player.userId ? ' (usuario)' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </AppLayout>

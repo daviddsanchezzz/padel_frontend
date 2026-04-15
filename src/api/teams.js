@@ -6,6 +6,7 @@ export const createDivisionTeam = (divisionId, data) => api.post(`/divisions/${d
 
 // Tournament teams
 export const getCompetitionTeams  = (competitionId)      => api.get(`/competitions/${competitionId}/teams`);
+export const getCompetitionTeamsDetailed = (competitionId) => api.get(`/competitions/${competitionId}/teams/detailed`);
 export const createCompetitionTeam = (competitionId, data) => api.post(`/competitions/${competitionId}/teams`, data);
 
 // Shared
