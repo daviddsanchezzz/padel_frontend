@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { getCompetition, updateCompetition } from '../api/competitions';
 import { getDivisions, createDivision, deleteDivision, updateDivision } from '../api/divisions';
@@ -619,6 +619,7 @@ const CompetitionDetail = () => {
   const [teamsDetailLoading, setTeamsDetailLoading] = useState(false);
   const [teamsDetailError, setTeamsDetailError] = useState('');
   const [activeSeasonLabel, setActiveSeasonLabel] = useState('');
+  const teamsSectionRef = useRef(null);
 
   const isOrganizer = user?.role === 'organizer' && competition?.organizer?.toString() === user?.id;
   const { activeOrg } = useOrg();
@@ -841,9 +842,17 @@ const CompetitionDetail = () => {
           )}
         </div>
         {isOrganizer && (
-          <button onClick={() => setShowForm(!showForm)} className="btn-primary text-xs py-1.5">
-            <Icon name="plus" size={13} /> Añadir {entityName.toLowerCase()}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => teamsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="btn-secondary text-xs py-1.5"
+            >
+              <Icon name="team" size={13} /> Ver todos los equipos
+            </button>
+            <button onClick={() => setShowForm(!showForm)} className="btn-primary text-xs py-1.5">
+              <Icon name="plus" size={13} /> Añadir {entityName.toLowerCase()}
+            </button>
+          </div>
         )}
       </div>
 
@@ -947,7 +956,7 @@ const CompetitionDetail = () => {
       )}
 
       {isOrganizer && (
-        <div className="mt-6">
+        <div ref={teamsSectionRef} className="mt-6">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Equipos de la competicion</h3>
@@ -979,49 +988,48 @@ const CompetitionDetail = () => {
               </p>
             </div>
           ) : (
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-50">
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-100">
               {teamsDetail.map((team) => (
-                <div key={team._id} className="px-4 py-4">
+                <div key={team._id} className="px-4 py-4 hover:bg-gray-50/70 transition-colors">
                   <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Icon name="team" size={14} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-semibold text-gray-900 truncate">{team.name}</p>
-                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
                           {paymentStatusLabel(team.paymentStatus)}
                         </span>
                       </div>
-                      <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-gray-500">
-                        <span>{isLeague ? 'Division' : 'Categoria'}: {team.division?.name || 'General'}</span>
-                        <span>•</span>
-                        <span>{team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}</span>
+                      <div className="mt-2 flex items-center gap-2 flex-wrap text-xs text-gray-500">
+                        <span className="px-2 py-0.5 bg-gray-100 rounded-md">
+                          {isLeague ? 'División' : 'Categoría'}: {team.division?.name || 'General'}
+                        </span>
+                        <span className="px-2 py-0.5 bg-gray-100 rounded-md">
+                          {team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}
+                        </span>
                         {team.group && (
-                          <>
-                            <span>•</span>
-                            <span>Grupo {team.group}</span>
-                          </>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded-md">Grupo {team.group}</span>
                         )}
                         {team.contactEmail && (
-                          <>
-                            <span>•</span>
-                            <span>{team.contactEmail}</span>
-                          </>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded-md truncate max-w-[220px]">{team.contactEmail}</span>
                         )}
                       </div>
+                      {Array.isArray(team.players) && team.players.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {team.players.map((player, idx) => (
+                            <span key={`${team._id}-${idx}`} className="text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-lg">
+                              {player.name}{player.dorsal ? ` #${player.dorsal}` : ''}{player.userId ? ' (usuario)' : ''}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <span className="text-[11px] text-gray-400 whitespace-nowrap">
-                      {new Date(team.createdAt).toLocaleDateString('es-ES')}
+                    <span className="text-[11px] text-gray-400 whitespace-nowrap mt-1">
+                      {new Date(team.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     </span>
                   </div>
-
-                  {Array.isArray(team.players) && team.players.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {team.players.map((player, idx) => (
-                        <span key={`${team._id}-${idx}`} className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg">
-                          {player.name}{player.dorsal ? ` #${player.dorsal}` : ''}{player.userId ? ' (usuario)' : ''}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
