@@ -23,10 +23,12 @@ const CompetitionModal = ({ onClose, onCreated }) => {
 
   useEffect(() => {
     getSports().then((res) => {
-      setSports(res.data);
-      if (res.data.length > 0) setForm((f) => ({ ...f, sportId: res.data[0]._id }));
+      const disabled = new Set((activeOrg?.disabledSports || []).map(String));
+      const enabled = res.data.filter((s) => !disabled.has(String(s._id)));
+      setSports(enabled);
+      if (enabled.length > 0) setForm((f) => ({ ...f, sportId: enabled[0]._id }));
     });
-  }, []);
+  }, [activeOrg]);
 
   useEffect(() => {
     const handler = (e) => {
