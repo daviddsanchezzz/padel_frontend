@@ -98,7 +98,8 @@ const OrganizationSettings = () => {
 
   if (!activeOrg) return null;
 
-  const publicPageUrl = `${window.location.origin}/${activeOrg.slug || activeOrg._id}`;
+  const publicPath = activeOrg.slug ? `/${activeOrg.slug}` : `/organizations/${activeOrg._id}/public`;
+  const publicPageUrl = `${window.location.origin}${publicPath}`;
   const copyPublicUrl = async () => {
     try { await navigator.clipboard.writeText(publicPageUrl); setCopied(true); setTimeout(() => setCopied(false), 1800); }
     catch { setCopied(false); }

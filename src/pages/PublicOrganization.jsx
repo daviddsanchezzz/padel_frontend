@@ -76,7 +76,7 @@ const PublicOrganization = () => {
   const navigateToComp = (compId) => {
     const orgRef = org?.slug || id || slug;
     navigate(`/organizations/${orgRef}/competitions/${compId}/public`, {
-      state: { org: { name: org.name, logo: org.logo, primaryColor: org.primaryColor } },
+      state: { org: { name: org.name, slug: org.slug, logo: org.logo, primaryColor: org.primaryColor } },
     });
   };
 
