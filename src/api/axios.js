@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const envApiUrl = import.meta.env.VITE_API_URL;
+// In production we force same-origin /api to keep auth cookies first-party on iOS Safari.
+const baseURL = import.meta.env.PROD ? '/api' : (envApiUrl || '/api');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
   // Required for Better Auth session cookies to be sent cross-origin
   withCredentials: true,

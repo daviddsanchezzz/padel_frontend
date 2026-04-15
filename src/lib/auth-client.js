@@ -5,7 +5,9 @@ import { organizationClient } from 'better-auth/client/plugins';
  * Better Auth client.
  * baseURL points to the server root — Better Auth appends /api/auth internally.
  */
-const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const rawApiUrl = import.meta.env.PROD
+  ? '/api'
+  : (import.meta.env.VITE_API_URL || 'http://localhost:3001/api');
 
 // When VITE_API_URL is relative (e.g. '/api'), Vercel proxies requests to the backend.
 // Better Auth client needs an absolute origin — use window.location.origin so auth
