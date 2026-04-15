@@ -17,7 +17,7 @@ export const login = ({ email, password }) =>
  * Sign in with Google OAuth.
  * Redirects the browser; callbackURL is where the user lands after auth.
  */
-export const loginWithGoogle = (callbackURL = '/dashboard') =>
+export const loginWithGoogle = (callbackURL = '/resumen') =>
   authClient.signIn.social({ provider: 'google', callbackURL });
 
 /**

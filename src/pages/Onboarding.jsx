@@ -32,7 +32,7 @@ const Onboarding = () => {
         type: form.type,
       });
       orgCreated(res.data);
-      navigate('/dashboard');
+      navigate('/resumen');
     } catch (err) {
       setError(err.response?.data?.message || 'Error al crear el club');
     } finally {

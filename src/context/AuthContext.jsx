@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   const loginUser = ({ email, password }) =>
     authClient.signIn.email({ email, password });
 
-  const loginWithGoogle = (callbackURL = '/dashboard') =>
+  const loginWithGoogle = (callbackURL = '/resumen') =>
     authClient.signIn.social({ provider: 'google', callbackURL });
 
   const logout = async () => {

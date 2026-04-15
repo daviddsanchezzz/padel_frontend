@@ -36,7 +36,7 @@ const Register = () => {
     if (competitionId) {
       navigate(`/competitions/${competitionId}`);
     } else {
-      navigate(data.user.role === 'organizer' ? '/dashboard' : '/player');
+      navigate(data.user.role === 'organizer' ? '/resumen' : '/player');
     }
   };
 

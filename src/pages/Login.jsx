@@ -30,14 +30,14 @@ const Login = () => {
 
     // Use full navigation instead of React Router to force a fresh session load.
     // On iOS Safari, useSession() may not pick up the new cookie in the same render cycle.
-    const dest = data.user.role === 'organizer' ? '/dashboard' : '/player';
+    const dest = data.user.role === 'organizer' ? '/resumen' : '/player';
     window.location.href = dest;
   };
 
   const handleGoogle = async () => {
     setGoogleLoading(true);
     // Redirects the browser — no return value to handle
-    await authClient.signIn.social({ provider: 'google', callbackURL: '/dashboard' });
+    await authClient.signIn.social({ provider: 'google', callbackURL: '/resumen' });
   };
 
   return (

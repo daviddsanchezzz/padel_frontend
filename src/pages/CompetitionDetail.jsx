@@ -436,7 +436,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
               <div className="space-y-2">
                 <div className="bg-brand-50 rounded-xl p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-brand-800">? ↑ Equipos que ascienden</p>
+                    <p className="text-sm font-semibold text-brand-800">↑ Equipos que ascienden</p>
                     <p className="text-xs text-brand-500 mt-0.5">
                       {s.promotionSpots === 0 ? 'Sin ascensos' : `${s.promotionSpots} equipo${s.promotionSpots > 1 ? 's' : ''} por división`}
                     </p>
@@ -445,7 +445,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                 </div>
                 <div className="bg-red-50 rounded-xl p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-red-800">? ↓ Equipos que descienden</p>
+                    <p className="text-sm font-semibold text-red-800">↓ Equipos que descienden</p>
                     <p className="text-xs text-red-400 mt-0.5">
                       {s.relegationSpots === 0 ? 'Sin descensos' : `${s.relegationSpots} equipo${s.relegationSpots > 1 ? 's' : ''} por división`}
                     </p>
@@ -836,7 +836,7 @@ const CompetitionDetail = () => {
     <AppLayout title={competition.name} actions={<div className="hidden md:flex">{organizerActions}</div>}>
       {/* Back */}
       <button
-        onClick={() => navigate(isOrganizer ? '/dashboard' : '/player')}
+        onClick={() => navigate(isOrganizer ? '/resumen' : '/player')}
         className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-3"
       >
         <Icon name="chevronLeft" size={14} /> {isOrganizer ? 'Mis competiciones' : 'Mi panel'}

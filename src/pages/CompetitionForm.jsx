@@ -319,7 +319,7 @@ const CompetitionForm = () => {
 
           <div className="fixed left-0 right-0 bottom-0 z-20 bg-white/95 backdrop-blur border-t border-gray-200">
             <div className="max-w-[1200px] mx-auto px-4 py-3 flex items-center justify-end gap-2">
-              <button type="button" onClick={() => navigate('/dashboard')} className="btn-secondary">
+              <button type="button" onClick={() => navigate('/resumen')} className="btn-secondary">
                 Cancelar
               </button>
               <button type="submit" disabled={loading} className="btn-primary">
