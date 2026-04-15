@@ -32,6 +32,8 @@ const CompetitionTeams = () => {
   const [activeSeason, setActiveSeason] = useState('');
   const [search, setSearch] = useState('');
   const [savingTeamId, setSavingTeamId] = useState('');
+  const [editingTeamId, setEditingTeamId] = useState('');
+  const [pendingDivisionId, setPendingDivisionId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -88,8 +90,25 @@ const CompetitionTeams = () => {
     });
   }, [teams, search]);
 
-  const handleDivisionChange = async (team, nextDivisionId) => {
+  const startDivisionEdit = (team) => {
+    setEditingTeamId(team._id);
+    setPendingDivisionId(team.division?._id || '');
+  };
+
+  const cancelDivisionEdit = () => {
+    setEditingTeamId('');
+    setPendingDivisionId('');
+  };
+
+  const saveDivisionChange = async (team) => {
+    const nextDivisionId = pendingDivisionId;
     const nextDivision = divisions.find((d) => d._id === nextDivisionId);
+    const currentDivisionId = team.division?._id || '';
+    if (currentDivisionId === nextDivisionId) {
+      cancelDivisionEdit();
+      return;
+    }
+
     const label = isLeague ? 'división' : 'categoría';
     const nextLabel = nextDivision?.name || 'General';
     const confirmed = window.confirm(`¿Estas seguro de mover este equipo a ${label} "${nextLabel}"?`);
@@ -112,6 +131,7 @@ const CompetitionTeams = () => {
       alert(err.response?.data?.message || 'No se pudo actualizar la división/categoría');
     } finally {
       setSavingTeamId('');
+      cancelDivisionEdit();
     }
   };
 
@@ -201,17 +221,49 @@ const CompetitionTeams = () => {
                   <label className="text-[11px] font-semibold text-gray-500">
                     {isLeague ? 'División' : 'Categoría'}
                   </label>
-                  <select
-                    value={team.division?._id || ''}
-                    onChange={(e) => handleDivisionChange(team, e.target.value)}
-                    disabled={savingTeamId === team._id}
-                    className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
-                  >
-                    <option value="">General</option>
-                    {divisions.map((division) => (
-                      <option key={division._id} value={division._id}>{division.name}</option>
-                    ))}
-                  </select>
+                  {editingTeamId === team._id ? (
+                    <>
+                      <select
+                        value={pendingDivisionId}
+                        onChange={(e) => setPendingDivisionId(e.target.value)}
+                        disabled={savingTeamId === team._id}
+                        className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                      >
+                        <option value="">General</option>
+                        {divisions.map((division) => (
+                          <option key={division._id} value={division._id}>{division.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => saveDivisionChange(team)}
+                          disabled={savingTeamId === team._id}
+                          className="text-xs px-2 py-1 rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          onClick={cancelDivisionEdit}
+                          disabled={savingTeamId === team._id}
+                          className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-60"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold">
+                        {team.division?.name || 'General'}
+                      </span>
+                      <button
+                        onClick={() => startDivisionEdit(team)}
+                        className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      >
+                        Mover
+                      </button>
+                    </div>
+                  )}
                   <span className="text-[11px] text-gray-400 whitespace-nowrap">
                     {new Date(team.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                   </span>
