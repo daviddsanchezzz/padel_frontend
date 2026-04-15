@@ -12,6 +12,7 @@ export const getPublicDivision        = (orgId, divId)        => api.get(`/organ
 export const getPublicMatchDetail     = (orgId, matchId)      => api.get(`/organizations/${orgId}/matches/${matchId}/public`);
 export const registerForCompetition   = (orgId, compId, data) => api.post(`/organizations/${orgId}/competitions/${compId}/register`, data);
 export const getAdminOrganizationsOverview = () => api.get('/organizations/admin/overview');
+export const patchOrgSports = (orgId, disabledSports) => api.patch(`/organizations/admin/${orgId}/sports`, { disabledSports });
 
 // Stripe Connect
 export const getConnectStatus  = (orgId) => api.get(`/connect/status?orgId=${orgId}`);
