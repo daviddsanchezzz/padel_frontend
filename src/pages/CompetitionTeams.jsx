@@ -56,6 +56,13 @@ const CompetitionTeams = () => {
   const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
+    if (!menuTeamId) return undefined;
+    const closeMenu = () => setMenuTeamId('');
+    window.addEventListener('click', closeMenu);
+    return () => window.removeEventListener('click', closeMenu);
+  }, [menuTeamId]);
+
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError('');
@@ -205,18 +212,18 @@ const CompetitionTeams = () => {
           <span className="badge bg-white border border-gray-200 text-gray-800 font-semibold">{competition.name}</span>
           {competition.sport?.name && <span className="badge bg-white border border-gray-200 text-gray-500">{competition.sport.name}</span>}
           {activeSeason && <span className="badge bg-white border border-gray-200 text-gray-500">Temporada: {activeSeason}</span>}
-          <span className="badge bg-gray-50 border border-gray-200 text-gray-600">{teams.length} equipos</span>
+          <span className="badge bg-gray-100/90 border border-gray-200 text-gray-600">{teams.length} equipos</span>
         </div>
       )}
 
-      <div className="mb-5">
+      <div className="mb-4">
         <div className="relative w-full">
           <Icon name="search" size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar equipo o email..."
-            className="w-full bg-white border border-gray-200 rounded-xl px-11 py-2 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow"
+            className="w-full h-10 bg-white border border-gray-200 rounded-xl px-10 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-shadow"
           />
         </div>
       </div>
@@ -236,15 +243,15 @@ const CompetitionTeams = () => {
           <p className="text-sm text-gray-400">No hay equipos que coincidan con tu busqueda.</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-visible">
-          <div className="hidden md:grid grid-cols-[minmax(0,1fr)_180px_72px] px-5 py-2.5 bg-gray-50/80 border-b border-gray-100 rounded-t-2xl">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Equipo</p>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">{isLeague ? 'División' : 'Categoría'}</p>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500 text-center">Acciones</p>
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-visible">
+          <div className="hidden md:grid grid-cols-[minmax(0,1fr)_180px_64px] px-5 py-2 bg-gray-50/90 border-b border-gray-200 rounded-t-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Equipo</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{isLeague ? 'División' : 'Categoría'}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 text-center">...</p>
           </div>
 
           {filteredTeams.map((team) => (
-            <div key={team._id} className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_180px_72px] items-center px-5 py-3.5 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/60 transition-colors">
+            <div key={team._id} className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_180px_64px] items-center px-5 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/70 transition-colors">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
                   <p className="font-semibold text-gray-900 truncate">{team.name}</p>
@@ -254,13 +261,15 @@ const CompetitionTeams = () => {
                     </span>
                   )}
                 </div>
-                <div className="mt-1.5 flex items-center gap-2 flex-wrap text-xs text-gray-500">
-                  {!isPadelSport && (
-                    <span>{team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}</span>
-                  )}
-                  {team.group && <span>Grupo {team.group}</span>}
-                  {team.contactEmail && <span className="truncate max-w-[260px]">{team.contactEmail}</span>}
-                </div>
+                {(!isPadelSport || team.group || team.contactEmail) && (
+                  <div className="mt-1.5 flex items-center gap-2 flex-wrap text-xs text-gray-500">
+                    {!isPadelSport && (
+                      <span>{team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}</span>
+                    )}
+                    {team.group && <span>Grupo {team.group}</span>}
+                    {team.contactEmail && <span className="truncate max-w-[260px]">{team.contactEmail}</span>}
+                  </div>
+                )}
               </div>
 
               <div className="hidden md:flex items-center">
@@ -271,13 +280,19 @@ const CompetitionTeams = () => {
 
               <div className="relative flex justify-end md:justify-center">
                 <button
-                  onClick={() => setMenuTeamId((prev) => (prev === team._id ? '' : team._id))}
-                  className="w-8 h-8 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700 flex items-center justify-center"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuTeamId((prev) => (prev === team._id ? '' : team._id));
+                  }}
+                  className="w-8 h-8 rounded-lg border border-transparent hover:border-gray-200 hover:bg-white text-gray-500 hover:text-gray-700 flex items-center justify-center"
                 >
                   <Icon name="more" size={16} />
                 </button>
                 {menuTeamId === team._id && (
-                  <div className="absolute right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 bottom-full mb-1 z-20 w-36 bg-white border border-gray-200 rounded-lg shadow-xl py-1">
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 top-9 z-30 w-36 bg-white border border-gray-200 rounded-lg shadow-xl py-1"
+                  >
                     <button onClick={() => openEditTeam(team)} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Editar</button>
                     <button onClick={() => handleDeleteTeam(team)} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">Eliminar</button>
                   </div>
