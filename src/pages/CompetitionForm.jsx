@@ -27,13 +27,25 @@ const CompetitionForm = () => {
   useEffect(() => {
     getSports().then((res) => {
       setSports(res.data);
-      if (res.data.length > 0) setForm((f) => ({ ...f, sportId: res.data[0]._id }));
     });
   }, []);
 
+  // Filter out sports disabled for this org. Empty disabledSports = all enabled.
+  const enabledSports = useMemo(() => {
+    const disabled = new Set((activeOrg?.disabledSports || []).map(String));
+    return sports.filter((s) => !disabled.has(String(s._id)));
+  }, [sports, activeOrg]);
+
+  // Keep sportId in sync: if current selection gets filtered out, reset to first enabled.
+  useEffect(() => {
+    if (enabledSports.length === 0) return;
+    const valid = enabledSports.some((s) => s._id === form.sportId);
+    if (!valid) setForm((f) => ({ ...f, sportId: enabledSports[0]._id }));
+  }, [enabledSports]);
+
   const selectedSport = useMemo(
-    () => sports.find((sport) => sport._id === form.sportId) || null,
-    [sports, form.sportId]
+    () => enabledSports.find((sport) => sport._id === form.sportId) || null,
+    [enabledSports, form.sportId]
   );
 
   const normalizedSport = normalizeSportName(selectedSport?.name || '');
@@ -161,7 +173,7 @@ const CompetitionForm = () => {
                     required
                   >
                     <option value="">Selecciona deporte</option>
-                    {sports.map((s) => (
+                    {enabledSports.map((s) => (
                       <option key={s._id} value={s._id}>{s.name}</option>
                     ))}
                   </select>
