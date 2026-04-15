@@ -81,7 +81,7 @@ const AppLayout = ({ children, title, actions }) => {
     : '?';
 
   const sidebarContent = (
-    <div className="flex flex-col h-full" style={{ backgroundColor: '#0b1d12' }}>
+    <div className="flex flex-col h-full overflow-x-hidden" style={{ backgroundColor: '#0b1d12' }}>
       {/* Logo */}
       <div
         className={`flex items-center gap-3 py-5 border-b transition-all duration-200 ${collapsed ? 'justify-center px-3' : 'px-5'}`}
@@ -108,7 +108,7 @@ const AppLayout = ({ children, title, actions }) => {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 space-y-0.5">
         {isAdmin ? (
           <>
             <SectionLabel label="Administración" collapsed={collapsed} />
