@@ -820,7 +820,8 @@ const CompetitionDetail = () => {
       )}
 
       {/* Divisions / Categories */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4">
+        <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
             <Icon name="division" size={14} className="text-gray-400" />
@@ -841,7 +842,7 @@ const CompetitionDetail = () => {
           )}
         </div>
         {isOrganizer && (
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             <button
               onClick={() => navigate(`/competitions/${id}/teams`)}
               className="btn-secondary text-xs py-1.5"
@@ -850,6 +851,20 @@ const CompetitionDetail = () => {
             </button>
             <button onClick={() => setShowForm(!showForm)} className="btn-primary text-xs py-1.5">
               <Icon name="plus" size={13} /> Añadir {entityName.toLowerCase()}
+            </button>
+          </div>
+        )}
+        </div>
+        {isOrganizer && (
+          <div className="mt-3 grid grid-cols-2 gap-2 md:hidden">
+            <button
+              onClick={() => navigate(`/competitions/${id}/teams`)}
+              className="btn-secondary text-xs py-1.5 justify-center"
+            >
+              <Icon name="team" size={13} /> Ver todos los equipos
+            </button>
+            <button onClick={() => setShowForm(!showForm)} className="btn-primary text-xs py-1.5 justify-center">
+              <Icon name="plus" size={13} /> AÃ±adir {entityName.toLowerCase()}
             </button>
           </div>
         )}
