@@ -272,7 +272,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
       <div className="px-3 md:px-5 py-3 md:py-4">
 
         {scoringType === 'goals' ? (
-          /* â”€â”€ Football layout: Team A â€” Score â€” Team B â€” Actions â”€â”€ */
+          /* Football layout: Team A - Score - Team B - Actions */
           <div className="space-y-1.5">
             <div className="md:hidden space-y-2">
               <div className="flex items-start gap-2">
@@ -393,7 +393,7 @@ const MatchCard = ({ match, scoringType = 'sets', onResultRecorded, myTeamId = n
             {error && <p className="text-red-500 text-xs text-center">{error}</p>}
           </div>
         ) : (
-          /* â”€â”€ Padel / Tennis layout: stacked teams â”€â”€ */
+          /* Padel / Tennis layout: stacked teams */
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0 flex items-start gap-2">
               <div className="flex-1 min-w-0 space-y-1.5">
