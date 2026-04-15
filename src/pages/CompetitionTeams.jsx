@@ -244,25 +244,25 @@ const CompetitionTeams = () => {
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-visible">
-          <div className="hidden md:grid grid-cols-[minmax(0,1fr)_180px_64px] px-5 py-2 bg-gray-50/90 border-b border-gray-200 rounded-t-2xl">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Equipo</p>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{isLeague ? 'División' : 'Categoría'}</p>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 text-center">...</p>
+          <div className="hidden md:grid grid-cols-[minmax(0,1fr)_140px_56px] px-4 py-1.5 bg-gray-50/90 border-b border-gray-200 rounded-t-2xl">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">Equipo</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 text-right">{isLeague ? 'División' : 'Categoría'}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 text-center">&nbsp;</p>
           </div>
 
           {filteredTeams.map((team) => (
-            <div key={team._id} className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_180px_64px] items-center px-5 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/70 transition-colors">
+            <div key={team._id} className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_140px_56px] items-center px-4 py-2.5 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/70 transition-colors">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">{team.name}</p>
+                  <p className="font-semibold text-[15px] leading-tight text-gray-900 truncate">{team.name}</p>
                   {paymentStatusLabel(team.paymentStatus) && (
-                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
                       {paymentStatusLabel(team.paymentStatus)}
                     </span>
                   )}
                 </div>
                 {(!isPadelSport || team.group || team.contactEmail) && (
-                  <div className="mt-1.5 flex items-center gap-2 flex-wrap text-xs text-gray-500">
+                  <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px] text-gray-500">
                     {!isPadelSport && (
                       <span>{team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}</span>
                     )}
@@ -272,21 +272,21 @@ const CompetitionTeams = () => {
                 )}
               </div>
 
-              <div className="hidden md:flex items-center">
-                <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-1 font-semibold">
+              <div className="hidden md:flex items-center justify-end pr-1">
+                <span className="text-[11px] border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-0.5 font-semibold">
                   {team.division?.name || (isLeague ? '-' : 'General')}
                 </span>
               </div>
 
-              <div className="relative flex justify-end md:justify-center">
+              <div className="relative flex justify-end md:justify-end">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setMenuTeamId((prev) => (prev === team._id ? '' : team._id));
                   }}
-                  className="w-8 h-8 rounded-lg border border-transparent hover:border-gray-200 hover:bg-white text-gray-500 hover:text-gray-700 flex items-center justify-center"
+                  className="w-7 h-7 rounded-md border border-transparent hover:border-gray-200 hover:bg-white text-gray-500 hover:text-gray-700 flex items-center justify-center"
                 >
-                  <Icon name="more" size={16} />
+                  <Icon name="more" size={14} />
                 </button>
                 {menuTeamId === team._id && (
                   <div
