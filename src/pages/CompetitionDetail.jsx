@@ -811,21 +811,21 @@ const CompetitionDetail = () => {
         onClick={() => setShowInvite(true)}
         className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
       >
-        <Icon name="share" size={13} /> Invitar
+        <Icon name="share" size={12} /> Invitar
       </button>
       {showNewSeason && (
         <button
           onClick={() => navigate(`/competitions/${id}/new-season`)}
           className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
         >
-          <Icon name="calendar" size={13} /> + Temporada
+          <Icon name="calendar" size={12} /> + Temporada
         </button>
       )}
       <button
         onClick={() => setShowSettings(!showSettings)}
         className={`btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center ${showSettings ? 'bg-gray-100' : ''}`}
       >
-        <Icon name="settings" size={13} /> Config.
+        <Icon name="settings" size={12} /> Config.
       </button>
     </div>
   ) : null;
