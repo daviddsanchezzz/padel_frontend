@@ -37,6 +37,7 @@ const PublicRegistration = () => {
   }, [orgId, compId]);
 
   const org         = data?.org || {};
+  const orgRef = org.slug || orgId;
   const competition = data?.competition;
   const divisions   = data?.divisions || [];
   const color       = org.primaryColor || '#0b1d12';
@@ -83,7 +84,7 @@ const PublicRegistration = () => {
 
   if (loadError) {
     return (
-      <PublicLayout orgId={orgId} orgName={org.name} orgLogo={org.logo} orgColor={color}>
+      <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
         <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
           <p className="font-bold text-gray-900 mb-1">No disponible</p>
           <p className="text-sm text-gray-500">{loadError}</p>
@@ -94,7 +95,7 @@ const PublicRegistration = () => {
 
   if (success) {
     return (
-      <PublicLayout orgId={orgId} orgName={org.name} orgLogo={org.logo} orgColor={color}>
+      <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
         <div className="max-w-md mx-auto">
           <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
             <div className="w-14 h-14 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-4">
@@ -109,7 +110,7 @@ const PublicRegistration = () => {
               El organizador se pondrá en contacto cuando haya novedades.
             </p>
             <button
-              onClick={() => navigate(`/organizations/${orgId}/competitions/${compId}/public`)}
+              onClick={() => navigate(`/organizations/${orgRef}/competitions/${compId}/public`)}
               className="text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
             >
               Ver la competición →
@@ -121,9 +122,10 @@ const PublicRegistration = () => {
   }
 
   return (
-    <PublicLayout
-      orgId={orgId}
-      orgName={org.name}
+      <PublicLayout
+        orgId={orgId}
+        orgSlug={org.slug}
+        orgName={org.name}
       orgLogo={org.logo}
       orgColor={color}
       title={loading ? undefined : `Inscripción · ${competition?.name}`}

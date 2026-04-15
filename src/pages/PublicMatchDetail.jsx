@@ -57,6 +57,7 @@ const PublicMatchDetail = () => {
   }, [orgId, matchId]);
 
   const teamAId = match?.teamA?._id?.toString() || match?.teamA?.toString();
+  const orgRef = org?.slug || orgId;
   const winnerSide = match?.winner ? (match.winner.toString() === teamAId ? 'A' : 'B') : null;
   const goals = match?.result?.goals;
   const schedulePieces = [match?.location, formatDateTimeLabel(match)].filter(Boolean);
@@ -110,14 +111,14 @@ const PublicMatchDetail = () => {
     }
     const divId = match?.division?._id || match?.division;
     if (divId) {
-      navigate(`/organizations/${orgId}/divisions/${divId}/public`, { state: { org } });
+      navigate(`/organizations/${orgRef}/divisions/${divId}/public`, { state: { org } });
       return;
     }
-    navigate(`/organizations/${orgId}/public`, { state: { org } });
+    navigate(org?.slug ? `/${org.slug}` : `/organizations/${orgId}/public`, { state: { org } });
   };
 
   return (
-    <PublicLayout orgId={orgId} orgName={org?.name} orgLogo={org?.logo} orgColor={org?.primaryColor} title="Detalle del partido">
+    <PublicLayout orgId={orgId} orgSlug={org?.slug} orgName={org?.name} orgLogo={org?.logo} orgColor={org?.primaryColor} title="Detalle del partido">
       <button onClick={handleBack} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-4">
         <Icon name="chevronLeft" size={14} /> Volver
       </button>
@@ -229,4 +230,3 @@ const PublicMatchDetail = () => {
 };
 
 export default PublicMatchDetail;
-

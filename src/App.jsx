@@ -55,6 +55,7 @@ const App = () => (
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/organizations/:id/public" element={<PublicOrganization />} />
+          <Route path="/:slug" element={<PublicOrganization />} />
           <Route path="/organizations/:orgId/competitions/:compId/public" element={<PublicCompetitionDetail />} />
           <Route path="/organizations/:orgId/divisions/:divId/public" element={<PublicDivisionDetail />} />
           <Route path="/organizations/:orgId/matches/:matchId/public" element={<PublicMatchDetail />} />

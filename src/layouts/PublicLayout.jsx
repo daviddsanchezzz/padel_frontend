@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 
-const PublicLayout = ({ orgId, orgName, orgLogo, orgColor, children }) => {
+const PublicLayout = ({ orgId, orgSlug, orgName, orgLogo, orgColor, children }) => {
   const color = orgColor || '#0b1d12';
+  const orgHomePath = orgSlug ? `/${orgSlug}` : `/organizations/${orgId}/public`;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -14,7 +15,7 @@ const PublicLayout = ({ orgId, orgName, orgLogo, orgColor, children }) => {
       <header className="bg-white border-b border-gray-100 flex-shrink-0">
         <div className="max-w-3xl mx-auto px-4 h-12 flex items-center gap-2">
           <Link
-            to={`/organizations/${orgId}/public`}
+            to={orgHomePath}
             state={{ org: { name: orgName, logo: orgLogo, primaryColor: color } }}
             className="flex items-center gap-2 hover:opacity-70 transition-opacity flex-shrink-0"
           >

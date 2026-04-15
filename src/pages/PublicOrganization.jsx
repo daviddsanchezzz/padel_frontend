@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Building2, ChevronRight } from 'lucide-react';
-import { getPublicOrganization } from '../api/organizations';
+import { getPublicOrganizationById, getPublicOrganizationBySlug } from '../api/organizations';
 import { SportIcon } from '../components/Icon';
 
 const TYPE_TABS = [
@@ -15,7 +15,7 @@ const Skeleton = ({ className }) => (
 );
 
 const PublicOrganization = () => {
-  const { id } = useParams();
+  const { id, slug } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const stateOrg = location.state?.org || null;
@@ -25,13 +25,26 @@ const PublicOrganization = () => {
   const [typeFilter, setTypeFilter] = useState(null);
 
   useEffect(() => {
+    const isLegacyIdRoute = Boolean(id);
+    const orgRef = isLegacyIdRoute ? id : slug;
+    if (!orgRef) return;
+
     setLoading(true);
     setError('');
-    getPublicOrganization(id)
-      .then((res) => setOrg(res.data))
+    const request = isLegacyIdRoute
+      ? getPublicOrganizationById(orgRef)
+      : getPublicOrganizationBySlug(orgRef);
+
+    request
+      .then((res) => {
+        setOrg(res.data);
+        if (isLegacyIdRoute && res.data?.slug) {
+          navigate(`/${res.data.slug}`, { replace: true, state: { org: res.data } });
+        }
+      })
       .catch((err) => setError(err.response?.data?.message || 'No se pudo cargar la pagina'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, slug, navigate]);
 
   if (error && !loading) {
     return (
@@ -61,7 +74,8 @@ const PublicOrganization = () => {
   const sportGroups = Object.entries(bySport).sort(([a], [b]) => a.localeCompare(b));
 
   const navigateToComp = (compId) => {
-    navigate(`/organizations/${id}/competitions/${compId}/public`, {
+    const orgRef = org?.slug || id || slug;
+    navigate(`/organizations/${orgRef}/competitions/${compId}/public`, {
       state: { org: { name: org.name, logo: org.logo, primaryColor: org.primaryColor } },
     });
   };

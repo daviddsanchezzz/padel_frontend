@@ -43,6 +43,7 @@ const PublicCompetitionDetail = () => {
   }, [orgId, compId]);
 
   const org = data?.org || stateOrg || { name: '' };
+  const orgRef = org.slug || orgId;
   const competition = data?.competition;
   const divisions = data?.divisions || [];
 
@@ -52,14 +53,14 @@ const PublicCompetitionDetail = () => {
   const dateRange = formatDateRange(competition?.startDate, competition?.endDate);
 
   const navigateToDiv = (divId) => {
-    navigate(`/organizations/${orgId}/divisions/${divId}/public`, {
+    navigate(`/organizations/${orgRef}/divisions/${divId}/public`, {
       state: { org },
     });
   };
 
   if (error && !loading && !data) {
     return (
-      <PublicLayout orgId={orgId} orgName={org.name} orgLogo={org.logo} orgColor={color}>
+      <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
         <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center shadow-sm">
           <p className="font-bold text-gray-900 mb-1">No disponible</p>
           <p className="text-sm text-gray-500">{error}</p>
@@ -71,6 +72,7 @@ const PublicCompetitionDetail = () => {
   return (
     <PublicLayout
       orgId={orgId}
+      orgSlug={org.slug}
       orgName={org.name}
       orgLogo={org.logo}
       orgColor={color}
@@ -78,7 +80,7 @@ const PublicCompetitionDetail = () => {
     >
       {/* Back */}
       <button
-        onClick={() => navigate(`/organizations/${orgId}/public`, { state: { org } })}
+        onClick={() => navigate(org.slug ? `/${org.slug}` : `/organizations/${orgId}/public`, { state: { org } })}
         className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-5"
       >
         <Icon name="chevronLeft" size={13} /> {org.name || '...'}
