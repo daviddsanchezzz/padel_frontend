@@ -816,9 +816,11 @@ const CompetitionDetail = () => {
       {showNewSeason && (
         <button
           onClick={() => navigate(`/competitions/${id}/new-season`)}
-          className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
+          className="btn-secondary text-[11px] md:text-xs py-1 md:py-1.5 flex-1 md:flex-none justify-center"
         >
-          <Icon name="calendar" size={13} /> + Temporada
+          <Icon name="calendar" size={12} />
+          <span className="md:hidden">Temporada</span>
+          <span className="hidden md:inline">+ Temporada</span>
         </button>
       )}
       <button
