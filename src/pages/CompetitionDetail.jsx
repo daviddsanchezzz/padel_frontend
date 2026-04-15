@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { getCompetition, updateCompetition } from '../api/competitions';
+import { getCompetition, updateCompetition, updateCompetitionSeason } from '../api/competitions';
 import { getDivisions, createDivision, deleteDivision, updateDivision } from '../api/divisions';
 import { getDivisionTeams, getCompetitionTeamsDetailed } from '../api/teams';
 import AppLayout from '../layouts/AppLayout';
@@ -619,6 +619,15 @@ const CompetitionDetail = () => {
   const [teamsDetailLoading, setTeamsDetailLoading] = useState(false);
   const [teamsDetailError, setTeamsDetailError] = useState('');
   const [activeSeasonLabel, setActiveSeasonLabel] = useState('');
+  const [showSeasonEditor, setShowSeasonEditor] = useState(false);
+  const [seasonSaving, setSeasonSaving] = useState(false);
+  const [seasonDraft, setSeasonDraft] = useState({
+    seasonId: '',
+    name: '',
+    startDate: '',
+    endDate: '',
+    isActive: true,
+  });
 
   const isOrganizer = user?.role === 'organizer' && competition?.organizer?.toString() === user?.id;
   const { activeOrg } = useOrg();
@@ -684,6 +693,69 @@ const CompetitionDetail = () => {
       setTeamsDetailError(err.response?.data?.message || 'No se pudo cargar el listado de equipos');
     } finally {
       setTeamsDetailLoading(false);
+    }
+  };
+
+  const refreshCompetitionContext = async () => {
+    const [competitionRes, divisionsRes] = await Promise.all([getCompetition(id), getDivisions(id)]);
+    setCompetition(competitionRes.data);
+    setDivisions(divisionsRes.data || []);
+    await reloadTeamsDetail();
+  };
+
+  const activeSeason = competition?.seasons?.find((s) => s.isActive) || null;
+
+  const openSeasonEditor = () => {
+    const baseSeason = activeSeason || competition?.seasons?.[0];
+    if (!baseSeason) return;
+    setSeasonDraft({
+      seasonId: baseSeason._id,
+      name: baseSeason.name || '',
+      startDate: baseSeason.startDate || '',
+      endDate: baseSeason.endDate || '',
+      isActive: !!baseSeason.isActive,
+    });
+    setShowSeasonEditor(true);
+  };
+
+  const syncSeasonDraft = (seasonId) => {
+    const next = competition?.seasons?.find((s) => String(s._id) === String(seasonId));
+    if (!next) return;
+    setSeasonDraft({
+      seasonId: next._id,
+      name: next.name || '',
+      startDate: next.startDate || '',
+      endDate: next.endDate || '',
+      isActive: !!next.isActive,
+    });
+  };
+
+  const handleSaveSeason = async () => {
+    if (!seasonDraft.seasonId) return;
+    const cleanName = seasonDraft.name.trim();
+    if (!cleanName) {
+      alert('El nombre de la temporada es obligatorio');
+      return;
+    }
+    if (seasonDraft.startDate && seasonDraft.endDate && seasonDraft.endDate < seasonDraft.startDate) {
+      alert('La fecha fin no puede ser menor que la fecha inicio');
+      return;
+    }
+
+    setSeasonSaving(true);
+    try {
+      await updateCompetitionSeason(id, seasonDraft.seasonId, {
+        name: cleanName,
+        startDate: seasonDraft.startDate || '',
+        endDate: seasonDraft.endDate || '',
+        isActive: !!seasonDraft.isActive,
+      });
+      await refreshCompetitionContext();
+      setShowSeasonEditor(false);
+    } catch (err) {
+      alert(err.response?.data?.message || 'No se pudo actualizar la temporada');
+    } finally {
+      setSeasonSaving(false);
     }
   };
 
@@ -819,6 +891,90 @@ const CompetitionDetail = () => {
         />
       )}
 
+      {showSeasonEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setShowSeasonEditor(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900">Editar temporada</h3>
+              <button
+                onClick={() => setShowSeasonEditor(false)}
+                className="w-8 h-8 rounded-md hover:bg-gray-100 text-gray-500 flex items-center justify-center"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Temporada</label>
+                <select
+                  value={seasonDraft.seasonId}
+                  onChange={(e) => syncSeasonDraft(e.target.value)}
+                  className="input text-sm"
+                >
+                  {(competition?.seasons || []).map((season) => (
+                    <option key={season._id} value={season._id}>
+                      {season.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Nombre</label>
+                <input
+                  value={seasonDraft.name}
+                  onChange={(e) => setSeasonDraft((prev) => ({ ...prev, name: e.target.value }))}
+                  className="input text-sm"
+                  placeholder="Ej: Temporada 2"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Inicio</label>
+                  <input
+                    type="date"
+                    value={seasonDraft.startDate}
+                    onChange={(e) => setSeasonDraft((prev) => ({ ...prev, startDate: e.target.value }))}
+                    className="input text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Fin</label>
+                  <input
+                    type="date"
+                    value={seasonDraft.endDate}
+                    min={seasonDraft.startDate || undefined}
+                    onChange={(e) => setSeasonDraft((prev) => ({ ...prev, endDate: e.target.value }))}
+                    className="input text-sm"
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={seasonDraft.isActive}
+                  onChange={(e) => setSeasonDraft((prev) => ({ ...prev, isActive: e.target.checked }))}
+                />
+                Marcar como temporada activa
+              </label>
+            </div>
+
+            <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-end gap-2">
+              <button onClick={() => setShowSeasonEditor(false)} disabled={seasonSaving} className="btn-secondary text-xs">
+                Cancelar
+              </button>
+              <button onClick={handleSaveSeason} disabled={seasonSaving} className="btn-primary text-xs">
+                {seasonSaving ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Divisions / Categories */}
       <div className="mb-4">
         <div className="flex items-start justify-between gap-3">
@@ -830,14 +986,25 @@ const CompetitionDetail = () => {
           {isLeague && competition.seasons && competition.seasons.length > 0 && (
             <div className="mt-2 flex items-center gap-2">
               <span className="text-xs text-gray-500">Temporada:</span>
-              <select 
-                value={competition.seasons.find(s => s.isActive)?.name || ''}
+              <select
+                value={activeSeason?._id || ''}
+                disabled
                 className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
               >
                 {competition.seasons.map((season) => (
-                  <option key={season.name} value={season.name}>{season.name}</option>
+                  <option key={season._id} value={season._id}>
+                    {season.name}
+                  </option>
                 ))}
               </select>
+              {isOrganizer && (
+                <button
+                  onClick={openSeasonEditor}
+                  className="btn-secondary text-[11px] py-1 px-2"
+                >
+                  Editar
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -9,3 +9,5 @@ export const deleteCompetition = (id)         => api.delete(`/competitions/${id}
 
 export const getNewSeasonPreview = (id)       => api.get(`/competitions/${id}/new-season/preview`);
 export const createNewSeason     = (id, data) => api.post(`/competitions/${id}/new-season`, data);
+export const updateCompetitionSeason = (competitionId, seasonId, data) =>
+  api.patch(`/competitions/${competitionId}/seasons/${seasonId}`, data);
