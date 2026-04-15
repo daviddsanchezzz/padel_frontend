@@ -99,13 +99,13 @@ const AppLayout = ({ children, title, actions }) => {
         ) : isOrganizer ? (
           <>
             <SectionLabel label="General" collapsed={collapsed} />
-            <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard"
+            <NavItem to="/resumen" icon={LayoutDashboard} label="Resumen"
               collapsed={collapsed} onClick={() => setMobileOpen(false)} />
 
             <SectionLabel label="Competiciones" collapsed={collapsed} />
-            <NavItem to="/dashboard?type=league"     icon={Medal}     label="Ligas"
+            <NavItem to="/dashboard?type=league"     icon={Medal}  label="Ligas"
               collapsed={collapsed} onClick={() => setMobileOpen(false)} exact />
-            <NavItem to="/dashboard?type=tournament" icon={Trophy}    label="Torneos"
+            <NavItem to="/dashboard?type=tournament" icon={Trophy} label="Torneos"
               collapsed={collapsed} onClick={() => setMobileOpen(false)} exact />
           </>
         ) : (

@@ -1,6 +1,7 @@
 import api from './axios';
 
 export const getCompetitions   = ()           => api.get('/competitions');
+export const getOrgSummary     = ()           => api.get('/competitions/summary');
 export const getPlayerCompetitions = ()       => api.get('/competitions/player');
 export const getCompetition    = (id)         => api.get(`/competitions/${id}`);
 export const createCompetition = (data)       => api.post('/competitions', data);

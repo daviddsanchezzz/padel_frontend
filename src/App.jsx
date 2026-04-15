@@ -16,6 +16,7 @@ import DivisionDetail    from './pages/DivisionDetail';
 import NewSeason         from './pages/NewSeason';
 import AdminPanel        from './pages/AdminPanel';
 import AdminUsers        from './pages/AdminUsers';
+import OrgSummary        from './pages/OrgSummary';
 import PlayerDashboard   from './pages/PlayerDashboard';
 import MatchDetail       from './pages/MatchDetail';
 import PublicOrganization        from './pages/PublicOrganization';
@@ -47,7 +48,7 @@ const RootRedirect = () => {
     return <Navigate to="/admin" replace />;
   }
   if (user.role === 'organizer') {
-    return <Navigate to={hasOrg ? '/dashboard' : '/onboarding'} replace />;
+    return <Navigate to={hasOrg ? '/resumen' : '/onboarding'} replace />;
   }
   return <Navigate to="/player" replace />;
 };
@@ -81,6 +82,11 @@ const App = () => (
           } />
 
           {/* Organizer — all require a club */}
+          <Route path="/resumen" element={
+            <ProtectedRoute requiredRole="organizer">
+              <RequireOrg><OrgSummary /></RequireOrg>
+            </ProtectedRoute>
+          } />
           <Route path="/dashboard" element={
             <ProtectedRoute requiredRole="organizer">
               <RequireOrg><Dashboard /></RequireOrg>
