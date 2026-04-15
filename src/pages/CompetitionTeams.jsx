@@ -92,7 +92,15 @@ const CompetitionTeams = () => {
 
   const startDivisionEdit = (team) => {
     setEditingTeamId(team._id);
-    setPendingDivisionId(team.division?._id || '');
+    if (team.division?._id) {
+      setPendingDivisionId(team.division._id);
+      return;
+    }
+    if (isLeague && divisions.length > 0) {
+      setPendingDivisionId(divisions[0]._id);
+      return;
+    }
+    setPendingDivisionId('');
   };
 
   const cancelDivisionEdit = () => {
@@ -104,13 +112,17 @@ const CompetitionTeams = () => {
     const nextDivisionId = pendingDivisionId;
     const nextDivision = divisions.find((d) => d._id === nextDivisionId);
     const currentDivisionId = team.division?._id || '';
+    if (isLeague && !nextDivisionId) {
+      alert('Debes seleccionar una division');
+      return;
+    }
     if (currentDivisionId === nextDivisionId) {
       cancelDivisionEdit();
       return;
     }
 
     const label = isLeague ? 'división' : 'categoría';
-    const nextLabel = nextDivision?.name || 'General';
+    const nextLabel = nextDivision?.name || (isLeague ? 'sin division' : 'General');
     const confirmed = window.confirm(`¿Estas seguro de mover este equipo a ${label} "${nextLabel}"?`);
     if (!confirmed) return;
 
@@ -224,9 +236,9 @@ const CompetitionTeams = () => {
                         value={pendingDivisionId}
                         onChange={(e) => setPendingDivisionId(e.target.value)}
                         disabled={savingTeamId === team._id}
-                        className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2.5 py-1.5 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                        className="text-[11px] border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
                       >
-                        <option value="">General</option>
+                        {!isLeague && <option value="">General</option>}
                         {divisions.map((division) => (
                           <option key={division._id} value={division._id}>{division.name}</option>
                         ))}
@@ -251,7 +263,7 @@ const CompetitionTeams = () => {
                   ) : (
                     <div className="flex items-center gap-2">
                       <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2.5 py-1 font-semibold">
-                        {team.division?.name || 'General'}
+                        {team.division?.name || (isLeague ? '-' : 'General')}
                       </span>
                       <button
                         onClick={() => startDivisionEdit(team)}
