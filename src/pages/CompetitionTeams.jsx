@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { getCompetition } from '../api/competitions';
-import { getCompetitionTeamsDetailed, updateTeamDivision } from '../api/teams';
+import { deleteTeam, getCompetitionTeamsDetailed, updateTeam, updateTeamDivision } from '../api/teams';
 import { getDivisions } from '../api/divisions';
 import { useAuth } from '../context/AuthContext';
 
@@ -21,6 +21,19 @@ const paymentStatusClass = (status) => {
   return 'bg-gray-100 text-gray-600';
 };
 
+const normalizeNamesFromTeam = (team, teamSize) => {
+  const fromPlayers = Array.isArray(team.players) ? team.players.map((p) => (p?.name || '').trim()).filter(Boolean) : [];
+  if (fromPlayers.length >= teamSize) return fromPlayers.slice(0, teamSize);
+
+  const fromTeamName = String(team.name || '')
+    .split('/')
+    .map((n) => n.trim())
+    .filter(Boolean);
+
+  const source = fromPlayers.length > 0 ? fromPlayers : fromTeamName;
+  return Array.from({ length: teamSize }, (_, i) => source[i] || '');
+};
+
 const CompetitionTeams = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -31,11 +44,16 @@ const CompetitionTeams = () => {
   const [divisions, setDivisions] = useState([]);
   const [activeSeason, setActiveSeason] = useState('');
   const [search, setSearch] = useState('');
-  const [savingTeamId, setSavingTeamId] = useState('');
-  const [editingTeamId, setEditingTeamId] = useState('');
-  const [pendingDivisionId, setPendingDivisionId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [menuTeamId, setMenuTeamId] = useState('');
+
+  const [editingTeam, setEditingTeam] = useState(null);
+  const [editingDivisionId, setEditingDivisionId] = useState('');
+  const [editingPlayerNames, setEditingPlayerNames] = useState([]);
+  const [editingTeamName, setEditingTeamName] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +65,7 @@ const CompetitionTeams = () => {
           getCompetitionTeamsDetailed(id),
         ]);
         const comp = competitionRes.data;
+
         if (!(user?.role === 'organizer' && comp?.organizer?.toString() === user?.id)) {
           setError('Solo el organizador puede ver esta pagina');
           setLoading(false);
@@ -78,6 +97,10 @@ const CompetitionTeams = () => {
     const sportName = (competition?.sport?.name || '').toLowerCase();
     return sportName.includes('padel') || sportName.includes('pádel');
   }, [competition?.sport?.name]);
+  const teamSize = useMemo(
+    () => Number(competition?.settings?.teamSize ?? competition?.sport?.teamSize ?? 2),
+    [competition?.settings?.teamSize, competition?.sport?.teamSize]
+  );
 
   const filteredTeams = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -90,60 +113,81 @@ const CompetitionTeams = () => {
     });
   }, [teams, search]);
 
-  const startDivisionEdit = (team) => {
-    setEditingTeamId(team._id);
-    if (team.division?._id) {
-      setPendingDivisionId(team.division._id);
-      return;
+  const openEditTeam = (team) => {
+    setMenuTeamId('');
+    setEditingTeam(team);
+    setEditingDivisionId(team.division?._id || '');
+
+    if (teamSize <= 2) {
+      setEditingPlayerNames(normalizeNamesFromTeam(team, teamSize));
+      setEditingTeamName('');
+    } else {
+      setEditingTeamName(team.name || '');
+      setEditingPlayerNames([]);
     }
-    if (isLeague && divisions.length > 0) {
-      setPendingDivisionId(divisions[0]._id);
-      return;
-    }
-    setPendingDivisionId('');
   };
 
-  const cancelDivisionEdit = () => {
-    setEditingTeamId('');
-    setPendingDivisionId('');
+  const closeEditTeam = () => {
+    setEditingTeam(null);
+    setEditingDivisionId('');
+    setEditingPlayerNames([]);
+    setEditingTeamName('');
+    setSavingEdit(false);
   };
 
-  const saveDivisionChange = async (team) => {
-    const nextDivisionId = pendingDivisionId;
-    const nextDivision = divisions.find((d) => d._id === nextDivisionId);
-    const currentDivisionId = team.division?._id || '';
-    if (isLeague && !nextDivisionId) {
-      alert('Debes seleccionar una division');
-      return;
-    }
-    if (currentDivisionId === nextDivisionId) {
-      cancelDivisionEdit();
-      return;
-    }
-
-    const label = isLeague ? 'división' : 'categoría';
-    const nextLabel = nextDivision?.name || (isLeague ? 'sin division' : 'General');
-    const confirmed = window.confirm(`¿Estas seguro de mover este equipo a ${label} "${nextLabel}"?`);
+  const handleDeleteTeam = async (team) => {
+    setMenuTeamId('');
+    const confirmed = window.confirm('¿Seguro que quieres eliminar este equipo?');
     if (!confirmed) return;
 
-    setSavingTeamId(team._id);
     try {
-      await updateTeamDivision(team._id, nextDivisionId || null);
-      setTeams((prev) => prev.map((t) => (
-        t._id === team._id
-          ? {
-              ...t,
-              division: nextDivision
-                ? { _id: nextDivision._id, name: nextDivision.name, order: nextDivision.order }
-                : null,
-            }
-          : t
-      )));
+      await deleteTeam(team._id);
+      setTeams((prev) => prev.filter((t) => t._id !== team._id));
     } catch (err) {
-      alert(err.response?.data?.message || 'No se pudo actualizar la división/categoría');
-    } finally {
-      setSavingTeamId('');
-      cancelDivisionEdit();
+      alert(err.response?.data?.message || 'No se pudo eliminar el equipo');
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTeam) return;
+
+    const payload = {};
+    if (teamSize <= 2) {
+      const names = editingPlayerNames.map((n) => n.trim()).filter(Boolean);
+      if (names.length !== teamSize) {
+        alert(`Debes indicar exactamente ${teamSize} ${teamSize === 1 ? 'jugador' : 'jugadores'}`);
+        return;
+      }
+      payload.playerNames = names;
+    } else {
+      const cleanName = editingTeamName.trim();
+      if (!cleanName) {
+        alert('El nombre del equipo es obligatorio');
+        return;
+      }
+      payload.name = cleanName;
+    }
+
+    if (isLeague && !editingDivisionId) {
+      alert('Debes seleccionar una división');
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      await updateTeam(editingTeam._id, payload);
+
+      const currentDivisionId = editingTeam.division?._id || '';
+      if (currentDivisionId !== editingDivisionId) {
+        await updateTeamDivision(editingTeam._id, editingDivisionId || null);
+      }
+
+      const detailRes = await getCompetitionTeamsDetailed(id);
+      setTeams(detailRes.data?.teams || []);
+      closeEditTeam();
+    } catch (err) {
+      alert(err.response?.data?.message || 'No se pudo guardar el equipo');
+      setSavingEdit(false);
     }
   };
 
@@ -172,7 +216,7 @@ const CompetitionTeams = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar equipo o email..."
-            className="w-full bg-white border border-gray-200 rounded-xl px-11 py-2.5 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full bg-white border border-gray-200 rounded-xl px-11 py-2 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -193,13 +237,14 @@ const CompetitionTeams = () => {
         </div>
       ) : (
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-          <div className="hidden md:grid grid-cols-[minmax(0,1fr)_220px] px-5 py-2.5 bg-gray-50 border-b border-gray-100">
+          <div className="hidden md:grid grid-cols-[minmax(0,1fr)_180px_72px] px-5 py-2.5 bg-gray-50 border-b border-gray-100">
             <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">Equipo</p>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 text-right">{isLeague ? 'División' : 'Categoría'}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">{isLeague ? 'División' : 'Categoría'}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 text-center">Acciones</p>
           </div>
 
           {filteredTeams.map((team) => (
-            <div key={team._id} className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] px-5 py-3.5 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/60 transition-colors">
+            <div key={team._id} className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_180px_72px] items-center px-5 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/60 transition-colors">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
                   <p className="font-semibold text-gray-900 truncate">{team.name}</p>
@@ -218,51 +263,99 @@ const CompetitionTeams = () => {
                 </div>
               </div>
 
-              <div className="mt-2 md:mt-0 flex md:justify-end">
-                {editingTeamId === team._id ? (
-                  <div className="flex items-center gap-1.5">
-                    <select
-                      value={pendingDivisionId}
-                      onChange={(e) => setPendingDivisionId(e.target.value)}
-                      disabled={savingTeamId === team._id}
-                      className="text-[11px] border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
-                    >
-                      {!isLeague && <option value="">General</option>}
-                      {divisions.map((division) => (
-                        <option key={division._id} value={division._id}>{division.name}</option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={() => saveDivisionChange(team)}
-                      disabled={savingTeamId === team._id}
-                      className="text-xs px-2 py-1 rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
-                    >
-                      Guardar
-                    </button>
-                    <button
-                      onClick={cancelDivisionEdit}
-                      disabled={savingTeamId === team._id}
-                      className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-60"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-1 font-semibold">
-                      {team.division?.name || (isLeague ? '-' : 'General')}
-                    </span>
-                    <button
-                      onClick={() => startDivisionEdit(team)}
-                      className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    >
-                      Mover
-                    </button>
+              <div className="hidden md:flex items-center">
+                <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-1 font-semibold">
+                  {team.division?.name || (isLeague ? '-' : 'General')}
+                </span>
+              </div>
+
+              <div className="relative flex justify-end md:justify-center">
+                <button
+                  onClick={() => setMenuTeamId((prev) => (prev === team._id ? '' : team._id))}
+                  className="w-8 h-8 rounded-md hover:bg-gray-100 text-gray-500 flex items-center justify-center"
+                >
+                  <Icon name="more" size={16} />
+                </button>
+                {menuTeamId === team._id && (
+                  <div className="absolute right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 top-9 z-20 w-36 bg-white border border-gray-200 rounded-lg shadow-xl py-1">
+                    <button onClick={() => openEditTeam(team)} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">Editar</button>
+                    <button onClick={() => handleDeleteTeam(team)} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">Eliminar</button>
                   </div>
                 )}
               </div>
+
+              <div className="md:hidden mt-2 col-span-2">
+                <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-1 font-semibold">
+                  {team.division?.name || (isLeague ? '-' : 'General')}
+                </span>
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {editingTeam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30" onClick={closeEditTeam} />
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900">Editar equipo</h3>
+              <button onClick={closeEditTeam} className="w-8 h-8 rounded-md hover:bg-gray-100 text-gray-500 flex items-center justify-center">×</button>
+            </div>
+
+            <div className="px-5 py-4 space-y-4">
+              {teamSize <= 2 ? (
+                <div className="space-y-2">
+                  {Array.from({ length: teamSize }, (_, idx) => (
+                    <div key={idx}>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Jugador {idx + 1}</label>
+                      <input
+                        value={editingPlayerNames[idx] || ''}
+                        onChange={(e) => {
+                          const next = [...editingPlayerNames];
+                          next[idx] = e.target.value;
+                          setEditingPlayerNames(next);
+                        }}
+                        className="input text-sm"
+                        placeholder={`Nombre del jugador ${idx + 1}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Nombre del equipo</label>
+                  <input
+                    value={editingTeamName}
+                    onChange={(e) => setEditingTeamName(e.target.value)}
+                    className="input text-sm"
+                    placeholder="Nombre del equipo"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">{isLeague ? 'División' : 'Categoría'}</label>
+                <select
+                  value={editingDivisionId}
+                  onChange={(e) => setEditingDivisionId(e.target.value)}
+                  className="input text-sm"
+                >
+                  {!isLeague && <option value="">General</option>}
+                  {divisions.map((division) => (
+                    <option key={division._id} value={division._id}>{division.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-end gap-2">
+              <button onClick={closeEditTeam} disabled={savingEdit} className="btn-secondary text-xs">Cancelar</button>
+              <button onClick={handleSaveEdit} disabled={savingEdit} className="btn-primary text-xs">
+                {savingEdit ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </AppLayout>
