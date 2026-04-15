@@ -818,7 +818,7 @@ const CompetitionDetail = () => {
           onClick={() => navigate(`/competitions/${id}/new-season`)}
           className="btn-secondary text-xs py-1.5 flex-1 md:flex-none justify-center"
         >
-          <Icon name="calendar" size={13} /> Temporada
+          <Icon name="calendar" size={13} /> + Temporada
         </button>
       )}
       <button
