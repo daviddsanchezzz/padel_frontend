@@ -69,7 +69,9 @@ const PublicCompetitionDetail = () => {
 
   const isLeague = competition?.type === 'league';
   const activeSeasonName = isLeague
-    ? (competition?.seasons || []).find((s) => s.isActive)?.name || ''
+    ? (competition?.seasons || []).find((s) => s.isActive)?.name
+      || competition?.seasons?.[0]?.name
+      || ''
     : '';
   const settings = competition?.settings || {};
   const color = org.primaryColor || '#0b1d12';
@@ -134,6 +136,11 @@ const PublicCompetitionDetail = () => {
             {competition.sport && (
               <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 uppercase tracking-wide">
                 {competition.sport.name}
+              </span>
+            )}
+            {isLeague && activeSeasonName && (
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                Temporada: {activeSeasonName}
               </span>
             )}
             {isLeague && settings.promotionSpots > 0 && (
