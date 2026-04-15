@@ -192,88 +192,74 @@ const CompetitionTeams = () => {
           <p className="text-sm text-gray-400">No hay equipos que coincidan con tu busqueda.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+          <div className="hidden md:grid grid-cols-[minmax(0,1fr)_220px] px-5 py-2.5 bg-gray-50 border-b border-gray-100">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">Equipo</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 text-right">{isLeague ? 'División' : 'Categoría'}</p>
+          </div>
+
           {filteredTeams.map((team) => (
-            <div key={team._id} className="bg-white border border-gray-100 rounded-2xl shadow-sm px-5 py-4 transition-all hover:shadow-md">
-              <div className="flex flex-col md:flex-row md:items-start gap-4">
-                <div className="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Icon name="team" size={14} />
+            <div key={team._id} className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] px-5 py-3.5 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/60 transition-colors">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="font-semibold text-gray-900 truncate">{team.name}</p>
+                  {paymentStatusLabel(team.paymentStatus) && (
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
+                      {paymentStatusLabel(team.paymentStatus)}
+                    </span>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-gray-900 truncate">{team.name}</p>
-                    {paymentStatusLabel(team.paymentStatus) && (
-                      <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
-                        {paymentStatusLabel(team.paymentStatus)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-2 flex items-center gap-2 flex-wrap text-xs text-gray-500">
-                    {!isPadelSport && (
-                      <span className="px-2 py-0.5 bg-gray-100 rounded-md">
-                        {team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}
-                      </span>
-                    )}
-                    {team.group && <span className="px-2 py-0.5 bg-gray-100 rounded-md">Grupo {team.group}</span>}
-                    {team.contactEmail && <span className="px-2 py-0.5 bg-gray-100 rounded-md truncate max-w-[240px]">{team.contactEmail}</span>}
-                  </div>
+                <div className="mt-1.5 flex items-center gap-2 flex-wrap text-xs text-gray-500">
+                  {!isPadelSport && (
+                    <span>{team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}</span>
+                  )}
+                  {team.group && <span>Grupo {team.group}</span>}
+                  {team.contactEmail && <span className="truncate max-w-[260px]">{team.contactEmail}</span>}
+                </div>
+              </div>
 
-                  {!isPadelSport && Array.isArray(team.players) && team.players.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {team.players.map((player, idx) => (
-                        <span key={`${team._id}-${idx}`} className="text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-lg">
-                          {player.name}{player.dorsal ? ` #${player.dorsal}` : ''}{player.userId ? ' (usuario)' : ''}
-                        </span>
+              <div className="mt-2 md:mt-0 flex md:justify-end">
+                {editingTeamId === team._id ? (
+                  <div className="flex items-center gap-1.5">
+                    <select
+                      value={pendingDivisionId}
+                      onChange={(e) => setPendingDivisionId(e.target.value)}
+                      disabled={savingTeamId === team._id}
+                      className="text-[11px] border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                    >
+                      {!isLeague && <option value="">General</option>}
+                      {divisions.map((division) => (
+                        <option key={division._id} value={division._id}>{division.name}</option>
                       ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="md:border-l md:border-gray-100 md:pl-4 flex flex-col items-start md:items-end gap-2 min-w-[200px]">
-                  {editingTeamId === team._id ? (
-                    <>
-                      <select
-                        value={pendingDivisionId}
-                        onChange={(e) => setPendingDivisionId(e.target.value)}
-                        disabled={savingTeamId === team._id}
-                        className="text-[11px] border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
-                      >
-                        {!isLeague && <option value="">General</option>}
-                        {divisions.map((division) => (
-                          <option key={division._id} value={division._id}>{division.name}</option>
-                        ))}
-                      </select>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => saveDivisionChange(team)}
-                          disabled={savingTeamId === team._id}
-                          className="text-xs px-2.5 py-1 rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
-                        >
-                          Guardar
-                        </button>
-                        <button
-                          onClick={cancelDivisionEdit}
-                          disabled={savingTeamId === team._id}
-                          className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-60"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2.5 py-1 font-semibold">
-                        {team.division?.name || (isLeague ? '-' : 'General')}
-                      </span>
-                      <button
-                        onClick={() => startDivisionEdit(team)}
-                        className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      >
-                        Mover
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    </select>
+                    <button
+                      onClick={() => saveDivisionChange(team)}
+                      disabled={savingTeamId === team._id}
+                      className="text-xs px-2 py-1 rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
+                    >
+                      Guardar
+                    </button>
+                    <button
+                      onClick={cancelDivisionEdit}
+                      disabled={savingTeamId === team._id}
+                      className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-60"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-md px-2 py-1 font-semibold">
+                      {team.division?.name || (isLeague ? '-' : 'General')}
+                    </span>
+                    <button
+                      onClick={() => startDivisionEdit(team)}
+                      className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    >
+                      Mover
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
