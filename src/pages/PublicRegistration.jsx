@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+﻿import { useEffect, useState } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, ChevronDown, MapPin, Calendar } from 'lucide-react';
-import { getPublicCompetition, registerForCompetition } from '../api/organizations';
+import { getPublicCompetition, getPublicCompetitionBySlugs, registerForCompetition } from '../api/organizations';
 import PublicLayout from '../layouts/PublicLayout';
 
 const Skeleton = ({ className }) => (
@@ -9,43 +9,58 @@ const Skeleton = ({ className }) => (
 );
 
 const PublicRegistration = () => {
-  const { orgId, compId } = useParams();
+  const { orgId, compId, orgSlug, competitionSlug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [data, setData]         = useState(null);
-  const [loading, setLoading]   = useState(true);
+  const isLegacyRoute = Boolean(orgId && compId);
+  const routeOrgRef = orgId || orgSlug;
+  const routeCompRef = compId || competitionSlug;
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
   const [divisionId, setDivisionId] = useState('');
-  const [players, setPlayers]       = useState([]);
-  const [email, setEmail]           = useState('');
+  const [players, setPlayers] = useState([]);
+  const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [success, setSuccess]       = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    getPublicCompetition(orgId, compId)
+    if (!routeOrgRef || !routeCompRef) return;
+    const request = isLegacyRoute
+      ? getPublicCompetition(routeOrgRef, routeCompRef)
+      : getPublicCompetitionBySlugs(routeOrgRef, routeCompRef);
+
+    request
       .then((res) => {
         setData(res.data);
-        // Auto-select if only one division
+        if (isLegacyRoute && res.data?.org?.slug && res.data?.competition?.publicSlug) {
+          const canonicalPath = `/${res.data.org.slug}/${res.data.competition.publicSlug}/inscripcion`;
+          if (location.pathname !== canonicalPath) {
+            navigate(canonicalPath, { replace: true, state: { org: res.data.org } });
+          }
+        }
         if (res.data.divisions?.length === 1) {
           setDivisionId(res.data.divisions[0]._id);
         }
       })
-      .catch(() => setLoadError('No se pudo cargar la competición'))
+      .catch(() => setLoadError('No se pudo cargar la competicion'))
       .finally(() => setLoading(false));
-  }, [orgId, compId]);
+  }, [routeOrgRef, routeCompRef, isLegacyRoute, navigate, location.pathname]);
 
-  const org         = data?.org || {};
-  const orgRef = org.slug || orgId;
+  const org = data?.org || {};
+  const orgRef = org.slug || routeOrgRef;
   const competition = data?.competition;
-  const divisions   = data?.divisions || [];
-  const color       = org.primaryColor || '#0b1d12';
+  const compRef = competition?.publicSlug || routeCompRef;
+  const divisions = data?.divisions || [];
+  const color = org.primaryColor || '#0b1d12';
 
   const selectedDiv = divisions.find((d) => d._id === divisionId);
-  const teamSize    = selectedDiv?.teamSize || competition?.sport?.teamSize || 2;
+  const teamSize = selectedDiv?.teamSize || competition?.sport?.teamSize || 2;
 
-  // Reset player fields when division / teamSize changes
   useEffect(() => {
     setPlayers(Array(teamSize).fill(''));
   }, [divisionId, teamSize]);
@@ -58,25 +73,32 @@ const PublicRegistration = () => {
     e.preventDefault();
     setSubmitError('');
 
-    if (!divisionId) { setSubmitError('Selecciona una categoría'); return; }
-    if (players.some((p) => !p.trim())) { setSubmitError('Rellena el nombre de todos los jugadores'); return; }
+    if (!divisionId) {
+      setSubmitError('Selecciona una categoria');
+      return;
+    }
+    if (players.some((p) => !p.trim())) {
+      setSubmitError('Rellena el nombre de todos los jugadores');
+      return;
+    }
 
     setSubmitting(true);
     try {
-      const res = await registerForCompetition(orgId, compId, {
+      const organizationId = org.id || routeOrgRef;
+      const competitionId = competition?._id || compId;
+      const res = await registerForCompetition(organizationId, competitionId, {
         divisionId,
         players: players.map((name) => ({ name: name.trim() })),
         contactEmail: email.trim() || undefined,
       });
+
       if (res.data.requiresPayment && res.data.checkoutUrl) {
-        // Paid registration → redirect to Stripe Checkout
         window.location.href = res.data.checkoutUrl;
       } else {
-        // Free registration → show success inline
         setSuccess(true);
       }
     } catch (err) {
-      setSubmitError(err.response?.data?.message || 'Error al inscribirse. Inténtalo de nuevo.');
+      setSubmitError(err.response?.data?.message || 'Error al inscribirse. Intentalo de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -84,7 +106,7 @@ const PublicRegistration = () => {
 
   if (loadError) {
     return (
-      <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
+      <PublicLayout orgId={routeOrgRef} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
         <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
           <p className="font-bold text-gray-900 mb-1">No disponible</p>
           <p className="text-sm text-gray-500">{loadError}</p>
@@ -95,25 +117,25 @@ const PublicRegistration = () => {
 
   if (success) {
     return (
-      <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
+      <PublicLayout orgId={routeOrgRef} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
         <div className="max-w-md mx-auto">
           <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
             <div className="w-14 h-14 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-4">
               <CheckCircle size={28} className="text-brand-600" />
             </div>
-            <h2 className="text-lg font-bold text-gray-900 mb-1">¡Inscripción completada!</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Inscripcion completada</h2>
             <p className="text-sm text-gray-500 mb-2">
               <span className="font-semibold text-gray-700">{players.join(' / ')}</span>
             </p>
             <p className="text-sm text-gray-400 mb-6">
-              Estás inscrito en <span className="font-semibold text-gray-700">{selectedDiv?.name}</span>.
-              El organizador se pondrá en contacto cuando haya novedades.
+              Estas inscrito en <span className="font-semibold text-gray-700">{selectedDiv?.name}</span>.
+              El organizador se pondra en contacto cuando haya novedades.
             </p>
             <button
-              onClick={() => navigate(`/organizations/${orgRef}/competitions/${compId}/public`)}
+              onClick={() => navigate(compRef ? `/${orgRef}/${compRef}` : `/organizations/${orgRef}/competitions/${compId}/public`)}
               className="text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
             >
-              Ver la competición →
+              Ver la competicion -&gt;
             </button>
           </div>
         </div>
@@ -122,13 +144,13 @@ const PublicRegistration = () => {
   }
 
   return (
-      <PublicLayout
-        orgId={orgId}
-        orgSlug={org.slug}
-        orgName={org.name}
+    <PublicLayout
+      orgId={routeOrgRef}
+      orgSlug={org.slug}
+      orgName={org.name}
       orgLogo={org.logo}
       orgColor={color}
-      title={loading ? undefined : `Inscripción · ${competition?.name}`}
+      title={loading ? undefined : `Inscripcion · ${competition?.name}`}
     >
       <div className="max-w-md mx-auto">
         {loading ? (
@@ -140,7 +162,7 @@ const PublicRegistration = () => {
           <>
             <h1 className="text-base font-bold text-gray-900 mb-1">{competition?.name}</h1>
             <p className="text-sm text-gray-400 mb-1">
-              {competition?.type === 'tournament' ? 'Inscripción al torneo' : 'Inscripción a la competición'}
+              {competition?.type === 'tournament' ? 'Inscripcion al torneo' : 'Inscripcion a la competicion'}
               {competition?.season ? ` · T. ${competition.season}` : ''}
             </p>
             {(competition?.location || competition?.startDate || competition?.endDate) && (
@@ -151,10 +173,14 @@ const PublicRegistration = () => {
                   </span>
                 )}
                 {(competition?.startDate || competition?.endDate) && (() => {
-                  const fmt = (v) => { if (!v) return ''; const [y,m,d] = v.split('-'); return `${d}/${m}/${y}`; };
+                  const fmt = (v) => {
+                    if (!v) return '';
+                    const [y, m, d] = v.split('-');
+                    return `${d}/${m}/${y}`;
+                  };
                   const from = fmt(competition.startDate);
                   const to = fmt(competition.endDate);
-                  const label = from && to ? `${from} – ${to}` : from || to;
+                  const label = from && to ? `${from} - ${to}` : from || to;
                   return label ? (
                     <span className="flex items-center gap-1 text-xs text-gray-500">
                       <Calendar size={12} className="text-gray-400" /> {label}
@@ -169,14 +195,10 @@ const PublicRegistration = () => {
             {!competition?.description && <div className="mb-6" />}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-
-              {/* Categoría */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
-                  Categoría
-                </label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Categoria</label>
                 {divisions.length === 0 ? (
-                  <p className="text-sm text-gray-400">No hay categorías disponibles.</p>
+                  <p className="text-sm text-gray-400">No hay categorias disponibles.</p>
                 ) : divisions.length === 1 ? (
                   <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-800">
                     {divisions[0].name}
@@ -189,7 +211,7 @@ const PublicRegistration = () => {
                       required
                       className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500 pr-10"
                     >
-                      <option value="">Selecciona una categoría…</option>
+                      <option value="">Selecciona una categoria...</option>
                       {divisions.map((d) => (
                         <option key={d._id} value={d._id}>{d.name}</option>
                       ))}
@@ -199,7 +221,6 @@ const PublicRegistration = () => {
                 )}
               </div>
 
-              {/* Jugadores */}
               {divisionId && (
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
@@ -211,11 +232,7 @@ const PublicRegistration = () => {
                         key={idx}
                         type="text"
                         required
-                        placeholder={
-                          teamSize === 1
-                            ? 'Nombre completo'
-                            : `Jugador ${idx + 1}`
-                        }
+                        placeholder={teamSize === 1 ? 'Nombre completo' : `Jugador ${idx + 1}`}
                         value={players[idx] || ''}
                         onChange={(e) => setPlayer(idx, e.target.value)}
                         className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -225,7 +242,6 @@ const PublicRegistration = () => {
                 </div>
               )}
 
-              {/* Email */}
               {divisionId && (
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
@@ -241,14 +257,12 @@ const PublicRegistration = () => {
                 </div>
               )}
 
-              {/* Error */}
               {submitError && (
                 <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">
                   {submitError}
                 </div>
               )}
 
-              {/* Submit */}
               {divisionId && (
                 <button
                   type="submit"
@@ -256,7 +270,7 @@ const PublicRegistration = () => {
                   className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-60"
                   style={{ backgroundColor: color }}
                 >
-                  {submitting ? 'Inscribiendo…' : 'Inscribirse'}
+                  {submitting ? 'Inscribiendo...' : 'Inscribirse'}
                 </button>
               )}
             </form>

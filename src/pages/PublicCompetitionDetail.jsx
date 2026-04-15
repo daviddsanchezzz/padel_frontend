@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { getPublicCompetition } from '../api/organizations';
+import { getPublicCompetition, getPublicCompetitionBySlugs } from '../api/organizations';
 import PublicLayout from '../layouts/PublicLayout';
 import Icon, { SportIcon } from '../components/Icon';
 
@@ -24,7 +24,7 @@ const formatDateRange = (startDate, endDate) => {
 };
 
 const PublicCompetitionDetail = () => {
-  const { orgId, compId } = useParams();
+  const { orgId, compId, orgSlug, competitionSlug } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,16 +35,36 @@ const PublicCompetitionDetail = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const isLegacyRoute = Boolean(orgId && compId);
+    const orgRef = isLegacyRoute ? orgId : orgSlug;
+    const competitionRef = isLegacyRoute ? compId : competitionSlug;
+    if (!orgRef || !competitionRef) return;
+
     setLoading(true);
-    getPublicCompetition(orgId, compId)
-      .then((res) => setData(res.data))
+    const request = isLegacyRoute
+      ? getPublicCompetition(orgRef, competitionRef)
+      : getPublicCompetitionBySlugs(orgRef, competitionRef);
+
+    request
+      .then((res) => {
+        setData(res.data);
+        const canonicalOrgSlug = res.data?.org?.slug;
+        const canonicalCompSlug = res.data?.competition?.publicSlug;
+        if (canonicalOrgSlug && canonicalCompSlug) {
+          const canonicalPath = `/${canonicalOrgSlug}/${canonicalCompSlug}`;
+          if (location.pathname !== canonicalPath) {
+            navigate(canonicalPath, { replace: true, state: { org: res.data.org } });
+          }
+        }
+      })
       .catch((err) => setError(err.response?.data?.message || 'No se pudo cargar la competicion'))
       .finally(() => setLoading(false));
-  }, [orgId, compId]);
+  }, [orgId, compId, orgSlug, competitionSlug, location.pathname, navigate]);
 
-  const org = data?.org || stateOrg || { name: '' };
-  const orgRef = org.slug || orgId;
   const competition = data?.competition;
+  const org = data?.org || stateOrg || { name: '' };
+  const orgRef = org.slug || orgId || orgSlug;
+  const compRef = competition?.publicSlug || compId || competitionSlug;
   const divisions = data?.divisions || [];
 
   const isLeague = competition?.type === 'league';
@@ -53,14 +73,17 @@ const PublicCompetitionDetail = () => {
   const dateRange = formatDateRange(competition?.startDate, competition?.endDate);
 
   const navigateToDiv = (divId) => {
-    navigate(`/organizations/${orgRef}/divisions/${divId}/public`, {
+    const nextPath = compRef
+      ? `/${orgRef}/${compRef}/divisiones/${divId}`
+      : `/organizations/${orgRef}/divisions/${divId}/public`;
+    navigate(nextPath, {
       state: { org },
     });
   };
 
   if (error && !loading && !data) {
     return (
-      <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
+      <PublicLayout orgId={orgRef} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
         <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center shadow-sm">
           <p className="font-bold text-gray-900 mb-1">No disponible</p>
           <p className="text-sm text-gray-500">{error}</p>
@@ -71,7 +94,7 @@ const PublicCompetitionDetail = () => {
 
   return (
     <PublicLayout
-      orgId={orgId}
+      orgId={orgRef}
       orgSlug={org.slug}
       orgName={org.name}
       orgLogo={org.logo}
@@ -80,7 +103,7 @@ const PublicCompetitionDetail = () => {
     >
       {/* Back */}
       <button
-        onClick={() => navigate(org.slug ? `/${org.slug}` : `/organizations/${orgId}/public`, { state: { org } })}
+        onClick={() => navigate(org.slug ? `/${org.slug}` : `/organizations/${orgRef}/public`, { state: { org } })}
         className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-5"
       >
         <Icon name="chevronLeft" size={13} /> {org.name || '...'}

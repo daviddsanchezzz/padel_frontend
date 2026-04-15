@@ -750,7 +750,7 @@ const CompetitionDetail = () => {
       {/* Invite modal */}
       {showInvite && (
         <InviteModal
-          url={`${window.location.origin}/organizations/${activeOrg?.slug || activeOrg?._id}/competitions/${id}/register`}
+          url={`${window.location.origin}/${activeOrg?.slug || activeOrg?._id}/${competition?.publicSlug || id}/inscripcion`}
           onClose={() => setShowInvite(false)}
         />
       )}

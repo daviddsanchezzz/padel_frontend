@@ -54,12 +54,16 @@ const App = () => (
           <Route path="/" element={<RootRedirect />} />
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/organizations/:id/public" element={<PublicOrganization />} />
-          <Route path="/:slug" element={<PublicOrganization />} />
           <Route path="/organizations/:orgId/competitions/:compId/public" element={<PublicCompetitionDetail />} />
           <Route path="/organizations/:orgId/divisions/:divId/public" element={<PublicDivisionDetail />} />
           <Route path="/organizations/:orgId/matches/:matchId/public" element={<PublicMatchDetail />} />
           <Route path="/organizations/:orgId/competitions/:compId/register" element={<PublicRegistration />} />
+          <Route path="/organizations/:id/public" element={<PublicOrganization />} />
+          <Route path="/:orgSlug/:competitionSlug/inscripcion" element={<PublicRegistration />} />
+          <Route path="/:orgSlug/:competitionSlug/divisiones/:divId" element={<PublicDivisionDetail />} />
+          <Route path="/:orgSlug/:competitionSlug/partidos/:matchId" element={<PublicMatchDetail />} />
+          <Route path="/:orgSlug/:competitionSlug" element={<PublicCompetitionDetail />} />
+          <Route path="/:slug" element={<PublicOrganization />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/cancel"  element={<PaymentCancel />} />
           <Route path="/connect/return"  element={<ProtectedRoute requiredRole="organizer"><ConnectReturn /></ProtectedRoute>} />

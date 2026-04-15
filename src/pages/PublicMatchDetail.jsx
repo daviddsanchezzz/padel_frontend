@@ -33,9 +33,10 @@ const EVENT_FEED_META = {
 };
 
 const PublicMatchDetail = () => {
-  const { orgId, matchId } = useParams();
+  const { orgId, orgSlug, compId, competitionSlug, matchId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const routeOrgRef = orgId || orgSlug;
 
   const [org, setOrg] = useState(location.state?.org || null);
   const [match, setMatch] = useState(null);
@@ -44,20 +45,28 @@ const PublicMatchDetail = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!routeOrgRef || !matchId) return;
     setLoading(true);
     setError('');
-    getPublicMatchDetail(orgId, matchId)
+    getPublicMatchDetail(routeOrgRef, matchId)
       .then((res) => {
         setOrg(res.data?.org || null);
         setMatch(res.data?.match || null);
         setEvents(Array.isArray(res.data?.events) ? res.data.events : []);
+        if (!competitionSlug && res.data?.org?.slug && res.data?.match?.competition?.publicSlug) {
+          const canonicalPath = `/${res.data.org.slug}/${res.data.match.competition.publicSlug}/partidos/${matchId}`;
+          if (location.pathname !== canonicalPath) {
+            navigate(canonicalPath, { replace: true, state: { org: res.data.org } });
+          }
+        }
       })
       .catch((err) => setError(err.response?.data?.message || 'No se pudo cargar el partido'))
       .finally(() => setLoading(false));
-  }, [orgId, matchId]);
+  }, [routeOrgRef, matchId, competitionSlug, navigate, location.pathname]);
 
   const teamAId = match?.teamA?._id?.toString() || match?.teamA?.toString();
-  const orgRef = org?.slug || orgId;
+  const orgRef = org?.slug || routeOrgRef;
+  const compRef = competitionSlug || match?.competition?.publicSlug || compId;
   const winnerSide = match?.winner ? (match.winner.toString() === teamAId ? 'A' : 'B') : null;
   const goals = match?.result?.goals;
   const schedulePieces = [match?.location, formatDateTimeLabel(match)].filter(Boolean);
@@ -111,14 +120,17 @@ const PublicMatchDetail = () => {
     }
     const divId = match?.division?._id || match?.division;
     if (divId) {
-      navigate(`/organizations/${orgRef}/divisions/${divId}/public`, { state: { org } });
+      navigate(
+        compRef ? `/${orgRef}/${compRef}/divisiones/${divId}` : `/organizations/${orgRef}/divisions/${divId}/public`,
+        { state: { org } }
+      );
       return;
     }
-    navigate(org?.slug ? `/${org.slug}` : `/organizations/${orgId}/public`, { state: { org } });
+    navigate(org?.slug ? `/${org.slug}` : `/organizations/${orgRef}/public`, { state: { org } });
   };
 
   return (
-    <PublicLayout orgId={orgId} orgSlug={org?.slug} orgName={org?.name} orgLogo={org?.logo} orgColor={org?.primaryColor} title="Detalle del partido">
+    <PublicLayout orgId={routeOrgRef} orgSlug={org?.slug} orgName={org?.name} orgLogo={org?.logo} orgColor={org?.primaryColor} title="Detalle del partido">
       <button onClick={handleBack} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-4">
         <Icon name="chevronLeft" size={14} /> Volver
       </button>

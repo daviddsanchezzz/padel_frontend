@@ -313,7 +313,7 @@ const PublicGroups = ({ groups, scoringType, teamsAdvancing, eventModeEnabled, o
 
 /* ── Main page ──────────────────────────────────────────────── */
 const PublicDivisionDetail = () => {
-  const { orgId, divId } = useParams();
+  const { orgId, orgSlug, compId, competitionSlug, divId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -328,16 +328,28 @@ const PublicDivisionDetail = () => {
     if (location.state?.tab) setTab(location.state.tab);
   }, [location.state]);
 
+  const routeOrgRef = orgId || orgSlug;
+
   useEffect(() => {
+    if (!routeOrgRef || !divId) return;
     setLoading(true);
-    getPublicDivision(orgId, divId)
-      .then((res) => setData(res.data))
+    getPublicDivision(routeOrgRef, divId)
+      .then((res) => {
+        setData(res.data);
+        if (!competitionSlug && res.data?.org?.slug && res.data?.division?.competition?.publicSlug) {
+          const canonicalPath = `/${res.data.org.slug}/${res.data.division.competition.publicSlug}/divisiones/${divId}`;
+          if (location.pathname !== canonicalPath) {
+            navigate(canonicalPath, { replace: true, state: { org: res.data.org } });
+          }
+        }
+      })
       .catch((err) => setError(err.response?.data?.message || 'No se pudo cargar la division'))
       .finally(() => setLoading(false));
-  }, [orgId, divId]);
+  }, [routeOrgRef, divId, competitionSlug, navigate, location.pathname]);
 
   const org        = data?.org || stateOrg || { name: '' };
-  const orgRef = org.slug || orgId;
+  const orgRef = org.slug || routeOrgRef;
+  const compRef = competitionSlug || data?.division?.competition?.publicSlug || compId;
   const color      = org.primaryColor || '#0b1d12';
   const division   = data?.division;
   const competition = division?.competition;
@@ -403,14 +415,20 @@ const PublicDivisionDetail = () => {
     return acc;
   }, {});
   const rounds = Object.keys(matchesByRound).map(Number).sort((a, b) => a - b);
-  const compId = competition?._id;
+  const competitionId = competition?._id;
 
   const openPublicMatchDetail = (id, state = {}) => {
-    navigate(`/organizations/${orgRef}/matches/${id}/public`, {
+    const nextPath = compRef
+      ? `/${orgRef}/${compRef}/partidos/${id}`
+      : `/organizations/${orgRef}/matches/${id}/public`;
+    const backPath = compRef
+      ? `/${orgRef}/${compRef}/divisiones/${divId}`
+      : `/organizations/${orgRef}/divisions/${divId}/public`;
+    navigate(nextPath, {
       state: {
         org,
         backTo: {
-          pathname: `/organizations/${orgRef}/divisions/${divId}/public`,
+          pathname: backPath,
           state,
         },
       },
@@ -419,7 +437,7 @@ const PublicDivisionDetail = () => {
 
   if (error && !loading && !data) {
     return (
-      <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
+      <PublicLayout orgId={routeOrgRef} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}>
         <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center shadow-sm">
           <p className="font-bold text-gray-900 mb-1">No disponible</p>
           <p className="text-sm text-gray-500">{error}</p>
@@ -429,13 +447,13 @@ const PublicDivisionDetail = () => {
   }
 
   return (
-    <PublicLayout orgId={orgId} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}
+    <PublicLayout orgId={routeOrgRef} orgSlug={org.slug} orgName={org.name} orgLogo={org.logo} orgColor={color}
       title={loading ? undefined : `${competition?.name} · ${division?.name}`}
     >
       {/* Breadcrumb */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <button
-          onClick={() => navigate(`/organizations/${orgRef}/competitions/${compId}/public`, { state: { org } })}
+          onClick={() => navigate(compRef ? `/${orgRef}/${compRef}` : `/organizations/${orgRef}/competitions/${competitionId || compId}/public`, { state: { org } })}
           className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors"
         >
           <Icon name="chevronLeft" size={13} />
@@ -447,7 +465,10 @@ const PublicDivisionDetail = () => {
             {allDivisions.map((d) => (
               <button
                 key={d._id}
-                onClick={() => navigate(`/organizations/${orgRef}/divisions/${d._id}/public`, { state: { org } })}
+                onClick={() => navigate(
+                  compRef ? `/${orgRef}/${compRef}/divisiones/${d._id}` : `/organizations/${orgRef}/divisions/${d._id}/public`,
+                  { state: { org } }
+                )}
                 className="text-xs px-3 py-1 rounded-full font-semibold transition-colors border"
                 style={d._id === divId
                   ? { backgroundColor: color, color: '#fff', borderColor: color }

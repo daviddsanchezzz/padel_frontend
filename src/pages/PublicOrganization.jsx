@@ -75,7 +75,12 @@ const PublicOrganization = () => {
 
   const navigateToComp = (compId) => {
     const orgRef = org?.slug || id || slug;
-    navigate(`/organizations/${orgRef}/competitions/${compId}/public`, {
+    const competition = comps.find((item) => item._id === compId);
+    const compRef = competition?.publicSlug || compId;
+    const path = competition?.publicSlug
+      ? `/${orgRef}/${compRef}`
+      : `/organizations/${orgRef}/competitions/${compRef}/public`;
+    navigate(path, {
       state: { org: { name: org.name, slug: org.slug, logo: org.logo, primaryColor: org.primaryColor } },
     });
   };
