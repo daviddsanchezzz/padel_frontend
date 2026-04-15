@@ -68,6 +68,9 @@ const PublicCompetitionDetail = () => {
   const divisions = data?.divisions || [];
 
   const isLeague = competition?.type === 'league';
+  const activeSeasonName = isLeague
+    ? (competition?.seasons || []).find((s) => s.isActive)?.name || ''
+    : '';
   const settings = competition?.settings || {};
   const color = org.primaryColor || '#0b1d12';
   const dateRange = formatDateRange(competition?.startDate, competition?.endDate);
