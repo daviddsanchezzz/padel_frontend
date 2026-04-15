@@ -23,6 +23,7 @@ const Register = () => {
       email: form.email,
       password: form.password,
       role: competitionId ? 'player' : form.role,
+      rememberMe: true,
     });
 
     setLoading(false);

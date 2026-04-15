@@ -19,6 +19,7 @@ const Login = () => {
     const { data, error: authError } = await authClient.signIn.email({
       email: form.email,
       password: form.password,
+      rememberMe: true,
     });
 
     setLoading(false);
