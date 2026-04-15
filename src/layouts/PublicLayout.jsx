@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 
-const PublicLayout = ({ orgId, orgName, orgLogo, orgColor, title, children }) => {
+const PublicLayout = ({ orgId, orgName, orgLogo, orgColor, children }) => {
   const color = orgColor || '#0b1d12';
 
   return (
@@ -28,12 +28,6 @@ const PublicLayout = ({ orgId, orgName, orgLogo, orgColor, title, children }) =>
             <span className="font-semibold text-gray-800 text-sm">{orgName}</span>
           </Link>
 
-          {title && (
-            <>
-              <span className="text-gray-300 text-sm select-none flex-shrink-0">/</span>
-              <span className="text-sm text-gray-500 truncate min-w-0">{title}</span>
-            </>
-          )}
         </div>
       </header>
 
