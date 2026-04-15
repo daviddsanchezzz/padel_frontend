@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { getCompetition, updateCompetition } from '../api/competitions';
 import { getDivisions, createDivision, deleteDivision, updateDivision } from '../api/divisions';
@@ -619,7 +619,6 @@ const CompetitionDetail = () => {
   const [teamsDetailLoading, setTeamsDetailLoading] = useState(false);
   const [teamsDetailError, setTeamsDetailError] = useState('');
   const [activeSeasonLabel, setActiveSeasonLabel] = useState('');
-  const teamsSectionRef = useRef(null);
 
   const isOrganizer = user?.role === 'organizer' && competition?.organizer?.toString() === user?.id;
   const { activeOrg } = useOrg();
@@ -844,7 +843,7 @@ const CompetitionDetail = () => {
         {isOrganizer && (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => teamsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              onClick={() => navigate(`/competitions/${id}/teams`)}
               className="btn-secondary text-xs py-1.5"
             >
               <Icon name="team" size={13} /> Ver todos los equipos
@@ -955,8 +954,8 @@ const CompetitionDetail = () => {
         </div>
       )}
 
-      {isOrganizer && (
-        <div ref={teamsSectionRef} className="mt-6">
+      {false && (
+        <div className="mt-6">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Equipos de la competicion</h3>

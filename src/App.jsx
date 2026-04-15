@@ -11,6 +11,7 @@ import OrganizationSettings   from './pages/OrganizationSettings';
 import Dashboard         from './pages/Dashboard';
 import CompetitionForm   from './pages/CompetitionForm';
 import CompetitionDetail from './pages/CompetitionDetail';
+import CompetitionTeams from './pages/CompetitionTeams';
 import DivisionDetail    from './pages/DivisionDetail';
 import NewSeason         from './pages/NewSeason';
 import PlayerDashboard   from './pages/PlayerDashboard';
@@ -87,6 +88,9 @@ const App = () => (
           } />
           <Route path="/competitions/:id" element={
             <ProtectedRoute><CompetitionDetail /></ProtectedRoute>
+          } />
+          <Route path="/competitions/:id/teams" element={
+            <ProtectedRoute requiredRole="organizer"><CompetitionTeams /></ProtectedRoute>
           } />
           <Route path="/divisions/:id" element={
             <ProtectedRoute><DivisionDetail /></ProtectedRoute>
