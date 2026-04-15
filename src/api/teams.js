@@ -11,5 +11,6 @@ export const createCompetitionTeam = (competitionId, data) => api.post(`/competi
 
 // Shared
 export const updateTeam = (id, data) => api.put(`/teams/${id}`, data);
+export const updateTeamDivision = (id, divisionId) => api.patch(`/teams/${id}/division`, { divisionId });
 export const deleteTeam = (id)       => api.delete(`/teams/${id}`);
 export const joinTeam   = (id, data) => api.post(`/teams/${id}/join`, data);

@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import Icon from '../components/Icon';
 import { getCompetition } from '../api/competitions';
-import { getCompetitionTeamsDetailed } from '../api/teams';
+import { getCompetitionTeamsDetailed, updateTeamDivision } from '../api/teams';
+import { getDivisions } from '../api/divisions';
 import { useAuth } from '../context/AuthContext';
 
 const paymentStatusLabel = (status) => {
@@ -27,7 +28,10 @@ const CompetitionTeams = () => {
 
   const [competition, setCompetition] = useState(null);
   const [teams, setTeams] = useState([]);
+  const [divisions, setDivisions] = useState([]);
   const [activeSeason, setActiveSeason] = useState('');
+  const [search, setSearch] = useState('');
+  const [savingTeamId, setSavingTeamId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -50,6 +54,13 @@ const CompetitionTeams = () => {
         setCompetition(comp);
         setTeams(teamsRes.data?.teams || []);
         setActiveSeason(teamsRes.data?.activeSeason || '');
+
+        try {
+          const divisionsRes = await getDivisions(id);
+          setDivisions(divisionsRes.data || []);
+        } catch {
+          setDivisions([]);
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'No se pudo cargar el listado de equipos');
       } finally {
@@ -65,6 +76,44 @@ const CompetitionTeams = () => {
     const sportName = (competition?.sport?.name || '').toLowerCase();
     return sportName.includes('padel') || sportName.includes('pádel');
   }, [competition?.sport?.name]);
+
+  const filteredTeams = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return teams;
+    return teams.filter((team) => {
+      const nameMatch = (team.name || '').toLowerCase().includes(term);
+      const divisionMatch = (team.division?.name || '').toLowerCase().includes(term);
+      const emailMatch = (team.contactEmail || '').toLowerCase().includes(term);
+      return nameMatch || divisionMatch || emailMatch;
+    });
+  }, [teams, search]);
+
+  const handleDivisionChange = async (team, nextDivisionId) => {
+    const nextDivision = divisions.find((d) => d._id === nextDivisionId);
+    const label = isLeague ? 'división' : 'categoría';
+    const nextLabel = nextDivision?.name || 'General';
+    const confirmed = window.confirm(`¿Estas seguro de mover este equipo a ${label} "${nextLabel}"?`);
+    if (!confirmed) return;
+
+    setSavingTeamId(team._id);
+    try {
+      await updateTeamDivision(team._id, nextDivisionId || null);
+      setTeams((prev) => prev.map((t) => (
+        t._id === team._id
+          ? {
+              ...t,
+              division: nextDivision
+                ? { _id: nextDivision._id, name: nextDivision.name, order: nextDivision.order }
+                : null,
+            }
+          : t
+      )));
+    } catch (err) {
+      alert(err.response?.data?.message || 'No se pudo actualizar la división/categoría');
+    } finally {
+      setSavingTeamId('');
+    }
+  };
 
   return (
     <AppLayout title="Todos los equipos">
@@ -84,6 +133,18 @@ const CompetitionTeams = () => {
         </div>
       )}
 
+      <div className="mb-4">
+        <div className="relative max-w-md">
+          <Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar equipo, división/categoría o email..."
+            className="input pl-9 text-sm"
+          />
+        </div>
+      </div>
+
       {loading ? (
         <div className="card p-10 text-center">
           <Icon name="spinner" size={20} className="animate-spin text-brand-500 mx-auto mb-2" />
@@ -93,14 +154,14 @@ const CompetitionTeams = () => {
         <div className="card p-6 text-center border-red-100 bg-red-50">
           <p className="text-sm text-red-600">{error}</p>
         </div>
-      ) : teams.length === 0 ? (
+      ) : filteredTeams.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="font-semibold text-gray-800 mb-1">Sin equipos registrados</p>
-          <p className="text-sm text-gray-400">Aun no hay equipos en esta competicion.</p>
+          <p className="font-semibold text-gray-800 mb-1">Sin resultados</p>
+          <p className="text-sm text-gray-400">No hay equipos que coincidan con tu busqueda.</p>
         </div>
       ) : (
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-100">
-          {teams.map((team) => (
+          {filteredTeams.map((team) => (
             <div key={team._id} className="px-4 py-4 hover:bg-gray-50/70 transition-colors">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -116,9 +177,6 @@ const CompetitionTeams = () => {
                     )}
                   </div>
                   <div className="mt-2 flex items-center gap-2 flex-wrap text-xs text-gray-500">
-                    <span className="px-2.5 py-0.5 bg-brand-100 text-brand-800 rounded-md font-semibold">
-                      {isLeague ? 'Division' : 'Categoria'}: {team.division?.name || 'General'}
-                    </span>
                     {!isPadelSport && (
                       <span className="px-2 py-0.5 bg-gray-100 rounded-md">
                         {team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}
@@ -138,9 +196,26 @@ const CompetitionTeams = () => {
                     </div>
                   )}
                 </div>
-                <span className="text-[11px] text-gray-400 whitespace-nowrap mt-1">
-                  {new Date(team.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                </span>
+
+                <div className="flex flex-col items-end gap-2 min-w-[180px]">
+                  <label className="text-[11px] font-semibold text-gray-500">
+                    {isLeague ? 'División' : 'Categoría'}
+                  </label>
+                  <select
+                    value={team.division?._id || ''}
+                    onChange={(e) => handleDivisionChange(team, e.target.value)}
+                    disabled={savingTeamId === team._id}
+                    className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                  >
+                    <option value="">General</option>
+                    {divisions.map((division) => (
+                      <option key={division._id} value={division._id}>{division.name}</option>
+                    ))}
+                  </select>
+                  <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                    {new Date(team.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </span>
+                </div>
               </div>
             </div>
           ))}
