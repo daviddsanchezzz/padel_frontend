@@ -17,8 +17,8 @@ export const AuthProvider = ({ children }) => {
     authClient.signIn.social({ provider: 'google', callbackURL });
 
   const logout = async () => {
-    await authClient.signOut();
-    window.location.href = '/login';
+    const { error } = await authClient.signOut();
+    if (error) throw new Error(error.message || 'No se pudo cerrar sesión');
   };
 
   return (

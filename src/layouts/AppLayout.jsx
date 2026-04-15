@@ -1,13 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+﻿import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useOrg } from '../context/OrgContext';
 import {
-  LayoutDashboard, Medal, Trophy, GitMerge, User, Users, SlidersHorizontal, LogOut,
+  LayoutDashboard, Medal, Trophy, User, Users, SlidersHorizontal, LogOut,
   ChevronDown, ChevronUp,
   PanelLeftClose, PanelLeftOpen, Menu,
 } from 'lucide-react';
 
-// ── Nav item ─────────────────────────────────────────────────────────────────
+// Nav item
 // `exact`: match only when pathname+search match exactly
 const NavItem = ({ to, icon: IconComp, label, collapsed, onClick, exact = false }) => {
   const location = useLocation();
@@ -44,13 +45,12 @@ const SectionLabel = ({ label, collapsed }) =>
     ? <div className="my-2 border-t border-sidebar-border" />
     : <p className="mt-4 mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-sidebar-label">{label}</p>;
 
-// ── Layout ────────────────────────────────────────────────────────────────────
 const AppLayout = ({ children, title, actions }) => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { activeOrg } = useOrg();
   const location = useLocation();
-  const [collapsed, setCollapsed]     = useState(false);
-  const [mobileOpen, setMobileOpen]   = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
@@ -62,30 +62,49 @@ const AppLayout = ({ children, title, actions }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      window.location.assign('/login');
+    }
+  };
+
   const isOrganizer = user?.role === 'organizer';
   const isAdmin = user?.role === 'admin';
+  const sidebarSubtitle = isOrganizer
+    ? (activeOrg?.name || 'Sin organización')
+    : (isAdmin ? 'Panel admin' : 'Panel jugador');
+
   const initials = user?.name
     ? user.name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
     : '?';
 
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ backgroundColor: '#0b1d12' }}>
-
       {/* Logo */}
-      <div className={`flex items-center gap-3 py-5 border-b transition-all duration-200 ${collapsed ? 'justify-center px-3' : 'px-5'}`}
-        style={{ borderColor: '#1c3325' }}>
+      <div
+        className={`flex items-center gap-3 py-5 border-b transition-all duration-200 ${collapsed ? 'justify-center px-3' : 'px-5'}`}
+        style={{ borderColor: '#1c3325' }}
+      >
         <div className="w-8 h-8 bg-brand-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
           <Trophy size={15} className="text-white" />
         </div>
         {!collapsed && (
-          <div>
+          <div className="min-w-0">
             <p className="text-white font-bold text-[15px] leading-none tracking-tight">PádelLeague</p>
-            <p className="text-sidebar-textDim text-[10px] font-medium mt-1">
-              {isAdmin ? 'Panel admin' : (isOrganizer ? 'Panel organizador' : 'Panel jugador')}
-            </p>
+            <p className="text-sidebar-textDim text-[10px] font-medium mt-1 truncate">{sidebarSubtitle}</p>
           </div>
         )}
+
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          className="hidden md:flex ml-auto w-6 h-6 items-center justify-center rounded-md text-sidebar-textDim hover:text-sidebar-text hover:bg-sidebar-hover transition-colors"
+          title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+          aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+        >
+          {collapsed ? <PanelLeftOpen size={13} /> : <PanelLeftClose size={13} />}
+        </button>
       </div>
 
       {/* Nav */}
@@ -93,20 +112,17 @@ const AppLayout = ({ children, title, actions }) => {
         {isAdmin ? (
           <>
             <SectionLabel label="Administración" collapsed={collapsed} />
-            <NavItem to="/admin"        icon={LayoutDashboard} label="Organizaciones" collapsed={collapsed} onClick={() => setMobileOpen(false)} />
-            <NavItem to="/admin/users"  icon={Users}           label="Usuarios"       collapsed={collapsed} onClick={() => setMobileOpen(false)} />
+            <NavItem to="/admin" icon={LayoutDashboard} label="Organizaciones" collapsed={collapsed} onClick={() => setMobileOpen(false)} />
+            <NavItem to="/admin/users" icon={Users} label="Usuarios" collapsed={collapsed} onClick={() => setMobileOpen(false)} />
           </>
         ) : isOrganizer ? (
           <>
             <SectionLabel label="General" collapsed={collapsed} />
-            <NavItem to="/resumen" icon={LayoutDashboard} label="Resumen"
-              collapsed={collapsed} onClick={() => setMobileOpen(false)} />
+            <NavItem to="/resumen" icon={LayoutDashboard} label="Resumen" collapsed={collapsed} onClick={() => setMobileOpen(false)} />
 
             <SectionLabel label="Competiciones" collapsed={collapsed} />
-            <NavItem to="/dashboard?type=league"     icon={Medal}  label="Ligas"
-              collapsed={collapsed} onClick={() => setMobileOpen(false)} exact />
-            <NavItem to="/dashboard?type=tournament" icon={Trophy} label="Torneos"
-              collapsed={collapsed} onClick={() => setMobileOpen(false)} exact />
+            <NavItem to="/dashboard?type=league" icon={Medal} label="Ligas" collapsed={collapsed} onClick={() => setMobileOpen(false)} exact />
+            <NavItem to="/dashboard?type=tournament" icon={Trophy} label="Torneos" collapsed={collapsed} onClick={() => setMobileOpen(false)} exact />
           </>
         ) : (
           <>
@@ -119,7 +135,6 @@ const AppLayout = ({ children, title, actions }) => {
 
       {/* Bottom */}
       <div className="px-2 pb-2 space-y-0.5" style={{ borderTop: '1px solid #1c3325', paddingTop: '8px', marginTop: '4px' }}>
-
         {/* Settings — only for organizers */}
         {isOrganizer && (
           <NavItem
@@ -144,13 +159,6 @@ const AppLayout = ({ children, title, actions }) => {
               }}
             >
               <button
-                onClick={() => setProfileOpen(false)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-sidebar-text hover:bg-sidebar-hover hover:text-white transition-colors"
-              >
-                <User size={14} /> Perfil
-              </button>
-              <div style={{ height: 1, backgroundColor: '#1c3325' }} />
-              <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors text-red-400 hover:bg-red-950/30"
               >
@@ -163,8 +171,10 @@ const AppLayout = ({ children, title, actions }) => {
             onClick={() => setProfileOpen(!profileOpen)}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-sidebar-hover group ${collapsed ? 'justify-center' : ''} ${profileOpen ? 'bg-sidebar-hover' : ''}`}
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold shadow-sm"
-              style={{ background: 'linear-gradient(135deg, #1e9e6a, #116644)' }}>
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold shadow-sm"
+              style={{ background: 'linear-gradient(135deg, #1e9e6a, #116644)' }}
+            >
               {initials}
             </div>
             {!collapsed && (
@@ -178,17 +188,6 @@ const AppLayout = ({ children, title, actions }) => {
             )}
           </button>
         </div>
-
-        {/* Collapse toggle */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className={`hidden md:flex w-full items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors text-sidebar-textDim hover:text-sidebar-text hover:bg-sidebar-hover ${collapsed ? 'justify-center' : ''}`}
-        >
-          <span className="flex-shrink-0 w-[18px] flex items-center justify-center">
-            {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
-          </span>
-          {!collapsed && <span className="text-xs font-medium">Colapsar</span>}
-        </button>
       </div>
     </div>
   );
