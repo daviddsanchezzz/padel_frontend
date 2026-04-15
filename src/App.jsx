@@ -15,6 +15,7 @@ import CompetitionTeams from './pages/CompetitionTeams';
 import DivisionDetail    from './pages/DivisionDetail';
 import NewSeason         from './pages/NewSeason';
 import AdminPanel        from './pages/AdminPanel';
+import AdminUsers        from './pages/AdminUsers';
 import PlayerDashboard   from './pages/PlayerDashboard';
 import MatchDetail       from './pages/MatchDetail';
 import PublicOrganization        from './pages/PublicOrganization';
@@ -116,6 +117,9 @@ const App = () => (
           {/* Admin */}
           <Route path="/admin" element={
             <ProtectedRoute requiredRole="admin"><AdminPanel /></ProtectedRoute>
+          } />
+          <Route path="/admin/users" element={
+            <ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>
           } />
 
           {/* Player */}

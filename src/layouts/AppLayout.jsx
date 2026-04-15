@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard, Medal, Trophy, GitMerge, User, SlidersHorizontal, LogOut,
+  LayoutDashboard, Medal, Trophy, GitMerge, User, Users, SlidersHorizontal, LogOut,
   ChevronDown, ChevronUp,
   PanelLeftClose, PanelLeftOpen, Menu,
 } from 'lucide-react';
@@ -93,13 +93,8 @@ const AppLayout = ({ children, title, actions }) => {
         {isAdmin ? (
           <>
             <SectionLabel label="Administración" collapsed={collapsed} />
-            <NavItem
-              to="/admin"
-              icon={LayoutDashboard}
-              label="Organizaciones"
-              collapsed={collapsed}
-              onClick={() => setMobileOpen(false)}
-            />
+            <NavItem to="/admin"        icon={LayoutDashboard} label="Organizaciones" collapsed={collapsed} onClick={() => setMobileOpen(false)} />
+            <NavItem to="/admin/users"  icon={Users}           label="Usuarios"       collapsed={collapsed} onClick={() => setMobileOpen(false)} />
           </>
         ) : isOrganizer ? (
           <>
