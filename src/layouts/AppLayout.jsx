@@ -64,6 +64,7 @@ const AppLayout = ({ children, title, actions }) => {
 
   const handleLogout = () => { logout(); navigate('/login'); };
   const isOrganizer = user?.role === 'organizer';
+  const isAdmin = user?.role === 'admin';
   const initials = user?.name
     ? user.name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
     : '?';
@@ -81,7 +82,7 @@ const AppLayout = ({ children, title, actions }) => {
           <div>
             <p className="text-white font-bold text-[15px] leading-none tracking-tight">PádelLeague</p>
             <p className="text-sidebar-textDim text-[10px] font-medium mt-1">
-              {isOrganizer ? 'Panel organizador' : 'Panel jugador'}
+              {isAdmin ? 'Panel admin' : (isOrganizer ? 'Panel organizador' : 'Panel jugador')}
             </p>
           </div>
         )}
@@ -89,7 +90,18 @@ const AppLayout = ({ children, title, actions }) => {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-        {isOrganizer ? (
+        {isAdmin ? (
+          <>
+            <SectionLabel label="Administración" collapsed={collapsed} />
+            <NavItem
+              to="/admin"
+              icon={LayoutDashboard}
+              label="Organizaciones"
+              collapsed={collapsed}
+              onClick={() => setMobileOpen(false)}
+            />
+          </>
+        ) : isOrganizer ? (
           <>
             <SectionLabel label="General" collapsed={collapsed} />
             <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard"
