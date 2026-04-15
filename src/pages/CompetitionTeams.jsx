@@ -139,28 +139,28 @@ const CompetitionTeams = () => {
     <AppLayout title="Todos los equipos">
       <button
         onClick={() => navigate(`/competitions/${id}`)}
-        className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-4"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-5"
       >
         <Icon name="chevronLeft" size={14} /> Volver a competicion
       </button>
 
       {competition && (
-        <div className="mb-4 flex items-center gap-2 flex-wrap">
-          <span className="badge bg-gray-100 text-gray-600">{competition.name}</span>
-          {competition.sport?.name && <span className="badge bg-gray-100 text-gray-500">{competition.sport.name}</span>}
-          {activeSeason && <span className="badge bg-gray-100 text-gray-500">Temporada: {activeSeason}</span>}
-          <span className="badge bg-gray-100 text-gray-500">{teams.length} equipos</span>
+        <div className="mb-5 flex items-center gap-2 flex-wrap">
+          <span className="badge bg-white border border-gray-200 text-gray-700">{competition.name}</span>
+          {competition.sport?.name && <span className="badge bg-white border border-gray-200 text-gray-500">{competition.sport.name}</span>}
+          {activeSeason && <span className="badge bg-white border border-gray-200 text-gray-500">Temporada: {activeSeason}</span>}
+          <span className="badge bg-white border border-gray-200 text-gray-500">{teams.length} equipos</span>
         </div>
       )}
 
-      <div className="mb-4">
-        <div className="relative max-w-md">
-          <Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <div className="mb-6">
+        <div className="relative max-w-xl">
+          <Icon name="search" size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar equipo, división/categoría o email..."
-            className="input pl-9 text-sm"
+            className="w-full bg-white border border-gray-200 rounded-2xl px-11 py-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -180,11 +180,11 @@ const CompetitionTeams = () => {
           <p className="text-sm text-gray-400">No hay equipos que coincidan con tu busqueda.</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-100">
+        <div className="space-y-3">
           {filteredTeams.map((team) => (
-            <div key={team._id} className="px-4 py-4 hover:bg-gray-50/70 transition-colors">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div key={team._id} className="bg-white border border-gray-100 rounded-2xl shadow-sm px-5 py-4 transition-all hover:shadow-md">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
+                <div className="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Icon name="team" size={14} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -217,8 +217,8 @@ const CompetitionTeams = () => {
                   )}
                 </div>
 
-                <div className="flex flex-col items-end gap-2 min-w-[180px]">
-                  <label className="text-[11px] font-semibold text-gray-500">
+                <div className="md:border-l md:border-gray-100 md:pl-4 flex flex-col items-start md:items-end gap-2 min-w-[200px]">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                     {isLeague ? 'División' : 'Categoría'}
                   </label>
                   {editingTeamId === team._id ? (
@@ -227,25 +227,25 @@ const CompetitionTeams = () => {
                         value={pendingDivisionId}
                         onChange={(e) => setPendingDivisionId(e.target.value)}
                         disabled={savingTeamId === team._id}
-                        className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+                        className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2.5 py-1.5 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
                       >
                         <option value="">General</option>
                         {divisions.map((division) => (
                           <option key={division._id} value={division._id}>{division.name}</option>
                         ))}
                       </select>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => saveDivisionChange(team)}
                           disabled={savingTeamId === team._id}
-                          className="text-xs px-2 py-1 rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
+                          className="text-xs px-2.5 py-1 rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
                         >
                           Guardar
                         </button>
                         <button
                           onClick={cancelDivisionEdit}
                           disabled={savingTeamId === team._id}
-                          className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-60"
+                          className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-60"
                         >
                           Cancelar
                         </button>
@@ -253,18 +253,18 @@ const CompetitionTeams = () => {
                     </>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2 py-1 font-semibold">
+                      <span className="text-xs border border-brand-200 bg-brand-50 text-brand-800 rounded-lg px-2.5 py-1 font-semibold">
                         {team.division?.name || 'General'}
                       </span>
                       <button
                         onClick={() => startDivisionEdit(team)}
-                        className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        className="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                       >
                         Mover
                       </button>
                     </div>
                   )}
-                  <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                  <span className="text-[11px] text-gray-300 whitespace-nowrap">
                     {new Date(team.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                   </span>
                 </div>
