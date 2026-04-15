@@ -338,7 +338,7 @@ const SettingsModal = ({ competition, onSave, onClose }) => {
                 />
               </div>
               <div>
-                <label className="label">Rango de fechas</label>
+                <label className="label">{isLeague ? 'Rango de fechas (temporada activa)' : 'Rango de fechas'}</label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="date"

@@ -192,7 +192,7 @@ const CompetitionModal = ({ onClose, onCreated }) => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Fecha inicio</label>
+                  <label className="label">{isLeague ? 'Inicio de temporada' : 'Fecha inicio'}</label>
                   <input
                     type="date"
                     className="input"
@@ -201,7 +201,7 @@ const CompetitionModal = ({ onClose, onCreated }) => {
                   />
                 </div>
                 <div>
-                  <label className="label">Fecha fin</label>
+                  <label className="label">{isLeague ? 'Fin de temporada' : 'Fecha fin'}</label>
                   <input
                     type="date"
                     className="input"

@@ -250,7 +250,9 @@ const CompetitionForm = () => {
           <section className="rounded-2xl border border-gray-200 bg-white p-5 md:p-6">
             <div className="mb-4">
               <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Calendario y sede</p>
-              <p className="text-sm font-semibold text-gray-900 mt-1">Ubicacion y rango de fechas</p>
+              <p className="text-sm font-semibold text-gray-900 mt-1">
+                {isLeague ? 'Ubicacion y fechas de la temporada inicial' : 'Ubicacion y rango de fechas de la competicion'}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -268,7 +270,7 @@ const CompetitionForm = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Fecha inicio</label>
+                  <label className="label">{isLeague ? 'Inicio de temporada' : 'Fecha inicio'}</label>
                   <input
                     type="date"
                     className="input"
@@ -277,7 +279,7 @@ const CompetitionForm = () => {
                   />
                 </div>
                 <div>
-                  <label className="label">Fecha fin</label>
+                  <label className="label">{isLeague ? 'Fin de temporada' : 'Fecha fin'}</label>
                   <input
                     type="date"
                     className="input"
