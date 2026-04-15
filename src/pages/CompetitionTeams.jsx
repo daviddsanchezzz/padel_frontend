@@ -10,7 +10,7 @@ const paymentStatusLabel = (status) => {
   if (status === 'paid') return 'Pagado';
   if (status === 'pending') return 'Pendiente';
   if (status === 'failed') return 'Fallido';
-  return 'Gratis';
+  return '';
 };
 
 const paymentStatusClass = (status) => {
@@ -61,6 +61,10 @@ const CompetitionTeams = () => {
   }, [id, user?.id, user?.role]);
 
   const isLeague = useMemo(() => competition?.type === 'league', [competition?.type]);
+  const isPadelSport = useMemo(() => {
+    const sportName = (competition?.sport?.name || '').toLowerCase();
+    return sportName.includes('padel') || sportName.includes('pádel');
+  }, [competition?.sport?.name]);
 
   return (
     <AppLayout title="Todos los equipos">
@@ -105,22 +109,26 @@ const CompetitionTeams = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-semibold text-gray-900 truncate">{team.name}</p>
-                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
-                      {paymentStatusLabel(team.paymentStatus)}
-                    </span>
+                    {paymentStatusLabel(team.paymentStatus) && (
+                      <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${paymentStatusClass(team.paymentStatus)}`}>
+                        {paymentStatusLabel(team.paymentStatus)}
+                      </span>
+                    )}
                   </div>
                   <div className="mt-2 flex items-center gap-2 flex-wrap text-xs text-gray-500">
-                    <span className="px-2 py-0.5 bg-gray-100 rounded-md">
+                    <span className="px-2.5 py-0.5 bg-brand-100 text-brand-800 rounded-md font-semibold">
                       {isLeague ? 'Division' : 'Categoria'}: {team.division?.name || 'General'}
                     </span>
-                    <span className="px-2 py-0.5 bg-gray-100 rounded-md">
-                      {team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}
-                    </span>
+                    {!isPadelSport && (
+                      <span className="px-2 py-0.5 bg-gray-100 rounded-md">
+                        {team.playerCount} jugador{team.playerCount === 1 ? '' : 'es'}
+                      </span>
+                    )}
                     {team.group && <span className="px-2 py-0.5 bg-gray-100 rounded-md">Grupo {team.group}</span>}
                     {team.contactEmail && <span className="px-2 py-0.5 bg-gray-100 rounded-md truncate max-w-[240px]">{team.contactEmail}</span>}
                   </div>
 
-                  {Array.isArray(team.players) && team.players.length > 0 && (
+                  {!isPadelSport && Array.isArray(team.players) && team.players.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {team.players.map((player, idx) => (
                         <span key={`${team._id}-${idx}`} className="text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-lg">
